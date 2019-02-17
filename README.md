@@ -59,26 +59,26 @@ Sensors - Track multiple targets
 * Git/Github - version control software
 
 ### Schedule - Iterations (date)Tasks
-* 1 (2/11/2019)
+* **1 (2/11/2019):**
 Rotating camera mounted to a Raspberry Pi with single degree of freedom
 Create code deployment mechanisms for version control, regression and functional testing
 Create account for AWS and start “hello world” website with front and backend
 
-* 2 (2/20/2019)
+* **2 (2/20/2019):**
 Recognize a human using openCV and display on a screen (camera system)
 Create a base page for a user to start, stop and view uploaded recordings (frontend)
 Allow storage and retrieval of video files from website backend (backend)
 
-* 3 (3/13/2019)
+* **3 (3/13/2019):**
 Rotate camera as human is moving out field of view on left and right sides of frame (camera system)
 Create basic login and account creation page (frontend)
 Create user storage in database for account creation and authentication for login (backend)
 
-* 4 (4/20/2019)
+* **4 (4/20/2019):**
 Create search mechanism for initially finding a person to record or if person is lost during recording (camera system)
 Retrieve and allow playback of recorded videos on the user dashboard page (frontend)
 Create backend communication mechanism with camera system and AWS server (backend)
 
-* 5 (4/1/2019)
+* **5 (4/1/2019):**
 Start and stop a recording tracking a human to be saved on the Raspberry Pi’s storage (camera system)
 Allow automatic video transfer from camera system to server after recording has stopped (backend)
