@@ -38,7 +38,6 @@ Sensors - Track multiple targets
 **Code Testing** - Code testing will involve regression and functional tests of each of the projects subsystems. We will measure the effectiveness of these tests based on if all of the features throughout the process of the project pass all regression and functional tests. 
 
 **The following subsystems will be subject to testing:**
-
 **Web** - The user interface where a lecture will begin, end and display recordings
 * Regression Tests
 * Functional Tests
