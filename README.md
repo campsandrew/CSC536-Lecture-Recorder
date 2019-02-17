@@ -1,23 +1,23 @@
-##Video Lecture Tracker                  
-###Team: Andrew Camps, David Weinflash, Himanshu Jain, Kyle Willson
+## Video Lecture Tracker                  
+### Team: Andrew Camps, David Weinflash, Himanshu Jain, Kyle Willson
 
-###Summary
+### Summary
 Using a microcontroller, camera and motor, a rotating camera system will be created that will track a lecturer automatically. The product will provide an expandable, object tracking platform capable of rotating itself so that it can always keep the tracked object in its field of view (FOV). The system will have an easy to use interface for starting and stopping lectures and web uploading capabilities to review recorded lectures. Since support and use of microcontrollers are so widespread, the possibilities of additional features and sensors are virtually limitless, further pushing the bounds of innovation.
 
-###Customer Value
+### Customer Value
 The primary customer for this project is the common presenter who would benefit from recording his or her presentations. Specifically, the Video Lecture Tracker is designed with the modern professor in mind, where the professor often records his/her lectures to later distribute online to students or staff. By automatically recording lectures and adjusting to movement, the Video Lecture Tracker will provide any professor with a professional recording of his/her presentation.
 
-###Problem Definition
+### Problem Definition
 Many professors and lectures tend to move around the classroom when teaching. Because of limited camera view angles many online records are confusing and hard to follow and whiteboard writing is missed. We would like to address this issue by creating an automatic recording devices which will track the location of the lecturer as they move around the room, interacting with students or drawing on the whiteboard.
  
-###Proposed Benefit
+### Proposed Benefit
 In constructing an automatic presentation recorder, we have chosen to provide college professor’s with an easy and hassle-free way to consistently record and save professional presentations for easy distribution. Our product will allow presenters to record their lectures more conveniently and more efficiently.
 It is common knowledge that body language makes up the majority of all human interaction and communication.  With this system, we can capture this thanks to its tracking and rotation abilities, which will in turn enhance the cyber education experience.
 
-###Technology
+### Technology
 The system will be primarily composed of three pieces of hardware; a Microcontroller like a Raspberry Pi/Arduino, a camera to track an object, and a servo motor to rotate the camera to keep an object within the FOV.  The main driver of the system will be OpenCV, or the an industry standard tool for object recognition on computers.
 
-###Proposed System
+### Proposed System
 The main components of our system and their functionality:
 Camera - Capture the recording.
 Servo motor - Rotate the camera on a single axis.
@@ -26,7 +26,7 @@ Mobile app/Website - Web interface for the user to manual control the system.
 Potential additional product features:
 Sensors - Track multiple targets
 
-###Testing
+### Testing
 **Consumer Testing** - A typical test will involve a lecturer being able to start up the system from a web application at the beginning of a lecture and stop the recording at the end of a lecture. We will measure the effectiveness of this testing based on a survey given to the lecturer after using the system. The survey will consist of questions about ease of use and questions gauging how well the system recorded the lecture. Two candidates for consumer testing will be Alon Efrat and Lester Mccann, both professors in the computer science department that frequently make lecture recordings.
 
 **Passing test cases:**
@@ -43,7 +43,7 @@ Sensors - Track multiple targets
 * Regression Tests
 * Functional Tests
 
-###Tools and External Technology
+### Tools and External Technology
 * Tools
 * Python or C/C++
 * Java
@@ -51,14 +51,14 @@ Sensors - Track multiple targets
 * Basic hand tools to create camera mounting system (wrenches, screwdrivers, wires, etc)
 * Classroom with wifi for testing
 
-###External Technologies
+### External Technologies
 * Amazon AWS (free trial) - hosting the website to upload the recording
 * openCV - computer vision library
 * Python flask - micro web framework
 * Reactjs - web frontend library
 * Git/Github - version control software
 
-###Schedule - Iterations (date)Tasks
+### Schedule - Iterations (date)Tasks
 * 1 (2/11/2019)
 Rotating camera mounted to a Raspberry Pi with single degree of freedom
 Create code deployment mechanisms for version control, regression and functional testing
