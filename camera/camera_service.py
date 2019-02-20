@@ -1,4 +1,5 @@
 from flask import Flask
+import cv2
 
 service = Flask(__name__)
 
