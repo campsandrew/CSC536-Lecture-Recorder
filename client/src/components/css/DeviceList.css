@@ -1,0 +1,31 @@
+.DeviceList {
+	/* Positioning */
+	/* Display & Box Model */
+	border-radius: 10px;
+	overflow: hidden;
+	width: 250px;
+
+	/* Color */
+	background-color: white;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+	/* Text */
+	/* Other */
+}
+
+.DeviceList ul {
+	/* Positioning */
+	/* Display & Box Model */
+	margin: 10px;
+	padding: 0;
+	list-style-type: none;
+	/* Color */
+	/* Text */
+	/* Other */
+}
+
+@media screen and (max-device-width: 400px) {
+	.DeviceList {
+		width: 100%;
+	}
+}

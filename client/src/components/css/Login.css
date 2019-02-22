@@ -1,0 +1,31 @@
+button {
+	/* Positioning */
+	/* Display & Box Model */
+	transition-duration: 0.4;
+	height: 35px;
+	width: 90px;
+	border-width: 2px;
+	border-radius: 8px;
+
+	/* Color */
+	background-color: #b7ddff;
+	border-color: white;
+	color: #034377;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
+
+	/* Text */
+	font-size: 12pt;
+	font-weight: bold;
+
+	/* Other */
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: white;
+	border-color: #034377;
+}
+
+button:focus {
+	outline: none;
+}

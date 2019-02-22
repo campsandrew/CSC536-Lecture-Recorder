@@ -1,0 +1,33 @@
+/* Positioning */
+/* Display & Box Model */
+/* Color */
+/* Text */
+/* Other */
+
+body {
+	/* Positioning */
+	/* Display & Box Model */
+	margin: 0;
+	padding: 0;
+
+	/* Color */
+	background-color: #b3c6d1;
+
+	/* Text */
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+		"Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+		sans-serif;
+
+	/* Other */
+}
+
+code {
+	/* Positioning */
+	/* Display & Box Model */
+	/* Color */
+	/* Text */
+	font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+		monospace;
+
+	/* Other */
+}

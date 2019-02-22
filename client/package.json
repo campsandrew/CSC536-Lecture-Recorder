@@ -1,36 +1,26 @@
 {
   "name": "client",
-  "version": "1.0.0",
-  "description": "",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "webpack-dev-server --mode development",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/campsandrew/CSC536-Lecture-Recorder.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/campsandrew/CSC536-Lecture-Recorder/issues"
-  },
-  "homepage": "https://github.com/campsandrew/CSC536-Lecture-Recorder#readme",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "react": "^16.8.2",
-    "react-dom": "^16.8.2"
+    "axios": "^0.18.0",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "react-scripts": "2.1.5"
   },
-  "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.3.3",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/preset-react": "^7.0.0",
-    "babel-loader": "^8.0.5",
-    "css-loader": "^2.1.0",
-    "style-loader": "^0.23.1",
-    "webpack": "^4.29.4",
-    "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.1.14"
-  }
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

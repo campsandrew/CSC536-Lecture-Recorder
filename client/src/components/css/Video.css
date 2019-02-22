@@ -1,0 +1,29 @@
+.Video {
+	/* Positioning */
+	/* Display & Box Model */
+	margin: 8px 0;
+	padding: 5px 10px;
+	/* Color */
+	background-color: #f4f8ff;
+	/* Text */
+	/* Other */
+}
+
+.Video:hover {
+	/* Positioning */
+	/* Display & Box Model */
+	/* Color */
+	background-color: grey;
+	/* Text */
+	/* Other */
+}
+
+.Video iframe {
+	/* Positioning */
+	/* Display & Box Model */
+	height: 150px;
+	width: 250px;
+	/* Color */
+	/* Text */
+	/* Other */
+}

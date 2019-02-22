@@ -1,0 +1,41 @@
+.Device {
+	/* Positioning */
+	justify-content: space-between;
+	align-items: center;
+
+	/* Display & Box Model */
+	display: flex;
+	margin: 4px 0;
+	padding: 10px;
+
+	/* Color */
+	background-color: #f4f8ff;
+	/* Text */
+	/* Other */
+}
+
+.Device:hover {
+	/* Positioning */
+	/* Display & Box Model */
+	/* Color */
+	background-color: grey;
+	/* Text */
+	/* Other */
+}
+
+#status {
+	/* Positioning */
+	display: inline-block;
+
+	/* Display & Box Model */
+	height: 16px;
+	width: 30px;
+	border-radius: 8px;
+	border: 1px solid grey;
+
+	/* Color */
+	background-color: yellow;
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 10px 0 rgba(0, 0, 0, 0.19);
+	/* Text */
+	/* Other */
+}

@@ -1,0 +1,13 @@
+.ContentArea {
+	/* Positioning */
+	/* Display & Box Model */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	margin: 50px 0 0 0;
+	padding: 20px;
+
+	/* Color */
+	/* Text */
+	/* Other */
+}
