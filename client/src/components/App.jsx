@@ -5,10 +5,6 @@ import HeaderBar from "./HeaderBar";
 import ContentArea from "./ContentArea";
 
 class App extends Component {
-	constructor(props) {
-		super(props);
-	}
-
 	render() {
 		return (
 			<div>
