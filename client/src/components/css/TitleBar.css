@@ -11,3 +11,12 @@
 	/* Text */
 	/* Other */
 }
+
+.color-dark {
+	background-color: #689fff;
+	color: black;
+}
+
+.large {
+	padding: 14px 20px;
+}

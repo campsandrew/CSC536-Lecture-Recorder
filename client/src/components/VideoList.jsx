@@ -26,17 +26,48 @@ class VideoList extends Component {
 		var videos = [
 			{
 				id: 0,
+				name: "Sample Video",
 				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				camera: "My Camera",
 				date: new Date(),
-				length: "1000",
-				name: "Sample Video"
+				length: 22,
+				description: "Sample video pulled from youtube"
 			},
 			{
 				id: 1,
+				name: "Sample Video",
 				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				camera: "My Camera",
 				date: new Date(),
-				length: "1000",
-				name: "Sample Video"
+				length: 22,
+				description: "Sample video pulled from youtube"
+			},
+			{
+				id: 2,
+				name: "Sample Video",
+				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				camera: "Backup",
+				date: new Date(),
+				length: 22,
+				description: "Sample video pulled from youtube"
+			},
+			{
+				id: 3,
+				name: "Sample Video",
+				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				camera: "My Camera",
+				date: new Date(),
+				length: 22,
+				description: "Sample video pulled from youtube"
+			},
+			{
+				id: 4,
+				name: "Sample Video",
+				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				camera: "My Camera",
+				date: new Date(),
+				length: 22,
+				description: "Sample video pulled from youtube"
 			}
 		];
 
@@ -45,8 +76,9 @@ class VideoList extends Component {
 	}
 
 	render() {
+		const click = this.props.onClick;
 		const videoList = this.state.videos.map(video => (
-			<Video title={video.name} url={video.url} key={video.id} />
+			<Video details={video} onClick={click} key={video.id} />
 		));
 
 		return (

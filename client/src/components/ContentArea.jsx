@@ -1,45 +1,58 @@
 import React, { Component } from "react";
 import "./css/ContentArea.css";
 
-import DeviceList from "./DeviceList";
-import VideoList from "./VideoList";
-
-const ROUTES = {
-	"/": {
-		title: "LectureFly | Home",
-		page: <div className="ContentArea" />
-	},
-	"/dashboard": {
-		title: "LectureFly | Dash",
-		page: (
-			<div className="ContentArea">
-				<DeviceList />
-				<VideoList />
-			</div>
-		)
-	}
-};
+import Page from "./Page";
+import Modal from "./Modal";
+import ModalContent from "./ModalContent";
 
 class ContentArea extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			page: ""
+			route: "/",
+			show: false
 		};
 	}
 
 	componentDidMount() {
-		const route = ROUTES[window.location.pathname];
-
 		this.setState({
-			page: route.page
+			route: window.location.pathname
 		});
-		document.title = route.title;
 	}
 
+	showModal = (e, title) => {
+		this.setState({
+			show: true,
+			modalTitle: title
+		});
+	};
+
+	closeModal = e => {
+		this.setState({ show: false });
+	};
+
+	saveModal = e => {
+		this.setState({ show: false });
+	};
+
 	render() {
-		return this.state.page;
+		const route = this.state.route;
+		const title = this.state.modalTitle;
+		const show = this.state.show;
+		const onClick = {
+			save: this.saveModal,
+			close: this.closeModal
+		};
+
+		return (
+			<div>
+				<Page route={route} onClick={this.showModal} />
+				<Modal show={show} title={title}>
+					<ModalContent onClick={onClick} />
+				</Modal>
+			</div>
+		);
 	}
 }
 

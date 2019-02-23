@@ -38,8 +38,9 @@ class DeviceList extends Component {
 	}
 
 	render() {
+		const click = this.props.onClick;
 		const deviceList = this.state.devices.map(device => (
-			<Device name={device.name} key={device.id} />
+			<Device name={device.name} onClick={click} key={device.id} />
 		));
 
 		return (

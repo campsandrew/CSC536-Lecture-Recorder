@@ -1,6 +1,8 @@
 .Video {
 	/* Positioning */
 	/* Display & Box Model */
+	display: flex;
+	flex-wrap: wrap;
 	margin: 8px 0;
 	padding: 5px 10px;
 	/* Color */
@@ -23,7 +25,21 @@
 	/* Display & Box Model */
 	height: 150px;
 	width: 250px;
+	margin: 0 10px 0 0;
 	/* Color */
 	/* Text */
 	/* Other */
+}
+
+.Video h3 {
+	margin: 0;
+	font-size: 16pt;
+}
+
+.Video p {
+	font-size: 11pt;
+}
+
+.Video #summary {
+	font-size: 9pt;
 }

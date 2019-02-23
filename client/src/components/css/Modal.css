@@ -1,0 +1,73 @@
+.Modal {
+	/* Positioning */
+	position: fixed;
+	top: 0;
+	left: 0;
+	/* Display & Box Model */
+	width: 100%;
+	height: 100%;
+	/* Color */
+	background: rgba(0, 0, 0, 0.6);
+	/* Text */
+	/* Other */
+}
+
+.Modal section {
+	/* Positioning */
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	/* Display & Box Model */
+	width: auto;
+	height: auto;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.4), 0 6px 20px 0 rgba(0, 0, 0, 0.4);
+
+	/* Color */
+	background: white;
+	/* Text */
+	/* Other */
+}
+
+.Modal .ModalContent {
+	position: relative;
+	height: 100%;
+	padding: 10px;
+}
+
+.display-block {
+	display: block;
+}
+
+.display-none {
+	display: none;
+}
+
+.Modal #buttons {
+	text-align: right;
+}
+
+.Modal button {
+	height: 35px;
+	width: auto;
+	margin: 0 0 0 5px;
+	padding: 0 15px;
+	border-radius: 5px;
+	border-width: 1px;
+	border-color: grey;
+	font-weight: normal;
+}
+
+.Modal #primary {
+	background-color: #689fff;
+	color: white;
+}
+
+.Modal #secondary {
+	background-color: white;
+	border-width: 1px;
+	border-color: grey;
+	color: black;
+}
