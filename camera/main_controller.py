@@ -1,6 +1,6 @@
 from camera_module import Camera
 from motor_module import Motor
-from input import Input
+from input_module import Input
 
 import logging
 import socket
@@ -14,23 +14,27 @@ import os
 CONTROLLER = "controller"
 MOTOR_MODULE = "motor"
 CAMERA_MODULE = "camera"
+INPUT_MODULE = "input"
 CONFIG_FILE = "config.json"
 PORT = "port"
 SERVER = "server"
 DEBUG = "debug"
+LOCATION = "location"
+ERROR = "error"
+SUCCESS = "success"
 
 #------------
 # Entry Point
 #------------
 def main():
 	"""Main method initializes controller
-	with JSON configuration file.
+	with JSON configuration file. Start
 
 	Returns: None
 	"""
 
+	# Create controller instance
 	controller = Controller()
-	Input.input_service(controller)
 
 	controller.logger.debug("main() returned")
 	return None
@@ -70,14 +74,19 @@ class Controller:
 		self.port = self._config[CONTROLLER][PORT]
 		self.server = self._config[CONTROLLER][SERVER]
 		self.is_connected = self.has_connection(self.server)
+		self.service = None
 
 		## Private
 		self._motor_module = Motor()
 		self._camera_module = Camera()
+		self._input_module = Input()
 		self._modules = {
 			MOTOR_MODULE: self._motor_module,
-			CAMERA_MODULE: self._camera_module
+			CAMERA_MODULE: self._camera_module,
+			INPUT_MODULE: self._input_module
 		}
+
+		self.service = self._input_module.start_service(self)
 
 		self.logger.debug("__init__() returned")
 		return None
@@ -87,7 +96,7 @@ class Controller:
 		modules. Each module will get passed a message 
 		callback method and individual configuration
 		read from JSON file. Controller debug config is
-		passed through to all module configs
+		passed through to all module configs.
 
 		Returns: None
 		"""
@@ -101,45 +110,72 @@ class Controller:
 		self.logger.debug("initialize() returned")
 		return None
 
-	def module_message(self, module, message, callback):
+	def module_message(self, module, message):
 		"""Receive message from module and send message
 		to specific module controller method.
 
 		Keyword arguments:
 		module - current instance of module sending message
 		message - any data passed to module controller method
-		callback - method to call after message is received
+		that must of LOCATION
 
 		Returns: None
 		"""
 
+		callback = None
+
 		if isinstance(module, Camera):
+			callback = self._camera_module.controller_message
 			self.logger.debug("camera message directed")
-			self._camera_control(message, callback)
 
 		elif isinstance(module, Motor):
+			callback = self._motor_module.controller_message
 			self.logger.debug("motor message directed")
-			self._motor_control(message, callback)
+
+		elif isinstance(module, Input):
+			callback = self._input_module.controller_message
+			self.logger.debug("motor message directed")
 
 		else:
 			self.logger.debug("unknown message received")
+			callback = module.controller_message
 			## Unknown module message
 			## Do nothing
 			pass
 
+		## Message direction switchboard called
+		self._direct_message(message, callback)
+
 		self.logger.debug("module_message() returned")
-		return None
+		return True
 
-	def _motor_control(self, message, callback):
+	def _direct_message(self, message, callback):
 		"""
 		"""
 
-		return None
+		return_message = {}
 
-	def _camera_control(self, message, callback):
-		"""
-		"""
+		## Error message sent back if not message location
+		## specified
+		if LOCATION not in message:
+			return_message[ERROR] = "no message location"
 
+		elif message[LOCATION] == MOTOR_MODULE:
+			self._motor_module.controller_message(message)
+			return_message[SUCCESS] = "message sent to motor"
+
+		elif message[LOCATION] == CAMERA_MODULE:
+			self._camera_module.controller_message(message)
+			return_message[SUCCESS] = "message sent to camera"
+
+		elif message[LOCATION] == INPUT_MODULE:
+			self._input_module.controller_message(message)
+			return_message[SUCCESS] ="message sent to input"
+
+		else:
+			return_message[ERROR] = "unknown message location"
+
+		callback(return_message)
 		return None
 
 	def cleanup(self, shutdown=False):

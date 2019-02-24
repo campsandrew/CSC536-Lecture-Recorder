@@ -7,5 +7,6 @@
 	"camera": {
 		"save_file": "./videos/"
 	},
-	"motor": {}
+	"motor": {},
+	"input": {}
 }
