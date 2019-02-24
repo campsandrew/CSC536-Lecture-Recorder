@@ -1,4 +1,4 @@
-
+from module import Module
 
 class Motor(Module):
 
