@@ -1,8 +1,9 @@
 from camera_module import Camera
-from input_module import Input
 from motor_module import Motor
+from input import Input
 
 import logging
+import socket
 import json
 import sys
 import os
@@ -11,10 +12,11 @@ import os
 ## Note: These module names could be python 
 ## Enums eventually
 CONTROLLER = "controller"
-INPUT_MODULE = "input"
 MOTOR_MODULE = "motor"
 CAMERA_MODULE = "camera"
 CONFIG_FILE = "config.json"
+PORT = "port"
+SERVER = "server"
 DEBUG = "debug"
 
 #------------
@@ -27,10 +29,10 @@ def main():
 	Returns: None
 	"""
 
-	# Create controller instance
-	controller = Controller().initialize()
+	controller = Controller()
+	Input.input_service(controller)
 
-	logging.debug("main returned")
+	controller.logger.debug("main() returned")
 	return None
 
 #----------------------
@@ -39,8 +41,8 @@ def main():
 class Controller:
 
 	def __new__(cls, filepath=CONFIG_FILE):
-		"""Creates instance of class. Initializes
-		logger.
+		"""Creates instance of class and initializes
+		logger
 
 		Returns: self - instance of class
 		"""
@@ -48,8 +50,9 @@ class Controller:
 		cls._config = cls.get_configuration(filepath)
 		cls.debug = cls._config[CONTROLLER][DEBUG]
 		cls.logger = logging.getLogger()
-		
-		# Initialize logging
+
+		# Initialize logger
+		logging.basicConfig()
 		if cls.debug:
 			cls.logger.setLevel(logging.DEBUG)
 
@@ -62,15 +65,16 @@ class Controller:
 		Keyword arguments:
 		filepath - JSON file with system configurations
 		"""
-
+		
 		## Public
+		self.port = self._config[CONTROLLER][PORT]
+		self.server = self._config[CONTROLLER][SERVER]
+		self.is_connected = self.has_connection(self.server)
 
 		## Private
 		self._motor_module = Motor()
-		self._input_module = Input()
 		self._camera_module = Camera()
 		self._modules = {
-			INPUT_MODULE: self._input_module,
 			MOTOR_MODULE: self._motor_module,
 			CAMERA_MODULE: self._camera_module
 		}
@@ -85,8 +89,7 @@ class Controller:
 		read from JSON file. Controller debug config is
 		passed through to all module configs
 
-		Returns:
-		self - instance of class Controller
+		Returns: None
 		"""
 
 		# Call init methods on all modules
@@ -96,7 +99,7 @@ class Controller:
 			module.initialize(self.module_message, config)
 
 		self.logger.debug("initialize() returned")
-		return self
+		return None
 
 	def module_message(self, module, message, callback):
 		"""Receive message from module and send message
@@ -110,31 +113,21 @@ class Controller:
 		Returns: None
 		"""
 
-		if isinstance(module, Input):
-			logging.debug("input message directed")
-			self._input_control(message, callback)
-
-		elif isinstance(module, Camera):
-			logging.debug("camera message directed")
+		if isinstance(module, Camera):
+			self.logger.debug("camera message directed")
 			self._camera_control(message, callback)
 
 		elif isinstance(module, Motor):
-			logging.debug("motor message directed")
+			self.logger.debug("motor message directed")
 			self._motor_control(message, callback)
 
 		else:
-			logging.debug("unknown message received")
+			self.logger.debug("unknown message received")
 			## Unknown module message
 			## Do nothing
 			pass
 
-		logging.debug("module_message() returned")
-		return None
-
-	def _input_control(self, message, callback):
-		"""
-		"""
-
+		self.logger.debug("module_message() returned")
 		return None
 
 	def _motor_control(self, message, callback):
@@ -164,19 +157,43 @@ class Controller:
 
 		# Turn off computer
 		if shutdown:
-			logging.warning("system shutting down")
+			self.logger.warning("system shutting down")
 			os.system("shutdown -s")
 
-		logging.debug("cleanup() returned")
+		self.logger.debug("cleanup() returned")
 		return None
 
 	@classmethod
-	def get_configuration(cls, filepath):
-		"""Class method to read a JSON config file
+	def has_connection(cls, hostname, port=80, timeout=2):
+		"""Performs a test connection to server.
+
+		Key arguments:
+		hostname - url of server
+		port - port of server
+		timeout - time spent waiting for connection
+
+		Returns:
+		connected - boolean of connection
+		"""
+
+		connected = True
+
+		try:
+			host = socket.gethostbyname(hostname)
+			connect = socket.create_connection((host, port), timeout)
+		except:
+			cls.logger.warning("no connection to server")
+			connected = False
+
+		cls.logger.debug("has_connection() returned " + str(connected))
+		return connected
+
+	@staticmethod
+	def get_configuration(filepath):
+		"""Static method to read a JSON config file
 		with module specific configurations passed to
 		each module when an instance is created. If config
-		file fails to open, the cleanup method is called
-		and the program exits with exit code -1
+		file fails to open and the program exits with exit code -1
 
 		Keyword arguments:
 		filepath - JSON configuration filepath
@@ -191,11 +208,9 @@ class Controller:
 			config = json.load(file)
 		except:
 			logging.error("Could not open " + filepath)
-			logging.info("Cleaning up....")
-			cls.cleanup()
+			logging.info("Exiting with status code -1")
 			sys.exit(-1)
 
-		logging.debug("get_configuration() returned")
 		return config
 
 if __name__ == "__main__":

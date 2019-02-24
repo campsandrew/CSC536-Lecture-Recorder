@@ -1,8 +1,6 @@
 {
 	"controller": {
-		"debug": true
-	},
-	"input": {
+		"debug": true,
 		"server": "www.google.com",
 		"port": 5000
 	},
