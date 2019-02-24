@@ -1,4 +1,7 @@
 {
+	"controller": {
+		"debug": false
+	},
 	"input": {
 		"server": "www.google.com",
 		"port": 5000

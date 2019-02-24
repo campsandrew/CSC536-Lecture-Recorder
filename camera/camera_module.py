@@ -2,6 +2,8 @@ from module import Module
 
 import logging
 
+DEBUG = "debug"
+
 #--------------------
 # Camera Module Class
 #--------------------

@@ -4,6 +4,7 @@ from flask import Flask
 import logging
 import socket
 
+DEBUG = "debug"
 CONFIG_SERVER = "server"
 
 #-------------------
@@ -12,29 +13,53 @@ CONFIG_SERVER = "server"
 class Input(Module):
 
 	def __init__(self):
-		"""
+		"""Declare class attributes and initialize
+		logger
+
+		Returns: None
 		"""
 
-		## Initialize class attributes
+		## Public
 		self.is_connected = False
-		self.config = None
-		self._callback = None
 		self.logger = logging.getLogger(__name__)
+		
+		## Private
+		self._config = None
+		self._callback = None
+		self._service = Flask(__name__)
+
 
 		self.logger.debug("__init__() returned")
 		return None
 
 	def initialize(self, callback, config):
+		"""
+
+		Key arguments:
+		callback - function to call to send message to
+		controller
+		config - dictionary of configuration from config file
+
+		Returns: None
+		"""
+
 		self._callback = callback
 		self._config = config
 		self.is_connected = self._has_connection(config[CONFIG_SERVER])
-		self._callback(self, "test", self.controller_message)
 
 		self.logger.debug("initialize() returned")
 		return None
 
 	def _has_connection(self, hostname, port=80, timeout=2):
-		"""
+		"""Performs a test connection to server.
+
+		Key arguments:
+		hostname - url of server
+		port - port of server
+		timeout - time spent waiting for connection
+
+		Returns:
+		connected - boolean of connection
 		"""
 
 		connected = True
@@ -52,6 +77,7 @@ class Input(Module):
 	def controller_message(self, message):
 		"""
 		"""
+
 		self.logger.debug("message received - " + str(message))
 		self.logger.debug("controller_message() returned")
 		return None
