@@ -1,0 +1,10 @@
+{
+	"input": {
+		"server": "www.google.com",
+		"port": 5000
+	},
+	"camera": {
+		"save_file": "./videos/"
+	},
+	"motor": {}
+}
