@@ -5,12 +5,10 @@ from camera_module import Camera
 def main():
 	controller = Controller()
 
-
-
 class Controller:
 
 	def __init__(self):
-		pass	
+		pass
 
 
 if __name__ == "__main__":
