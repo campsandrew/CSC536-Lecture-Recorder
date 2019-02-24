@@ -28,12 +28,7 @@ def main():
 	"""
 
 	# Create controller instance
-	controller = Controller()
-
-	
-
-	# Initialize controller modules
-	controller.initialize()
+	controller = Controller().initialize()
 
 	logging.debug("main returned")
 	return None
@@ -90,7 +85,8 @@ class Controller:
 		read from JSON file. Controller debug config is
 		passed through to all module configs
 
-		Returns: None
+		Returns:
+		self - instance of class Controller
 		"""
 
 		# Call init methods on all modules
@@ -100,7 +96,7 @@ class Controller:
 			module.initialize(self.module_message, config)
 
 		self.logger.debug("initialize() returned")
-		return None
+		return self
 
 	def module_message(self, module, message, callback):
 		"""Receive message from module and send message
@@ -142,9 +138,15 @@ class Controller:
 		return None
 
 	def _motor_control(self, message, callback):
+		"""
+		"""
+
 		return None
 
 	def _camera_control(self, message, callback):
+		"""
+		"""
+
 		return None
 
 	def cleanup(self, shutdown=False):

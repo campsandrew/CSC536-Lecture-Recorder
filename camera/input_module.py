@@ -1,11 +1,15 @@
 from module import Module
 from flask import Flask
 
+import threading
 import logging
 import socket
 
 DEBUG = "debug"
+CONFIG_PORT = "port"
 CONFIG_SERVER = "server"
+
+service = Flask(__name__)
 
 #-------------------
 # Input Module Class
@@ -26,7 +30,7 @@ class Input(Module):
 		## Private
 		self._config = None
 		self._callback = None
-		self._service = Flask(__name__)
+		self._service_thread = None
 
 
 		self.logger.debug("__init__() returned")
@@ -46,6 +50,8 @@ class Input(Module):
 		self._callback = callback
 		self._config = config
 		self.is_connected = self._has_connection(config[CONFIG_SERVER])
+		self._service_thread = threading.Thread(target=self.start_service)
+		self._service_thread.start()
 
 		self.logger.debug("initialize() returned")
 		return None
@@ -73,6 +79,18 @@ class Input(Module):
 
 		self.logger.debug("_has_connection() returned " + str(connected))
 		return connected
+
+	def start_service(self):
+		"""
+		"""
+
+		if self.is_connected:
+			port = self._config[CONFIG_PORT]
+			debug = self._config[DEBUG]
+			self.logger.debug("flask service starting")
+			service.run(port=port, debug=debug, use_reloader=False)
+
+		return None
 
 	def controller_message(self, message):
 		"""
