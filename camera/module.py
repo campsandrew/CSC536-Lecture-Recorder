@@ -18,7 +18,7 @@ class Module:
 		"""
 
 		## Private
-		self._callback = None
+		self._send_message = None
 		self._config = None
 
 		## Public
@@ -38,7 +38,7 @@ class Module:
 		Returns: None
 		"""
 
-		self._callback = callback
+		self._send_message = callback
 		self._config = config
 
 		self.logger.debug("initialize() returned")

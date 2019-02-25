@@ -28,7 +28,7 @@ SUCCESS = "success"
 #------------
 def main():
 	"""Main method initializes controller
-	with JSON configuration file. Start
+	with JSON configuration file.
 
 	Returns: None
 	"""
@@ -46,7 +46,7 @@ class Controller:
 
 	def __new__(cls, filepath=CONFIG_FILE):
 		"""Creates instance of class and initializes
-		logger
+		logger.
 
 		Returns: self - instance of class
 		"""
@@ -191,7 +191,7 @@ class Controller:
 		for name, module in self._modules.items():
 			module.cleanup()
 
-		# Turn off computer
+		# Turn off computer (untested at the moment)
 		if shutdown:
 			self.logger.warning("system shutting down")
 			os.system("shutdown -s")

@@ -17,7 +17,7 @@ class Camera(module.Module):
 		self.logger = logging.getLogger(__name__)
 
 		## Private
-		self._callback = None
+		self._send_message = None
 		self._config = None
 
 		self.logger.debug("__init__() returned")
@@ -34,8 +34,21 @@ class Camera(module.Module):
 		Returns: None
 		"""
 
-		self._callback = callback
+		self._send_message = callback
 		self._config = config
+
+		## EXAMPLE MESSAGES
+		# msg = {module.LOCATION: module.INPUT_MODULE, 
+		# 			 module.DATA: "from camera"}
+		# self._send_message(self, msg)
+
+		# msg = {module.LOCATION: module.MOTOR_MODULE, 
+		# 			 module.DATA: "from camera"}
+		# self._send_message(self, msg)
+
+		# msg = {module.LOCATION: module.CAMERA_MODULE, 
+		# 			 module.DATA: "from camera"}
+		# self._send_message(self, msg)
 
 		self.logger.debug("initialize() returned")
 		return None

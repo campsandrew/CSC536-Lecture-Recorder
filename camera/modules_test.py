@@ -3,6 +3,8 @@ from camera_module import Camera
 from motor_module import Motor
 from input_module import Input
 
+import module
+
 import unittest
 
 #----------------------
@@ -12,6 +14,9 @@ class TestController(unittest.TestCase):
 	
 	def setUp(self):
 		self.controller = Controller()
+		self.input = Input()
+		self.motor = Motor()
+		self.camera = Camera()
 
 	def test_success_message_modules(self):
 		pass
@@ -22,6 +27,7 @@ class TestController(unittest.TestCase):
 	def test_receive_message_modules(self):
 		pass
 
+	## Example test
 	#def test_unittest(self):
 	#	self.assertEqual(50, 20)
 
