@@ -38,17 +38,17 @@ class Camera(module.Module):
 		self._config = config
 
 		## EXAMPLE MESSAGES
-		# msg = {module.LOCATION: module.INPUT_MODULE, 
-		# 			 module.DATA: "from camera"}
-		# self._send_message(self, msg)
+		msg = {module.LOCATION: module.INPUT_MODULE, 
+					 module.DATA: "from camera"}
+		self._send_message(msg, from_module=self)
 
-		# msg = {module.LOCATION: module.MOTOR_MODULE, 
-		# 			 module.DATA: "from camera"}
-		# self._send_message(self, msg)
+		msg = {module.LOCATION: module.MOTOR_MODULE, 
+					 module.DATA: "from camera"}
+		self._send_message(msg, from_module=self)
 
-		# msg = {module.LOCATION: module.CAMERA_MODULE, 
-		# 			 module.DATA: "from camera"}
-		# self._send_message(self, msg)
+		msg = {module.LOCATION: module.CAMERA_MODULE, 
+					 module.DATA: "from camera"}
+		self._send_message(msg, from_module=self)
 
 		self.logger.debug("initialize() returned")
 		return None

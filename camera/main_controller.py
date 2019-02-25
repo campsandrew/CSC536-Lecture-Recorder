@@ -110,52 +110,63 @@ class Controller:
 		self.logger.debug("initialize() returned")
 		return None
 
-	def module_message(self, module, message):
+	def module_message(self, message, from_module=None):
 		"""Receive message from module and send message
-		to specific module controller method.
+		to specific module controller method. If module is
+		sending a message that is unknown, a callback is
+		not made.
 
 		Keyword arguments:
 		module - current instance of module sending message
 		message - any data passed to module controller method
-		that must of LOCATION
+		that must have LOCATION
 
-		Returns: None
+		Returns:
+		Boolean - whether controller received message
 		"""
 
 		callback = None
 
-		if isinstance(module, Camera):
+		if isinstance(from_module, Camera):
 			callback = self._camera_module.controller_message
 			self.logger.debug("camera message directed")
 
-		elif isinstance(module, Motor):
+		elif isinstance(from_module, Motor):
 			callback = self._motor_module.controller_message
 			self.logger.debug("motor message directed")
 
-		elif isinstance(module, Input):
+		elif isinstance(from_module, Input):
 			callback = self._input_module.controller_message
-			self.logger.debug("motor message directed")
+			self.logger.debug("input message directed")
 
 		else:
-			self.logger.debug("unknown message received")
-			callback = module.controller_message
-			## Unknown module message
-			## Do nothing
-			pass
+			self.logger.debug("unknown module sending message")
+			self._direct_message(message)
+			return True
 
 		## Message direction switchboard called
-		self._direct_message(message, callback)
+		self._direct_message(message, callback=callback)
 
 		self.logger.debug("module_message() returned")
 		return True
 
-	def _direct_message(self, message, callback):
-		"""
+	def _direct_message(self, message, callback=None):
+		"""Method to direct each message to it's corresponding
+		module location. If message location is unknown and 
+		callback is specified, the message is sent back to sender.
+		If callback is not specified, message is ignored.
+
+		Key arguments:
+		message - any data passed to module controller method
+		that must have LOCATION
+		callback - method to send back to sender
+
+		Returns: None
 		"""
 
 		return_message = {}
 
-		## Error message sent back if not message location
+		## Error message sent back if no message location
 		## specified
 		if LOCATION not in message:
 			return_message[ERROR] = "no message location"
@@ -175,7 +186,10 @@ class Controller:
 		else:
 			return_message[ERROR] = "unknown message location"
 
-		callback(return_message)
+		# Check if callback is known
+		if callback:
+			callback(return_message)
+
 		return None
 
 	def cleanup(self, shutdown=False):
