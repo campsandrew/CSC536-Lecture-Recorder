@@ -2,10 +2,8 @@ from main_controller import Controller
 from camera_module import Camera
 from motor_module import Motor
 from input_module import Input
-
 import module
 
-import subprocess
 import unittest
 
 #----------------------

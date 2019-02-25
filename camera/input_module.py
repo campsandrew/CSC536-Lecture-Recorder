@@ -24,7 +24,8 @@ class Input(module.Module):
 		global logger
 		service = flask.Flask(__name__)
 		logger = logging.getLogger(__name__)
-		kwargs = {"port": controller.port,
+		kwargs = {"host": "0.0.0.0",
+							"port": controller.port,
 							"debug": controller.debug,
 							"use_reloader": False}
 
