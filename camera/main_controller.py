@@ -122,7 +122,7 @@ class Controller:
 		that must have LOCATION
 
 		Returns:
-		Boolean - whether controller received message
+		Boolean - true if message was sent correctly
 		"""
 
 		callback = None
@@ -141,14 +141,13 @@ class Controller:
 
 		else:
 			self.logger.debug("unknown module sending message")
-			self._direct_message(message)
-			return True
+			return self._direct_message(message)
 
 		## Message direction switchboard called
-		self._direct_message(message, callback=callback)
+		sent = self._direct_message(message, callback=callback)
 
 		self.logger.debug("module_message() returned")
-		return True
+		return sent
 
 	def _direct_message(self, message, callback=None):
 		"""Method to direct each message to it's corresponding
@@ -161,9 +160,12 @@ class Controller:
 		that must have LOCATION
 		callback - method to send back to sender
 
-		Returns: None
+		Returns:
+		Boolean - whether the message was directed to
+		desired location
 		"""
 
+		directed = False
 		return_message = {}
 
 		## Error message sent back if no message location
@@ -174,23 +176,26 @@ class Controller:
 		elif message[LOCATION] == MOTOR_MODULE:
 			self._motor_module.controller_message(message)
 			return_message[SUCCESS] = "message sent to motor"
+			directed = True
 
 		elif message[LOCATION] == CAMERA_MODULE:
 			self._camera_module.controller_message(message)
 			return_message[SUCCESS] = "message sent to camera"
+			directed = True
 
 		elif message[LOCATION] == INPUT_MODULE:
 			self._input_module.controller_message(message)
 			return_message[SUCCESS] ="message sent to input"
+			directed = True
 
 		else:
 			return_message[ERROR] = "unknown message location"
 
 		# Check if callback is known
-		if callback:
+		if callback is not None:
 			callback(return_message)
 
-		return None
+		return directed
 
 	def cleanup(self, shutdown=False):
 		"""Calls cleanup method on all registered modules.
@@ -205,7 +210,7 @@ class Controller:
 		for name, module in self._modules.items():
 			module.cleanup()
 
-		# Turn off computer (untested at the moment)
+		# Turn off computer (untested on raspberry pi, needs su permissions)
 		if shutdown:
 			self.logger.warning("system shutting down")
 			os.system("shutdown -s")
@@ -231,6 +236,7 @@ class Controller:
 		try:
 			host = socket.gethostbyname(hostname)
 			connect = socket.create_connection((host, port), timeout)
+			connect.close()
 		except:
 			cls.logger.warning("no connection to server")
 			connected = False
@@ -256,6 +262,7 @@ class Controller:
 		try:
 			file = open(filepath, "r")
 			config = json.load(file)
+			file.close()
 		except:
 			logging.error("Could not open " + filepath)
 			logging.info("Exiting with status code -1")
