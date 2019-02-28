@@ -2,7 +2,7 @@ import module
 
 import logging
 
-## Note: Define constants in parent class (module.py)
+## Camera Module Specific Constants
 
 #--------------------
 # Camera Module Class

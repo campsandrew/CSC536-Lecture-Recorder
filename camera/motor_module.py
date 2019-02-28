@@ -2,7 +2,7 @@ import module
 
 import logging
 
-## Note: Define constants in parent class (module.py)
+## Motor Module Specific Constants
 
 #-------------------
 # Motor Module Class

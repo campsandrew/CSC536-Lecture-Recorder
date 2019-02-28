@@ -3,8 +3,8 @@ from motor_module import Motor
 from input_module import Input
 
 import logging
-import socket
 import json
+import uuid
 import sys
 import os
 
@@ -16,12 +16,14 @@ MOTOR_MODULE = "motor"
 CAMERA_MODULE = "camera"
 INPUT_MODULE = "input"
 CONFIG_FILE = "config.json"
-PORT = "port"
-SERVER = "server"
 DEBUG = "debug"
 LOCATION = "location"
 ERROR = "error"
 SUCCESS = "success"
+
+## Statuses
+ONLINE = 0
+RECORDING = 1
 
 #------------
 # Entry Point
@@ -52,12 +54,12 @@ class Controller:
 		"""
 
 		cls._config = cls.get_configuration(filepath)
-		cls.debug = cls._config[CONTROLLER][DEBUG]
+		cls._debug = cls._config[CONTROLLER][DEBUG]
 		cls.logger = logging.getLogger()
 
 		# Initialize logger
 		logging.basicConfig()
-		if cls.debug:
+		if cls._debug:
 			cls.logger.setLevel(logging.DEBUG)
 
 		instance = super(Controller, cls).__new__(cls)
@@ -71,22 +73,25 @@ class Controller:
 		"""
 		
 		## Public
-		self.port = self._config[CONTROLLER][PORT]
-		self.server = self._config[CONTROLLER][SERVER]
-		self.is_connected = self.has_connection(self.server)
-		self.service = None
+		self.deviceId = str(uuid.getnode())
+		self.status = ONLINE
 
 		## Private
-		self._motor_module = Motor()
-		self._camera_module = Camera()
-		self._input_module = Input()
-		self._modules = {
-			MOTOR_MODULE: self._motor_module,
-			CAMERA_MODULE: self._camera_module,
-			INPUT_MODULE: self._input_module
+		self._modules = {}
+		self._registered_modules = {
+			MOTOR_MODULE: Motor, 
+			CAMERA_MODULE: Camera, 
+			INPUT_MODULE: Input
 		}
+		
+		## Initialize all registered modules
+		for name, module in self._registered_modules.items():
+			self._modules[name] = module();
 
-		self.service = self._input_module.start_service(self)
+		## Startup flask input service
+		input_config = self._config[INPUT_MODULE]
+		input_config[DEBUG] = self._debug
+		self._modules[INPUT_MODULE].start_service(self, input_config)
 
 		self.logger.debug("__init__() returned")
 		return None
@@ -104,7 +109,7 @@ class Controller:
 		# Call init methods on all modules
 		for name, module in self._modules.items():
 			config = self._config[name]
-			config[DEBUG] = self.debug
+			config[DEBUG] = self._debug
 			module.initialize(self.module_message, config)
 
 		self.logger.debug("initialize() returned")
@@ -117,84 +122,42 @@ class Controller:
 		not made.
 
 		Keyword arguments:
-		module - current instance of module sending message
 		message - any data passed to module controller method
 		that must have LOCATION
+		from_module - current instance of module sending message
 
 		Returns:
 		Boolean - true if message was sent correctly
 		"""
 
-		callback = None
-
-		if isinstance(from_module, Camera):
-			callback = self._camera_module.controller_message
-			self.logger.debug("camera message directed")
-
-		elif isinstance(from_module, Motor):
-			callback = self._motor_module.controller_message
-			self.logger.debug("motor message directed")
-
-		elif isinstance(from_module, Input):
-			callback = self._input_module.controller_message
-			self.logger.debug("input message directed")
-
-		else:
-			self.logger.debug("unknown module sending message")
-			return self._direct_message(message)
-
-		## Message direction switchboard called
-		sent = self._direct_message(message, callback=callback)
-
-		self.logger.debug("module_message() returned")
-		return sent
-
-	def _direct_message(self, message, callback=None):
-		"""Method to direct each message to it's corresponding
-		module location. If message location is unknown and 
-		callback is specified, the message is sent back to sender.
-		If callback is not specified, message is ignored.
-
-		Key arguments:
-		message - any data passed to module controller method
-		that must have LOCATION
-		callback - method to send back to sender
-
-		Returns:
-		Boolean - whether the message was directed to
-		desired location
-		"""
-
 		directed = False
+		sender_callback = None
 		return_message = {}
 
-		## Error message sent back if no message location
-		## specified
-		if LOCATION not in message:
-			return_message[ERROR] = "no message location"
+		## Register sender callback
+		for name, module in self._registered_modules.items():
+			if isinstance(from_module, module):
+				sender_callback = self._modules[name].controller_message
+				self.logger.debug(name + " message directed")
+				break
 
-		elif message[LOCATION] == MOTOR_MODULE:
-			self._motor_module.controller_message(message)
-			return_message[SUCCESS] = "message sent to motor"
-			directed = True
-
-		elif message[LOCATION] == CAMERA_MODULE:
-			self._camera_module.controller_message(message)
-			return_message[SUCCESS] = "message sent to camera"
-			directed = True
-
-		elif message[LOCATION] == INPUT_MODULE:
-			self._input_module.controller_message(message)
-			return_message[SUCCESS] ="message sent to input"
+		## Send message to receiver
+		if LOCATION in message and message[LOCATION] in self._registered_modules:
+			loc = message[LOCATION]
+			return_message[SUCCESS] = "message sent to " + loc
+			self.logger.debug("message sent to " + loc)
+			self._modules[loc].controller_message(message)
 			directed = True
 
 		else:
-			return_message[ERROR] = "unknown message location"
+			return_message[ERROR] = "no message location"
+			self.logger.error("no message location from: " + str(from_module))
+			
+		## Send message to sender
+		if sender_callback is not None:
+			sender_callback(return_message)
 
-		# Check if callback is known
-		if callback is not None:
-			callback(return_message)
-
+		self.logger.debug("module_message() returned " + str(directed))
 		return directed
 
 	def cleanup(self, shutdown=False):
@@ -217,32 +180,6 @@ class Controller:
 
 		self.logger.debug("cleanup() returned")
 		return None
-
-	@classmethod
-	def has_connection(cls, hostname, port=80, timeout=2):
-		"""Performs a test connection to server.
-
-		Key arguments:
-		hostname - url of server
-		port - port of server
-		timeout - time spent waiting for connection
-
-		Returns:
-		connected - boolean of connection
-		"""
-
-		connected = True
-
-		try:
-			host = socket.gethostbyname(hostname)
-			connect = socket.create_connection((host, port), timeout)
-			connect.close()
-		except:
-			cls.logger.warning("no connection to server")
-			connected = False
-
-		cls.logger.debug("has_connection() returned " + str(connected))
-		return connected
 
 	@staticmethod
 	def get_configuration(filepath):
@@ -268,7 +205,10 @@ class Controller:
 			logging.info("Exiting with status code -1")
 			sys.exit(-1)
 
-		return config
+		## Get environment config
+		env = os.environ["FLASK_ENV"] or "development"
+
+		return config[env]
 
 if __name__ == "__main__":
 	main()
