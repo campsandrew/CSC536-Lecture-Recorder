@@ -1,5 +1,6 @@
 import logging
 
+## Constants
 MOTOR_MODULE = "motor"
 CAMERA_MODULE = "camera"
 INPUT_MODULE = "input"

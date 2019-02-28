@@ -1,12 +1,32 @@
 {
-	"controller": {
-		"debug": true,
-		"server": "www.google.com",
-		"port": 5000
+	"development": {
+		"controller": {
+			"debug": true
+		},
+		"camera": {
+			"save_file": "./videos/"
+		},
+		"motor": {},
+		"input": {
+			"server": "http://localhost:4000",
+			"host": "0.0.0.0",
+			"port": 5000
+		}
 	},
-	"camera": {
-		"save_file": "./videos/"
-	},
-	"motor": {},
-	"input": {}
+	"production": {
+		"controller": {
+			"debug": true,
+			"server": "",
+			"port": 5000
+		},
+		"camera": {
+			"save_file": "./videos/"
+		},
+		"motor": {},
+		"input": {
+			"server": "http://localhost:4000",
+			"host": "0.0.0.0",
+			"port": 5000
+		}
+	}
 }
