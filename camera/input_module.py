@@ -34,10 +34,16 @@ class Input(module.Module):
 							"debug": config[module.DEBUG],
 							"use_reloader": False}
 
+		## Lookup server address in shared database collection
+		server = ""
+		try:
+			lookup_args = [config[SERVER_NAME], config[DATABASE], config[DB_NAME]]
+			server = Input.server_address_lookup(*lookup_args)
+		except:
+			logger.error("failed to lookup server")
+
 		## Don't start service if not connected
 		## to server
-		lookup_args = [config[SERVER_NAME], config[DATABASE], config[DB_NAME]]
-		server = Input.server_address_lookup(*lookup_args)
 		parts = [server, controller.deviceId, "ping"]
 		status_url = "/".join(s.strip("/") for s in parts)
 		params = {"address": socket.getfqdn() + ":" + str(config[PORT])}
@@ -62,19 +68,6 @@ class Input(module.Module):
 		def start_recording_route():
 			"""
 			"""
-			
-			## EXAMPLE MESSAGES
-			# msg = {module.DATA: "from input", 
-			# 			 module.LOCATION: module.MOTOR_MODULE}
-			# controller.module_message(msg, from_module=Input())
-
-			# msg = {module.DATA: "from input", 
-			# 			 module.LOCATION: module.CAMERA_MODULE}
-			# controller.module_message(msg)
-
-			# msg = {module.DATA: "from input", 
-			# 			 module.LOCATION: module.INPUT_MODULE}
-			# controller.module_message(msg)
 
 			logger.debug("start_recording_route() returned")
 			return "start recording"
@@ -125,12 +118,20 @@ class Input(module.Module):
 
 		@service.errorhandler(404)
 		def error_route(err):
-			"""
+			"""Route used if request is made
+			to an unregistered route in Flask.
+
+			Key arguments:
+			err - 404 error created by Flask
+
+			Response payload:
+			success - False
+			message - error message from err argument
 			"""
 
 			payload = {
 				"success": False,
-				"message": "404 not found"
+				"message": str(err)
 			}
 
 			logger.debug("error_route() return payload: " + str(payload))
@@ -224,7 +225,17 @@ class Input(module.Module):
 
 	@staticmethod
 	def server_address_lookup(server, database, name):
-		"""
+		"""Given a server name and a database to connnect
+		to, a shared mongoDB collection is used to lookup
+		the server address.
+
+		Key arguments:
+		server - name of server to look for in collection
+		database - uri to connect to mongo database using pymongo
+		name - the database name of the database
+
+		Returns:
+		address - url address of the server
 		"""
 
 		address = ""
@@ -236,4 +247,5 @@ class Input(module.Module):
 			doc = db.hosts.find_one({"name": server})
 			address = doc["address"]
 
+		logger.debug("server_address_lookup() returned " + str(address))
 		return address
