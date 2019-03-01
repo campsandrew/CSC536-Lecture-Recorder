@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
+// Host Schema
+const hostSchema = new Schema({
+  name: { type: String, required: true, unique: true },
+  address: { type: String, required: true }
+});
+const Host = model("Host", hostSchema);
+
 // Video Model
 const videoSchema = new Schema({});
 const Video = model("Video", videoSchema);
@@ -18,6 +25,7 @@ const userSchema = new Schema({});
 const User = model("User", userSchema);
 
 exports = {
+  Host,
   Video,
   Device,
   User

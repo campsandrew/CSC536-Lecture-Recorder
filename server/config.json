@@ -2,11 +2,13 @@
     "development": {
         "config_id": "development",
         "node_port": 4000,
+        "server_name": "homeserver",
         "database": "mongodb://andrewcamps:password1!@ds349455.mlab.com:49455/lecture-fly"
     },
     "production": {
         "config_id": "production",
         "node_port": 8080,
+        "server_name": "homeserver",
         "database": ""
     }
 }
