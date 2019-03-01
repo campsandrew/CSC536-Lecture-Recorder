@@ -6,7 +6,7 @@ const config_file = require("./config.json");
 const mongoose_options = { useNewUrlParser: true, useCreateIndex: true };
 const env = process.env.NODE_ENV || "development";
 const config = config_file[env];
-const address = os.hostname() + ":" + config.node_port;
+const address = "http://" + os.hostname() + ":" + config.node_port;
 const server_name = config.server_name;
 const mainDB = config.database;
 

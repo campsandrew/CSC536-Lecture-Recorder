@@ -1,6 +1,7 @@
 import module
 
 import requests
+import pymongo
 import logging
 import socket
 import flask
@@ -8,7 +9,9 @@ import sys
 
 ## Input Module Specific Constants
 HOST = "host"
-SERVER = "server"
+SERVER_NAME = "server_name"
+DATABASE = "database"
+DB_NAME = "database_name"
 PORT = "port"
 
 #--------------------
@@ -33,7 +36,9 @@ class Input(module.Module):
 
 		## Don't start service if not connected
 		## to server
-		parts = [config[SERVER], controller.deviceId, "ping"]
+		lookup_args = [config[SERVER_NAME], config[DATABASE], config[DB_NAME]]
+		server = Input.server_address_lookup(*lookup_args)
+		parts = [server, controller.deviceId, "ping"]
 		status_url = "/".join(s.strip("/") for s in parts)
 		params = {"address": socket.getfqdn() + ":" + str(config[PORT])}
 		is_connected = Input.has_connection(status_url, params)
@@ -216,3 +221,19 @@ class Input(module.Module):
 
 		logger.debug("has_connection() returned " + str(connected))
 		return connected
+
+	@staticmethod
+	def server_address_lookup(server, database, name):
+		"""
+		"""
+
+		address = ""
+		client = pymongo.MongoClient(database)
+		db = client[name]
+		collections = db.collection_names(include_system_collections=False)
+
+		if "hosts" in collections:
+			doc = db.hosts.find_one({"name": server})
+			address = doc["address"]
+
+		return address
