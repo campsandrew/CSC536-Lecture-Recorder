@@ -19,6 +19,16 @@ const Host = model("Host", hostSchema);
 // Connect to mongoDB
 mongoose.connect(mainDB, mongoose_options).catch(err => console.log(err));
 
+// All cross origin resource sharing
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 // Routes defined
 app.use("/connector", connectorRoute);
 app.use(errorRoute);
