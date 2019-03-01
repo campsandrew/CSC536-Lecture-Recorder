@@ -36,13 +36,8 @@ function devicePingRoute(req, res) {
   if (device.address !== address) {
     device
       .updateOne({ address: address })
-      .then(function(doc) {
-        console.log(doc);
-        res.json(payload);
-      })
-      .catch(function(err) {
-        console.log(err.errmsg);
-      });
+      .then(doc => res.json(payload))
+      .catch(err => console.log(err.errmsg));
     return;
   }
 
