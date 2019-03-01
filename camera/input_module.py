@@ -1,17 +1,14 @@
 import module
 
 import requests
-import pymongo
 import logging
 import socket
 import flask
 import sys
 
 ## Input Module Specific Constants
+CONNECTOR = "connector"
 HOST = "host"
-SERVER_NAME = "server_name"
-DATABASE = "database"
-DB_NAME = "database_name"
 PORT = "port"
 
 #--------------------
@@ -34,16 +31,10 @@ class Input(module.Module):
 							"debug": config[module.DEBUG],
 							"use_reloader": False}
 
-		## Lookup server address in shared database collection
-		server = ""
-		try:
-			lookup_args = [config[SERVER_NAME], config[DATABASE], config[DB_NAME]]
-			server = Input.server_address_lookup(*lookup_args)
-		except:
-			logger.error("failed to lookup server")
-
 		## Don't start service if not connected
 		## to server
+		server = Input.server_address_lookup(config[CONNECTOR])
+		print(server)
 		parts = [server, controller.deviceId, "ping"]
 		status_url = "/".join(s.strip("/") for s in parts)
 		params = {"address": socket.getfqdn() + ":" + str(config[PORT])}
@@ -224,28 +215,29 @@ class Input(module.Module):
 		return connected
 
 	@staticmethod
-	def server_address_lookup(server, database, name):
-		"""Given a server name and a database to connnect
-		to, a shared mongoDB collection is used to lookup
-		the server address.
+	def server_address_lookup(url):
+		"""Gets the address of a server using
+		a connector server lookup
 
 		Key arguments:
-		server - name of server to look for in collection
-		database - uri to connect to mongo database using pymongo
-		name - the database name of the database
+		url - url of the server to make connection
 
 		Returns:
 		address - url address of the server
 		"""
 
+		data = {}
 		address = ""
-		client = pymongo.MongoClient(database)
-		db = client[name]
-		collections = db.collection_names(include_system_collections=False)
 
-		if "hosts" in collections:
-			doc = db.hosts.find_one({"name": server})
-			address = doc["address"]
+		## Try to make connection with the server
+		try:
+			data = requests.get(url).json()
+		except:
+			logger.error("no connection to connector server - " + url)
 
-		logger.debug("server_address_lookup() returned " + str(address))
+		## Get address from data
+		if "success" in data and "address" in data:
+			address = data["address"]
+
+		logger.debug("server_address_lookup() returned " + address)
 		return address
