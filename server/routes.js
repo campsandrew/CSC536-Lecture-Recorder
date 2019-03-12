@@ -9,6 +9,7 @@ const router = express.Router();
 router.get("/:deviceid/ping", getDevice, devicePingRoute);
 
 // API Routes Frontend
+//router.get("/devices");
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/start", deviceStartRoute);
 router.get("/:deviceid/stop", deviceStopRoute);

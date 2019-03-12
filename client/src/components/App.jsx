@@ -15,18 +15,21 @@ class App extends Component {
 	}
 
 	componentWillMount() {
-		const connector =
-			"http://ec2-3-17-178-148.us-east-2.compute.amazonaws.com/connector";
+		const connector = "http://3.18.165.55:8080/connector";
 
 		this.serverConnector(connector);
 	}
 
+	/**
+	 *
+	 */
 	serverConnector(url) {
 		const self = this;
 		const config = {
 			crossdomain: true
 		};
 
+		// Get server address from connector
 		axios
 			.get(url, config)
 			.then(function(res) {
@@ -43,12 +46,11 @@ class App extends Component {
 
 	render() {
 		const server = this.state.server;
-		console.log(server);
 
 		return (
 			<div>
 				<HeaderBar loggedIn={true} />
-				<ContentArea />
+				<ContentArea server={server} />
 			</div>
 		);
 	}

@@ -8,9 +8,9 @@ import uuid
 import sys
 import os
 
-## Constants
-## Note: These module names could be python 
-## Enums eventually
+# Constants
+# Note: These module names could be python
+# Enums eventually
 CONTROLLER = "controller"
 MOTOR_MODULE = "motor"
 CAMERA_MODULE = "camera"
@@ -21,194 +21,200 @@ LOCATION = "location"
 ERROR = "error"
 SUCCESS = "success"
 
-## Statuses
+# Statuses
 ONLINE = 0
 RECORDING = 1
 
 #------------
 # Entry Point
 #------------
+
+
 def main():
-	"""Main method initializes controller
-	with JSON configuration file.
+    """Main method initializes controller
+    with JSON configuration file.
 
-	Returns: None
-	"""
+    Returns: None
+    """
 
-	# Create controller instance
-	controller = Controller()
+    # Create controller instance
+    controller = Controller()
 
-	controller.logger.debug("main() returned")
-	return None
+    controller.logger.debug("main() returned")
+    return None
 
 #----------------------
 # Main Controller Class
 #----------------------
+
+
 class Controller:
 
-	def __new__(cls, filepath=CONFIG_FILE):
-		"""Creates instance of class and initializes
-		logger.
+    def __new__(cls, filepath=CONFIG_FILE):
+        """Creates instance of class and initializes
+        logger.
 
-		Returns: self - instance of class
-		"""
+        Returns: self - instance of class
+        """
 
-		cls._config = cls.get_configuration(filepath)
-		cls._debug = cls._config[CONTROLLER][DEBUG]
-		cls.logger = logging.getLogger()
+        cls._config = cls.get_configuration(filepath)
+        cls._debug = cls._config[CONTROLLER][DEBUG]
+        cls.logger = logging.getLogger()
 
-		# Initialize logger
-		logging.basicConfig()
-		if cls._debug:
-			cls.logger.setLevel(logging.DEBUG)
+        # Initialize logger
+        logging.basicConfig()
+        if cls._debug:
+            cls.logger.setLevel(logging.DEBUG)
 
-		instance = super(Controller, cls).__new__(cls)
-		return instance
+        instance = super(Controller, cls).__new__(cls)
+        return instance
 
-	def __init__(self, filepath=CONFIG_FILE):
-		"""Initializes class attributes.
+    def __init__(self, filepath=CONFIG_FILE):
+        """Initializes class attributes.
 
-		Keyword arguments:
-		filepath - JSON file with system configurations
-		"""
-		
-		## Public
-		self.deviceId = str(uuid.getnode())
-		self.status = ONLINE
+        Keyword arguments:
+        filepath - JSON file with system configurations
+        """
 
-		## Private
-		self._modules = {}
-		self._registered_modules = {
-			MOTOR_MODULE: Motor, 
-			CAMERA_MODULE: Camera, 
-			INPUT_MODULE: Input
-		}
-		
-		## Initialize all registered modules
-		for name, module in self._registered_modules.items():
-			self._modules[name] = module();
+        # Public
+        self.deviceId = str(uuid.getnode())
+        self.status = ONLINE
 
-		## Startup flask input service
-		input_config = self._config[INPUT_MODULE]
-		input_config[DEBUG] = self._debug
-		self._modules[INPUT_MODULE].start_service(self, input_config)
+        # Private
+        self._modules = {}
+        self._registered_modules = {
+            MOTOR_MODULE: Motor,
+            CAMERA_MODULE: Camera,
+            INPUT_MODULE: Input
+        }
 
-		self.logger.debug("__init__() returned")
-		return None
+        # Initialize all registered modules
+        for name, module in self._registered_modules.items():
+            self._modules[name] = module()
 
-	def initialize(self):
-		"""Calls initialize method on all registered
-		modules. Each module will get passed a message 
-		callback method and individual configuration
-		read from JSON file. Controller debug config is
-		passed through to all module configs.
+        # Startup flask input service
+        input_config = self._config[INPUT_MODULE]
+        input_config[DEBUG] = self._debug
+        self._modules[INPUT_MODULE].start_service(self, input_config)
 
-		Returns: None
-		"""
+        self.logger.debug("__init__() returned")
+        return None
 
-		# Call init methods on all modules
-		for name, module in self._modules.items():
-			config = self._config[name]
-			config[DEBUG] = self._debug
-			module.initialize(self.module_message, config)
+    def initialize(self):
+        """Calls initialize method on all registered
+        modules. Each module will get passed a message 
+        callback method and individual configuration
+        read from JSON file. Controller debug config is
+        passed through to all module configs.
 
-		self.logger.debug("initialize() returned")
-		return None
+        Returns: None
+        """
 
-	def module_message(self, message, from_module=None):
-		"""Receive message from module and send message
-		to specific module controller method. If module is
-		sending a message that is unknown, a callback is
-		not made.
+        # Call init methods on all modules
+        for name, module in self._modules.items():
+            config = self._config[name]
+            config[DEBUG] = self._debug
+            module.initialize(self.module_message, config)
 
-		Keyword arguments:
-		message - any data passed to module controller method
-		that must have LOCATION
-		from_module - current instance of module sending message
+        self.logger.debug("initialize() returned")
+        return None
 
-		Returns:
-		Boolean - true if message was sent correctly
-		"""
+    def module_message(self, message, from_module=None):
+        """Receive message from module and send message
+        to specific module controller method. If module is
+        sending a message that is unknown, a callback is
+        not made.
 
-		directed = False
-		sender_callback = None
-		return_message = {}
+        Keyword arguments:
+        message - any data passed to module controller method
+        that must have LOCATION
+        from_module - current instance of module sending message
 
-		## Register sender callback
-		for name, module in self._registered_modules.items():
-			if isinstance(from_module, module):
-				sender_callback = self._modules[name].controller_message
-				self.logger.debug(name + " message directed")
-				break
+        Returns:
+        Boolean - true if message was sent correctly
+        """
 
-		## Send message to receiver
-		if LOCATION in message and message[LOCATION] in self._registered_modules:
-			loc = message[LOCATION]
-			return_message[SUCCESS] = "message sent to " + loc
-			self.logger.debug("message sent to " + loc)
-			self._modules[loc].controller_message(message)
-			directed = True
+        directed = False
+        sender_callback = None
+        return_message = {}
 
-		else:
-			return_message[ERROR] = "no message location"
-			self.logger.error("no message location from: " + str(from_module))
-			
-		## Send message to sender
-		if sender_callback is not None:
-			sender_callback(return_message)
+        # Register sender callback
+        for name, module in self._registered_modules.items():
+            if isinstance(from_module, module):
+                sender_callback = self._modules[name].controller_message
+                self.logger.debug(name + " message directed")
+                break
 
-		self.logger.debug("module_message() returned " + str(directed))
-		return directed
+        # Send message to receiver
+        if LOCATION in message and message[LOCATION] in self._registered_modules:
+            loc = message[LOCATION]
+            return_message[SUCCESS] = "message sent to " + loc
+            self.logger.debug("message sent to " + loc)
+            self._modules[loc].controller_message(message)
+            directed = True
 
-	def cleanup(self, shutdown=False):
-		"""Calls cleanup method on all registered modules.
+        else:
+            return_message[ERROR] = "no message location"
+            self.logger.error("no message location from: " + str(from_module))
 
-		Keyword arguments:
-		shutdown - boolean to trigger system shutdown
+        # Send message to sender
+        if sender_callback is not None:
+            sender_callback(return_message)
 
-		Returns: None
-		"""
+        self.logger.debug("module_message() returned " + str(directed))
+        return directed
 
-		# Call cleanup methods on all modules
-		for name, module in self._modules.items():
-			module.cleanup()
+    def cleanup(self, shutdown=False):
+        """Calls cleanup method on all registered modules.
 
-		# Turn off computer (untested on raspberry pi, needs su permissions)
-		if shutdown:
-			self.logger.warning("system shutting down")
-			os.system("shutdown -s")
+        Keyword arguments:
+        shutdown - boolean to trigger system shutdown
 
-		self.logger.debug("cleanup() returned")
-		return None
+        Returns: None
+        """
 
-	@staticmethod
-	def get_configuration(filepath):
-		"""Static method to read a JSON config file
-		with module specific configurations passed to
-		each module when an instance is created. If config
-		file fails to open and the program exits with exit code -1
+        # Call cleanup methods on all modules
+        for name, module in self._modules.items():
+            module.cleanup()
 
-		Keyword arguments:
-		filepath - JSON configuration filepath
+        # Turn off computer (untested on raspberry pi, needs su permissions)
+        if shutdown:
+            self.logger.warning("system shutting down")
+            os.system("shutdown -s")
 
-		Return:
-		config - dictionary with the config for each module
-		"""
+        self.logger.debug("cleanup() returned")
+        return None
 
-		# Attempt to read config file
-		try:
-			file = open(filepath, "r")
-			config = json.load(file)
-			file.close()
-		except:
-			logging.error("Could not open " + filepath)
-			logging.info("Exiting with status code -1")
-			sys.exit(-1)
+    @staticmethod
+    def get_configuration(filepath):
+        """Static method to read a JSON config file
+        with module specific configurations passed to
+        each module when an instance is created. If config
+        file fails to open and the program exits with exit code -1
 
-		## Get environment config
-		env = os.environ["FLASK_ENV"] or "development"
+        Keyword arguments:
+        filepath - JSON configuration filepath
 
-		return config[env]
+        Return:
+        config - dictionary with the config for each module
+        """
+
+        # Attempt to read config file
+        try:
+            file = open(filepath, "r")
+            config = json.load(file)
+            file.close()
+        except:
+            logging.error("Could not open " + filepath)
+            logging.info("Exiting with status code -1")
+            sys.exit(-1)
+
+        # Get environment config
+        env = "development"
+        if "FLASK_ENV" in os.environ:
+            env = os.environ["FLASK_ENV"]
+
+        return config[env]
 
 if __name__ == "__main__":
-	main()
+    main()

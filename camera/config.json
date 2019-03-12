@@ -1,14 +1,14 @@
 {
 	"development": {
 		"controller": {
-			"debug": false
+			"debug": true
 		},
 		"camera": {
-			"save_file": "./videos/"
+			"save_file": "videos/"
 		},
 		"motor": {},
 		"input": {
-			"connector": "http://ec2-3-17-178-148.us-east-2.compute.amazonaws.com/connector",
+			"connector": "http://3.18.165.55:8080/connector",
 			"host": "0.0.0.0",
 			"port": 5000
 		}
@@ -20,11 +20,11 @@
 			"port": 5000
 		},
 		"camera": {
-			"save_file": "./videos/"
+			"save_file": "videos/"
 		},
 		"motor": {},
 		"input": {
-			"connector": "http://ec2-3-17-178-148.us-east-2.compute.amazonaws.com/connector",
+			"connector": "http://3.18.165.55:8080/connector",
 			"host": "0.0.0.0",
 			"port": 5000
 		}
