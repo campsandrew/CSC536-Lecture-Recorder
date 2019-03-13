@@ -38,7 +38,7 @@ class Input(module.Module):
         server = Input.server_address_lookup(config[CONNECTOR])
         parts = [server, controller.deviceId, "ping"]
         status_url = "/".join(s.strip("/") for s in parts)
-        params = {"address": socket.getfqdn() + ":" + str(config[PORT])}
+        params = {"address": Input.get_ip_address() + ":" + str(config[PORT])}
         is_connected = Input.has_connection(status_url, params)
         if not is_connected:
             return None
@@ -163,7 +163,7 @@ class Input(module.Module):
             return flask.jsonify(payload)
 
         # Starting service and initialize
-        ## modules in controller
+        # modules in controller
         controller.initialize()
         service.run(**kwargs)
         return service
@@ -275,3 +275,16 @@ class Input(module.Module):
 
         logger.debug("server_address_lookup() returned " + address)
         return address
+
+    @staticmethod
+    def get_ip_address():
+        """
+        """
+
+        ip_address = ""
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+
+        return ip_address
