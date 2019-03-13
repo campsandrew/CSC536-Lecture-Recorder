@@ -25,6 +25,8 @@ function devicePingRoute(req, res) {
     success: true
   };
 
+  console.log(device.address);
+
   // Update device address if different
   if (device.address !== address) {
     device
@@ -76,7 +78,7 @@ function deviceStatusRoute(req, res) {
 
   // Send device status request
   axios
-    .get(`http://${device.address}/status`)
+    .get(`${device.address}/status`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;
@@ -116,7 +118,7 @@ function deviceRecordRoute(req, res) {
 
   // Send device status request
   axios
-    .get(`http://${device.address}/${action}`)
+    .get(`${device.address}/${action}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;
@@ -156,7 +158,7 @@ function deviceRotateRoute(req, res) {
 
   // Send device status request
   axios
-    .get(`http://${device.address}/rotate?direction=${direction}`)
+    .get(`${device.address}/rotate?direction=${direction}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;

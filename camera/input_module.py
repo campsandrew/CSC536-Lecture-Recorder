@@ -38,7 +38,8 @@ class Input(module.Module):
         server = Input.server_address_lookup(config[CONNECTOR])
         parts = [server, controller.deviceId, "ping"]
         status_url = "/".join(s.strip("/") for s in parts)
-        params = {"address": Input.get_ip_address() + ":" + str(config[PORT])}
+        params = {"address": "http://" + Input.get_ip_address() +
+                  ":" + str(config[PORT])}
         is_connected = Input.has_connection(status_url, params)
         if not is_connected:
             return None
