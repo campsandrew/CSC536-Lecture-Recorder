@@ -12,8 +12,8 @@ router.get("/:deviceid/ping", getDevice, devicePingRoute);
 router.get("/devices", getDevicesRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/record", getDevice, deviceRecordRoute);
+router.get("/:deviceid/rotate", getDevice, deviceRotateRoute);
 router.get("/:deviceid/cleanup", deviceCleanupRoute);
-router.get("/:deviceid/rotate", deviceRotateRoute);
 
 /**
  *
@@ -154,7 +154,27 @@ function deviceRotateRoute(req, res) {
     return res.json(payload);
   }
 
-  res.json(payload);
+  // Send device status request
+  axios
+    .get(`http://${device.address}/rotate?direction=${direction}`)
+    .then(function(response) {
+      if (response.data.success) {
+        delete response.data.success;
+        for (let k in response.data) {
+          payload[k] = response.data[k];
+        }
+      } else {
+        payload.success = false;
+        payload.message = response.data.message;
+      }
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      payload.success = false;
+      payload.message = "no communication with device";
+      res.json(payload);
+    });
 }
 
 /**

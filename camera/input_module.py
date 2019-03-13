@@ -66,11 +66,12 @@ class Input(module.Module):
                 "recording": True,
             }
 
+            # Check if device is alreaady recording
             if controller.status == 1:
                 payload["success"] = False
                 payload["message"] = "device currently recording"
-
-            controller.status = 1
+            else:
+                controller.status = 1
 
             logger.debug("start_recording_route() returned: " + str(payload))
             return flask.jsonify(payload)
@@ -85,11 +86,12 @@ class Input(module.Module):
                 "recording": False
             }
 
+            # Check if device is alreaady not recording
             if controller.status == 0:
                 payload["success"] = False
                 payload["message"] = "device not recording"
-
-            controller.status = 0
+            else:
+                controller.status = 0
 
             logger.debug("stop_recording_route() returned: " + str(payload))
             return flask.jsonify(payload)
@@ -99,13 +101,22 @@ class Input(module.Module):
             """
             """
 
+            payload = {
+                "success": True
+            }
+
             # Get directional parameters
             direction = flask.request.args.get("direction")
             if direction is None:
-                return "no direction specified"
+                payload["success"] = False
+                payload["message"] = "no direction specified"
+            else:
+                msg = {module.LOCATION: module.MOTOR_MODULE,
+                       module.DATA: {"direction": direction}}
+                success = controller.module_message(msg, from_module=Input())
 
-            logger.debug("rotate_camera_route() returned")
-            return "rotate left " if direction == "left" else "rotate right"
+            logger.debug("rotate_camera_route() returned: " + str(payload))
+            return flask.jsonify(payload)
 
         @service.route("/cleanup", methods=["GET"])
         def shutdown_system_route():
