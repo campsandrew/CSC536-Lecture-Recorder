@@ -3,7 +3,7 @@ import "./css/Video.css";
 
 function Video(props) {
 	const click = props.onClick;
-	const { name, url, length, camera, date, description } = props.details;
+	const { id, name, url, length, camera, date, description } = props.details;
 
 	function formatDuration(length) {
 		var minutes = length / 60;
@@ -16,7 +16,7 @@ function Video(props) {
 	}
 
 	return (
-		<div className="Video" onClick={e => click(e, name)}>
+		<div className="Video" onClick={e => click(e, id, "video", name)}>
 			<iframe
 				title={name}
 				src={url}

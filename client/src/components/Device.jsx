@@ -9,6 +9,7 @@ class Device extends Component {
 			status: 2
 		};
 
+		this.type = "device";
 		this.statusMap = {
 			0: "green",
 			1: "yellow",
@@ -20,8 +21,6 @@ class Device extends Component {
 		const id = this.props.id;
 		const server = this.props.server;
 		const statusUrl = server + "/" + id + "/status";
-
-		//this.timer = setInterval(() => console.log("HERE"), 1000);
 
 		this.timer = setInterval(() => this.updateStatus(statusUrl), 5000);
 		this.updateStatus(statusUrl);
@@ -40,13 +39,13 @@ class Device extends Component {
 		axios
 			.get(url, config)
 			.then(function(res) {
+				let status = 2;
 				if (res.status !== 200 || !res.data.success) {
 					return self.setState({
-						status: 2
+						status: status
 					});
 				}
 
-				let status = 2;
 				if (res.data.status in self.statusMap) {
 					status = res.data.status;
 				}
@@ -55,19 +54,27 @@ class Device extends Component {
 					status: status
 				});
 			})
-			.catch(err => console.log(err));
+			.catch(function(err) {
+				self.setState({
+					status: 2
+				});
+			});
 	}
 
 	render() {
+		const id = this.props.id;
 		const click = this.props.onClick;
 		const name = this.props.name;
 		const statusColor = this.statusMap[this.state.status];
-		const status = <div id="status" style={{ backgroundColor: statusColor }} />;
+		const status = this.state.status;
 
 		return (
-			<li className="Device" onClick={e => click(e, name)}>
+			<li
+				className="Device"
+				onClick={e => click(e, id, this.type, name, status)}
+			>
 				{name}
-				{status}
+				<div id="status" style={{ backgroundColor: statusColor }} />
 			</li>
 		);
 	}

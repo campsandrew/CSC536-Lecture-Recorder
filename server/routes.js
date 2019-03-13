@@ -11,8 +11,7 @@ router.get("/:deviceid/ping", getDevice, devicePingRoute);
 // API Routes Frontend
 router.get("/devices", getDevicesRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
-router.get("/:deviceid/start", deviceStartRoute);
-router.get("/:deviceid/stop", deviceStopRoute);
+router.get("/:deviceid/record", getDevice, deviceRecordRoute);
 router.get("/:deviceid/cleanup", deviceCleanupRoute);
 router.get("/:deviceid/rotate", deviceRotateRoute);
 
@@ -25,13 +24,6 @@ function devicePingRoute(req, res) {
   let payload = {
     success: true
   };
-
-  // Check for device
-  if (!device) {
-    payload.success = false;
-    payload.message = "device not registed";
-    res.status(403).json(payload);
-  }
 
   // Update device address if different
   if (device.address !== address) {
@@ -82,11 +74,6 @@ function deviceStatusRoute(req, res) {
     success: true
   };
 
-  // Check for device
-  if (!device) {
-    return;
-  }
-
   // Send device status request
   axios
     .get(`http://${device.address}/status`)
@@ -113,21 +100,59 @@ function deviceStatusRoute(req, res) {
 /**
  *
  */
-function deviceStartRoute(req, res) {
+function deviceRecordRoute(req, res) {
+  let action = req.query.action.toLowerCase();
+  let device = req.device;
   let payload = {
     success: true
   };
 
-  res.json(payload);
+  // Check for valid query action
+  if (action !== "start" && action !== "stop") {
+    payload.success = false;
+    payload.message = "invalid recording action";
+    return res.json(payload);
+  }
+
+  // Send device status request
+  axios
+    .get(`http://${device.address}/${action}`)
+    .then(function(response) {
+      if (response.data.success) {
+        delete response.data.success;
+        for (let k in response.data) {
+          payload[k] = response.data[k];
+        }
+      } else {
+        payload.success = false;
+        payload.message = response.data.message;
+      }
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      payload.success = false;
+      payload.message = "no communication with device";
+      res.json(payload);
+    });
 }
 
 /**
  *
  */
-function deviceStopRoute(req, res) {
+function deviceRotateRoute(req, res) {
+  let direction = req.query.direction.toLowerCase();
+  let device = req.device;
   let payload = {
     success: true
   };
+
+  // Check for valid query action
+  if (direction !== "left" && direction !== "right") {
+    payload.success = false;
+    payload.message = "invalid rotation direction";
+    return res.json(payload);
+  }
 
   res.json(payload);
 }
@@ -136,17 +161,6 @@ function deviceStopRoute(req, res) {
  *
  */
 function deviceCleanupRoute(req, res) {
-  let payload = {
-    success: true
-  };
-
-  res.json(payload);
-}
-
-/**
- *
- */
-function deviceRotateRoute(req, res) {
   let payload = {
     success: true
   };

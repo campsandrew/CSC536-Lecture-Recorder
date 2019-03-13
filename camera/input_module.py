@@ -61,16 +61,38 @@ class Input(module.Module):
             """
             """
 
-            logger.debug("start_recording_route() returned")
-            return "start recording"
+            payload = {
+                "success": True,
+                "recording": True,
+            }
+
+            if controller.status == 1:
+                payload["success"] = False
+                payload["message"] = "device currently recording"
+
+            controller.status = 1
+
+            logger.debug("start_recording_route() returned: " + str(payload))
+            return flask.jsonify(payload)
 
         @service.route("/stop", methods=["GET"])
         def stop_recording_route():
             """
             """
 
-            logger.debug("stop_recording_route() returned")
-            return "stop recording"
+            payload = {
+                "success": True,
+                "recording": False
+            }
+
+            if controller.status == 0:
+                payload["success"] = False
+                payload["message"] = "device not recording"
+
+            controller.status = 0
+
+            logger.debug("stop_recording_route() returned: " + str(payload))
+            return flask.jsonify(payload)
 
         @service.route("/rotate", methods=["GET"])
         def rotate_camera_route():

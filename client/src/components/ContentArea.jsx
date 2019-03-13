@@ -11,7 +11,8 @@ class ContentArea extends Component {
 
 		this.state = {
 			route: "/",
-			show: false
+			show: false,
+			content: ""
 		};
 	}
 
@@ -21,10 +22,15 @@ class ContentArea extends Component {
 		});
 	}
 
-	showModal = (e, title) => {
+	showModal = (e, id, type, title, status) => {
 		this.setState({
 			show: true,
-			modalTitle: title
+			modalTitle: title,
+			content: {
+				id: id,
+				type: type,
+				recording: status === 1
+			}
 		});
 	};
 
@@ -41,6 +47,7 @@ class ContentArea extends Component {
 		const route = this.state.route;
 		const title = this.state.modalTitle;
 		const show = this.state.show;
+		const content = this.state.content;
 		const onClick = {
 			save: this.saveModal,
 			close: this.closeModal
@@ -50,7 +57,7 @@ class ContentArea extends Component {
 			<div>
 				<Page route={route} server={server} onClick={this.showModal} />
 				<Modal show={show} title={title}>
-					<ModalContent onClick={onClick} />
+					<ModalContent server={server} content={content} onClick={onClick} />
 				</Modal>
 			</div>
 		);
