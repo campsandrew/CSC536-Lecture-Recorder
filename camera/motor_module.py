@@ -48,6 +48,7 @@ class Motor(module.Module):
 
         # Initialize GPIO pins
         if gpio is not None:
+            gpio.setwarnings(False)
             gpio.setmode(gpio.BOARD)
             for pin in self.control_pins:
                 gpio.setup(pin, gpio.OUT)

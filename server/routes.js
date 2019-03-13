@@ -25,8 +25,6 @@ function devicePingRoute(req, res) {
     success: true
   };
 
-  console.log(device.address);
-
   // Update device address if different
   if (device.address !== address) {
     device
