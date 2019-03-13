@@ -1,12 +1,14 @@
 //TODO: ADD LOGGER
 
 const express = require("express");
+const fileupload = require("express-fileupload");
 const routes = require("./routes");
 const config = require("./config-server");
 
 const app = express();
 
 // All cross origin resource sharing
+app.use(fileupload());
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(

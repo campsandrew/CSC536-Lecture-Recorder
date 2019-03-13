@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const fs = require("fs");
 const { Device, Video, User } = require("./models");
 const { getDevice } = require("./middleware");
 
@@ -7,6 +8,7 @@ const router = express.Router();
 
 // API Routes Device
 router.get("/:deviceid/ping", getDevice, devicePingRoute);
+router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
 
 // API Routes Frontend
 router.get("/devices", getDevicesRoute);
@@ -33,6 +35,27 @@ function devicePingRoute(req, res) {
       .catch(err => console.log(err.errmsg));
     return;
   }
+
+  res.json(payload);
+}
+
+/**
+ *
+ */
+function deviceUploadRoute(req, res) {
+  let payload = {
+    success: true
+  };
+
+  if (!req.files) {
+    payload.success = false;
+    payload.message = "no files found to upload";
+    return res.json(payload);
+  }
+
+  let bitmap = Buffer.from(req.files.media.data, "base64");
+  let filepath = "videos/" + req.files.media.name;
+  fs.writeFileSync(filepath, bitmap);
 
   res.json(payload);
 }

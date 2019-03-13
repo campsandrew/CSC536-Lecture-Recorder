@@ -5,6 +5,7 @@ import logging
 import socket
 import flask
 import sys
+import os
 
 # Input Module Specific Constants
 CONNECTOR = "connector"
@@ -24,6 +25,8 @@ class Input(module.Module):
         """
 
         global logger
+        global server
+        global deviceId
 
         # Initialize flask service and logger
         service = flask.Flask(__name__)
@@ -35,8 +38,9 @@ class Input(module.Module):
 
         # Don't start service if not connected
         # to server
+        deviceId = controller.deviceId
         server = Input.server_address_lookup(config[CONNECTOR])
-        parts = [server, controller.deviceId, "ping"]
+        parts = [server, deviceId, "ping"]
         status_url = "/".join(s.strip("/") for s in parts)
         params = {"address": "http://" + Input.get_ip_address() +
                   ":" + str(config[PORT])}
@@ -72,6 +76,9 @@ class Input(module.Module):
                 payload["success"] = False
                 payload["message"] = "device currently recording"
             else:
+                msg = {module.LOCATION: module.CAMERA_MODULE,
+                       module.DATA: {"recording": "start"}}
+                success = controller.module_message(msg, from_module=Input())
                 controller.status = 1
 
             logger.debug("start_recording_route() returned: " + str(payload))
@@ -92,6 +99,9 @@ class Input(module.Module):
                 payload["success"] = False
                 payload["message"] = "device not recording"
             else:
+                msg = {module.LOCATION: module.CAMERA_MODULE,
+                       module.DATA: {"recording": "stop"}}
+                success = controller.module_message(msg, from_module=Input())
                 controller.status = 0
 
             logger.debug("stop_recording_route() returned: " + str(payload))
@@ -190,6 +200,29 @@ class Input(module.Module):
         return None
 
     @staticmethod
+    def uploadVideo(url, filepath):
+        """
+        """
+
+        data = {}
+
+        # Try to make connection with the server
+        try:
+            files = {"media": open(filepath, "rb")}
+            data = requests.post(url, files=files).json()
+        except FileNotFoundError:
+            logger.error("error opening file - " + filepath)
+        except:
+            logger.error("no connection to connector server - " + url)
+
+        # TODO: delete file
+        if "success" in data:
+            os.remove(filepath)
+            logger.debug("file deleted - " + filepath)
+
+        return None
+
+    @staticmethod
     def controller_message(message):
         """
 
@@ -213,6 +246,13 @@ class Input(module.Module):
 
         # TODO: Create message types switchboard
         data = message[module.DATA]
+
+        # TODO: Put this on a thread
+        if "upload" in data:
+            filepath = data["upload"]
+            parts = [server, deviceId, "upload"]
+            url = "/".join(s.strip("/") for s in parts)
+            Input.uploadVideo(url, filepath)
 
         logger.debug("message data - " + str(data))
         logger.debug("controller_message() returned")
