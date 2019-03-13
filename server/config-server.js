@@ -1,5 +1,4 @@
 const os = require("os");
-const dns = require("dns");
 const mongoose = require("mongoose");
 const { Host } = require("./models");
 const config_file = require("./config.json");
@@ -9,27 +8,34 @@ const env = process.env.NODE_ENV || "development";
 const config = config_file[env];
 const server_name = config.server_name;
 const mainDB = config.database;
+const interfaces = os.networkInterfaces();
+
+// Get external ip address
+let ips = [];
+for (let interface in interfaces) {
+  for (let address of interfaces[interface]) {
+    if (
+      address.family === "IPv4" &&
+      address.address !== "127.0.0.1" &&
+      !address.internal
+    ) {
+      ips.push(address.address);
+    }
+  }
+}
 
 // Connect to mongoDB
 mongoose
   .connect(mainDB, mongoose_options)
-  .then(function(db) {
-    dns.lookup(os.hostname(), function(err, ip) {
-      if (err) {
-        console.log(err);
-        return;
-      }
-
-      saveHost(db, ip);
-    });
-  })
+  .then(saveHost)
   .catch(err => console.log(err));
 
 /**
  *
  */
-function saveHost(db, ip) {
-  const address = "http://" + ip + ":" + config.node_port;
+function saveHost(db) {
+  const address =
+    "http://" + (ips ? ips[0] : "127.0.0.1") + ":" + config.node_port;
 
   host = new Host({ name: server_name, address: address });
   Host.findOne({ name: host.name })
