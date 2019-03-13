@@ -4,6 +4,7 @@ import DeviceList from "./DeviceList";
 import VideoList from "./VideoList";
 
 function Page(props) {
+	let server = props.server;
 	const route = props.route;
 	const onClick = props.onClick;
 
@@ -18,8 +19,8 @@ function Page(props) {
 			document.title = "LectureFly | Dash";
 			content = (
 				<div className="ContentArea">
-					<DeviceList onClick={onClick} />
-					<VideoList onClick={onClick} />
+					<DeviceList server={server} onClick={onClick} />
+					<VideoList server={server} onClick={onClick} />
 				</div>
 			);
 			break;

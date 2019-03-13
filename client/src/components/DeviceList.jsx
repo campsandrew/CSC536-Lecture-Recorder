@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import axios from "axios";
+
 import "./css/DeviceList.css";
 
 import Device from "./Device";
@@ -13,34 +15,59 @@ class DeviceList extends Component {
 	}
 
 	componentDidMount() {
-		this.setState({
-			devices: this.getDevices()
-		});
+		const server = this.props.server;
+
+		if (server) {
+			this.getDevices(server);
+		}
+	}
+
+	componentWillReceiveProps(props) {
+		const url = props.server + "/devices";
+
+		this.getDevices(url);
 	}
 
 	/**
 	 * Ajax request for devices of current user
 	 */
-	getDevices() {
-		var devices = [
-			{
-				id: 0,
-				name: "My Device"
-			},
-			{
-				id: 1,
-				name: "Backup"
-			}
-		];
+	getDevices(url) {
+		const self = this;
+		const config = {
+			crossdomain: true
+		};
 
-		//TODO: Ajax request
-		return devices;
+		axios
+			.get(url, config)
+			.then(function(res) {
+				if (res.status !== 200 || !res.data.success) {
+					return;
+				}
+
+				// TODO: For demo purposes
+				res.data.devices.push({
+					id: 1,
+					name: "Backup"
+				});
+
+				self.setState({
+					devices: res.data.devices
+				});
+			})
+			.catch(err => console.log(err));
 	}
 
 	render() {
+		const server = this.props.server;
 		const click = this.props.onClick;
 		const deviceList = this.state.devices.map(device => (
-			<Device name={device.name} onClick={click} key={device.id} />
+			<Device
+				id={device.id}
+				name={device.name}
+				onClick={click}
+				server={server}
+				key={device.id}
+			/>
 		));
 
 		return (

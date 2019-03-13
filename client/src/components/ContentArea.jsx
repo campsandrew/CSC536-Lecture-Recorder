@@ -37,6 +37,7 @@ class ContentArea extends Component {
 	};
 
 	render() {
+		const server = this.props.server;
 		const route = this.state.route;
 		const title = this.state.modalTitle;
 		const show = this.state.show;
@@ -47,7 +48,7 @@ class ContentArea extends Component {
 
 		return (
 			<div>
-				<Page route={route} onClick={this.showModal} />
+				<Page route={route} server={server} onClick={this.showModal} />
 				<Modal show={show} title={title}>
 					<ModalContent onClick={onClick} />
 				</Modal>

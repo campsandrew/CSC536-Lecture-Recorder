@@ -6,6 +6,16 @@ const config = require("./config-server");
 
 const app = express();
 
+// All cross origin resource sharing
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 // Routes defined
 app.use("/", routes);
 app.use(errorRoute);
