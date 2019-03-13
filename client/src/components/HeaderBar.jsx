@@ -22,7 +22,7 @@ class HeaderBar extends Component {
 	componentWillUnmount() {}
 
 	getUser() {
-		var user = "Andrew Camps";
+		var user = "User Name";
 
 		this.setState({
 			user: user

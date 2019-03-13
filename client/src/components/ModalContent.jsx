@@ -1,10 +1,6 @@
 import React, { Component } from "react";
 
 class ModalContent extends Component {
-	constructor(props) {
-		super(props);
-	}
-
 	render() {
 		const save = this.props.onClick.save;
 		const close = this.props.onClick.close;

@@ -6,19 +6,11 @@ class Device extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			status: "yellow"
+			status: "red"
 		};
 	}
 
-	componentDidMount() {
-		this.setState({
-			status: this.getDeviceStatus()
-		});
-	}
-
-	getDeviceStatus() {
-		return "red";
-	}
+	componentDidMount() {}
 
 	render() {
 		const click = this.props.onClick;

@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/:deviceid/ping", getDevice, devicePingRoute);
 
 // API Routes Frontend
-//router.get("/devices");
+router.get("/devices", getDevicesRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/start", deviceStartRoute);
 router.get("/:deviceid/stop", deviceStopRoute);
@@ -43,6 +43,34 @@ function devicePingRoute(req, res) {
   }
 
   res.json(payload);
+}
+
+/**
+ * TODO: Add query for getting user devices
+ */
+function getDevicesRoute(req, res) {
+  let payload = {
+    success: true
+  };
+
+  Device.find({})
+    .then(function(docs) {
+      payload.devices = [];
+      for (let doc of docs) {
+        device = {
+          id: doc.id,
+          name: doc.name
+        };
+        payload.devices.push(device);
+      }
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      payload.success = false;
+      payload.message = err.errmsg;
+      res.json(payload);
+    });
 }
 
 /**
