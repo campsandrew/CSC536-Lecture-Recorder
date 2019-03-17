@@ -8,7 +8,7 @@
 		},
 		"motor": {},
 		"input": {
-			"connector": "http://3.18.165.55:8080/connector",
+			"connector": "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector",
 			"host": "0.0.0.0",
 			"port": 5000
 		}
@@ -24,7 +24,7 @@
 		},
 		"motor": {},
 		"input": {
-			"connector": "http://3.18.165.55:8080/connector",
+			"connector": "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector",
 			"host": "0.0.0.0",
 			"port": 5000
 		}

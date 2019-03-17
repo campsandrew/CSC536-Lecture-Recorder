@@ -15,7 +15,7 @@ class App extends Component {
 	}
 
 	componentWillMount() {
-		const connector = "http://3.18.165.55:8080/connector";
+		const connector = "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
 
 		this.serverConnector(connector);
 	}

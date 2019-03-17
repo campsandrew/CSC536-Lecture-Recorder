@@ -12,6 +12,7 @@ router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
 
 // API Routes Frontend
 router.get("/devices", getDevicesRoute);
+router.get("/videos", getVideosRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/record", getDevice, deviceRecordRoute);
 router.get("/:deviceid/rotate", getDevice, deviceRotateRoute);
@@ -53,7 +54,14 @@ function deviceUploadRoute(req, res) {
     return res.json(payload);
   }
 
-  let bitmap = Buffer.from(req.files.media.data, "base64");
+  // Check if any media was sent
+  let media = req.files.media;
+  if (!media) {
+    payload.success = false;
+    return res.json(payload);
+  }
+
+  let bitmap = Buffer.from(media.data, "base64");
   let filepath = "videos/" + req.files.media.name;
   fs.writeFileSync(filepath, bitmap);
 
@@ -77,6 +85,31 @@ function getDevicesRoute(req, res) {
           name: doc.name
         };
         payload.devices.push(device);
+      }
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      payload.success = false;
+      payload.message = err.errmsg;
+      res.json(payload);
+    });
+}
+
+/**
+ *
+ */
+function getVideosRoute(req, res) {
+  let payload = {
+    success: true
+  };
+
+  Video.find({})
+    .then(function(docs) {
+      payload.videos = [];
+      for (let doc of docs) {
+        video = {};
+        payload.videos.push(video);
       }
 
       res.json(payload);

@@ -27,7 +27,7 @@ class ModalContent extends Component {
 			case "device":
 				renderContent = (
 					<div>
-						<button onClick={e => this.startStopRecording(e)}>
+						<button ref="record" onClick={e => this.startStopRecording(e)}>
 							{buttonContent}
 						</button>
 						<br />
@@ -55,6 +55,8 @@ class ModalContent extends Component {
 		const url = server + "/" + id + "/record?action=" + action;
 		const config = { crossdomain: true };
 
+		this.refs.record.setAttribute("disabled", true);
+
 		axios
 			.get(url, config)
 			.then(function(res) {
@@ -67,12 +69,14 @@ class ModalContent extends Component {
 				self.setState({
 					recording: cur
 				});
+				self.refs.record.removeAttribute("disabled");
 			})
 			.catch(function(err) {
 				console.log(err);
 				self.setState({
 					recording: false
 				});
+				self.refs.record.removeAttribute("disabled");
 			});
 	}
 

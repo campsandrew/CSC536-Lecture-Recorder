@@ -1,5 +1,7 @@
 import module
 
+import threading
+import datetime
 import logging
 import cv2
 
@@ -41,40 +43,17 @@ class Camera(module.Module):
         self._send_message = callback
         self._config = config
         self._filepath = ""
-
-        # EXAMPLE MESSAGES
-        # msg = {module.LOCATION: module.INPUT_MODULE,
-        # 			 module.DATA: "from camera"}
-        # self._send_message(msg, from_module=self)
-
-        # msg = {module.LOCATION: module.MOTOR_MODULE,
-        # 			 module.DATA: "from camera"}
-        # self._send_message(msg, from_module=self)
-
-        # msg = {module.LOCATION: module.CAMERA_MODULE,
-        # 			 module.DATA: "from camera"}
-        # self._send_message(msg, from_module=self)
+        self._cap = None
 
         self.logger.debug("initialize() returned")
         return None
 
-    def start_recording(self):
-        name = "image.jpg"
-        self._filepath = self._config[SAVE_FILE] + name
-        capture = cv2.VideoCapture(0)
-
-        is_read, frame = capture.read()
-        cv2.imwrite(self._filepath, frame)
-        capture.release()
-
-        # while(True):
-        #     ret, frame = capture.read()
-        #     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #     cv2.imshow("frame", gray)
-        #     if cv2.waitKey(1) & 0xFF == ord("q"):
-        #         break
+    def start_recording(self, filename):
+        self._cap = VideoCaptureAsync(0, self._config[SAVE_FILE])
+        self._cap.start()
 
     def stop_recording(self):
+        self._filepath = self._cap.stop()
         msg = {module.LOCATION: module.INPUT_MODULE,
                module.DATA: {"upload": self._filepath}}
         self._send_message(msg, from_module=self)
@@ -116,10 +95,71 @@ class Camera(module.Module):
         if "recording" in data:
             action = data["recording"].lower()
             if action == "start":
-                self.start_recording()
+                self.start_recording("testing")
             else:
                 self.stop_recording()
 
         self.logger.debug("message data - " + str(data))
         self.logger.debug("controller_message() returned")
         return None
+
+
+#--------------------------
+# Async Video Capture Class
+#--------------------------
+class VideoCaptureAsync:
+
+    def __init__(self, src=0, filepath="video/", fps=30):
+        """
+        """
+
+        # Public
+        self.logger = logging.getLogger(__name__)
+
+        # Private
+        self._started = False
+        self._cap = cv2.VideoCapture(src)
+        self._fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+        self._frame_size = (int(self._cap.get(3)), int(self._cap.get(4)))
+        self._filepath = filepath + \
+            str(datetime.datetime.now()).replace(
+                ":", "-").replace(" ", ".") + ".m4v"
+        self._out = cv2.VideoWriter(
+            self._filepath, self._fourcc, fps, self._frame_size)
+
+        return None
+
+    def start(self):
+        """
+        """
+
+        if self._started:
+            print('[!] Asynchroneous video capturing has already been started.')
+            return None
+
+        self._started = True
+        self._thread = threading.Thread(target=self._update, args=())
+        self._thread.start()
+
+        return self
+
+    def _update(self):
+        """
+        """
+
+        while self._started:
+            grabbed, frame = self._cap.read()
+            self._out.write(frame)
+
+        return None
+
+    def stop(self):
+        """
+        """
+
+        self._started = False
+        self._thread.join()
+        self._cap.release()
+        self._out.release()
+
+        return self._filepath

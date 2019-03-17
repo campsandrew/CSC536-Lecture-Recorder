@@ -9,7 +9,14 @@ const hostSchema = new Schema({
 const Host = model("Host", hostSchema);
 
 // Video Model
-const videoSchema = new Schema({});
+const videoSchema = new Schema({
+  name: { type: String, require: true },
+  camera: { type: mongoose.Schema.Types.ObjectId, ref: "Device" },
+  video: { data: Buffer, contentType: String },
+  duration: { type: Number },
+  date: { type: Date, default: Date.now },
+  description: { type: String }
+});
 const Video = model("Video", videoSchema);
 
 // Device Model

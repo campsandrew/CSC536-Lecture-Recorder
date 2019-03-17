@@ -25,24 +25,6 @@ SUCCESS = "success"
 ONLINE = 0
 RECORDING = 1
 
-#------------
-# Entry Point
-#------------
-
-
-def main():
-    """Main method initializes controller
-    with JSON configuration file.
-
-    Returns: None
-    """
-
-    # Create controller instance
-    controller = Controller()
-
-    controller.logger.debug("main() returned")
-    return None
-
 #----------------------
 # Main Controller Class
 #----------------------
@@ -215,6 +197,3 @@ class Controller:
             env = os.environ["FLASK_ENV"]
 
         return config[env]
-
-if __name__ == "__main__":
-    main()

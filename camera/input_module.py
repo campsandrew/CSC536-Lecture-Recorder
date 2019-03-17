@@ -25,10 +25,11 @@ class Input(module.Module):
         """
 
         global logger
-        global server
         global deviceId
+        global input_config
 
         # Initialize flask service and logger
+        input_config = config
         service = flask.Flask(__name__)
         logger = logging.getLogger(__name__)
         kwargs = {"host": config[HOST],
@@ -249,10 +250,11 @@ class Input(module.Module):
 
         # TODO: Put this on a thread
         if "upload" in data:
-            filepath = data["upload"]
+            server = Input.server_address_lookup(input_config[CONNECTOR])
             parts = [server, deviceId, "upload"]
             url = "/".join(s.strip("/") for s in parts)
-            Input.uploadVideo(url, filepath)
+            print(data["upload"])
+            #Input.uploadVideo(url, data["upload"])
 
         logger.debug("message data - " + str(data))
         logger.debug("controller_message() returned")

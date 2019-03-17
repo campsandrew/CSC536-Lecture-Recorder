@@ -27,13 +27,13 @@ for (let interface in interfaces) {
 // Connect to mongoDB
 mongoose
   .connect(mainDB, mongoose_options)
-  .then(saveHost)
+  .then(db => setInterval(saveHost, 60000))
   .catch(err => console.log(err));
 
 /**
  *
  */
-function saveHost(db) {
+function saveHost() {
   const address =
     "http://" + (ips ? ips[0] : "127.0.0.1") + ":" + config.node_port;
 
