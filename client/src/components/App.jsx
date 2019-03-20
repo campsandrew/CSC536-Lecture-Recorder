@@ -1,10 +1,12 @@
 import React, { Component } from "react";
-import { Route, Link, BrowserRouter } from "react-router-dom";
+import { Route, BrowserRouter, Switch } from "react-router-dom";
 import axios from "axios";
 import "./css/App.css";
 
 import HeaderBar from "./HeaderBar";
-import ContentArea from "./ContentArea";
+import HomeContent from "./HomeContent";
+import DashContent from "./DashContent";
+import ErrorContent from "./ErrorContent";
 
 class App extends Component {
 	/**
@@ -14,8 +16,7 @@ class App extends Component {
 		super(props);
 
 		this.state = {
-			server: "",
-			user: {}
+			server: ""
 		};
 	}
 
@@ -59,14 +60,26 @@ class App extends Component {
 	 */
 	render() {
 		const server = this.state.server;
-		return <div />;
+		const routing = (
+			<BrowserRouter>
+				<HeaderBar />
+				<Switch>
+					<Route
+						exact
+						path="/"
+						render={() => <HomeContent server={server} />}
+					/>
+					<Route
+						exact
+						path="/dash"
+						render={() => <DashContent server={server} />}
+					/>
+					<Route render={() => <ErrorContent />} />
+				</Switch>
+			</BrowserRouter>
+		);
 
-		// return (
-		// 	<div>
-		// 		<HeaderBar loggedIn={true} />
-		// 		<ContentArea server={server} />
-		// 	</div>
-		// );
+		return routing;
 	}
 }
 

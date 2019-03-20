@@ -11,8 +11,8 @@ router.get("/:deviceid/ping", getDevice, devicePingRoute);
 router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
 
 // API Frontend Routes - Users
-//router.put("/user");
-//router.get("/user/login");
+router.post("/user", userRoute);
+//router.post("/user/login");
 
 // API Frontend Routes - Devices
 //router.put("/device");
@@ -23,8 +23,39 @@ router.get("/:deviceid/rotate", getDevice, deviceRotateRoute); // This can event
 router.get("/:deviceid/cleanup", deviceCleanupRoute);
 
 // API Frontend Routes - Videos
-//router.put("/video");
+//router.post("/video");
 router.get("/videos", getVideosRoute);
+
+/**
+ *
+ */
+function userRoute(req, res) {
+  let required = ["email", "password", "firstName", "lastName", "userType"];
+  let payload = {
+    success: true
+  };
+
+  // Check for proper values in body
+  for (let key of required) {
+    if (key in req.body && key !== "userType") {
+      continue;
+    } else if (
+      key === "userType" &&
+      key in req.body &&
+      req.body[key] === "viewer"
+    ) {
+      if ("lecturerEmail" in req.body) {
+        continue;
+      }
+    }
+
+    payload.success = false;
+    payload.message = "not enough fields in body";
+    return res.json(payload);
+  }
+
+  res.json(payload);
+}
 
 /**
  *

@@ -11,3 +11,13 @@
 	/* Text */
 	/* Other */
 }
+
+.justify-end {
+	justify-content: flex-end;
+}
+
+@media screen and (max-device-width: 400px) {
+	.ContentArea {
+		padding: 0;
+	}
+}

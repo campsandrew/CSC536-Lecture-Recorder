@@ -1,6 +1,7 @@
 //TODO: ADD LOGGER
 
 const express = require("express");
+const bodyParser = require("body-parser");
 const fileupload = require("express-fileupload");
 const { crossOrigin } = require("./middleware");
 const routes = require("./routes");
@@ -11,6 +12,7 @@ const app = express();
 // All cross origin resource sharing
 app.use(fileupload());
 app.use(crossOrigin);
+app.use(bodyParser.json());
 
 // Routes defined
 app.use("/", routes);

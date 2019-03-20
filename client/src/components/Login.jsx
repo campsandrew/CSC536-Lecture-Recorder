@@ -8,7 +8,7 @@ function Login(props) {
 		content = "Logout";
 	}
 
-	return <button>{content}</button>;
+	return <button className="Login">{content}</button>;
 }
 
 export default Login;

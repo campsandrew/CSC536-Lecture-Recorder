@@ -12,9 +12,18 @@
 	/* Other */
 }
 
+.text-center {
+	font-size: 22pt;
+	text-align: center;
+}
+
 .color-dark {
 	background-color: #689fff;
 	color: black;
+}
+
+.color-white {
+	background-color: white;
 }
 
 .large {

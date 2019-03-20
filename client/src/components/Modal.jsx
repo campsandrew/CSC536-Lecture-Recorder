@@ -9,7 +9,7 @@ function Modal({ show, title, children }) {
 	return (
 		<div className={className}>
 			<section>
-				<TitleBar title={title} classes="color-dark large" />
+				<TitleBar title={title} className="color-dark large" />
 				{children}
 			</section>
 		</div>

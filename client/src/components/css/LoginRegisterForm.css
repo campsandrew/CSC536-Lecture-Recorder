@@ -1,0 +1,92 @@
+.LoginRegisterForm {
+	/* Positioning */
+
+	/* Display & Box Model */
+	border-radius: 5px;
+	overflow: hidden;
+	width: 350px;
+	margin: 10px;
+	padding: 20px;
+	box-sizing: border-box;
+
+	/* Color */
+	background-color: white;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+	/* Text */
+	/* Other */
+}
+
+.LoginRegisterForm .content {
+	margin: 10px 0 20px 0;
+}
+
+.LoginRegisterForm button {
+	height: 35px;
+	width: 100%;
+	border-radius: 3px;
+	border: none;
+}
+
+.LoginRegisterForm button:hover {
+	color: white;
+	border: 1px solid white;
+}
+
+.LoginRegisterForm label {
+	display: block;
+	margin: 10px 0 5px 0;
+
+	font-size: 14pt;
+	color: grey;
+}
+
+.LoginRegisterForm input {
+	display: block;
+	box-sizing: border-box;
+	height: 40px;
+	width: 100%;
+	padding: 10px;
+	border: 1px solid grey;
+
+	font-size: 14pt;
+}
+
+.LoginRegisterForm .user-type {
+	display: inline-block;
+	margin: 10px 10px 0 0;
+}
+
+.LoginRegisterForm input[type="radio"] {
+	display: inline;
+	vertical-align: middle;
+	margin-top: -1px;
+	height: auto;
+	width: auto;
+}
+
+.LoginRegisterForm label[for="lecturer"],
+.LoginRegisterForm label[for="viewer"] {
+	display: inline;
+	font-size: 12pt;
+}
+
+.LoginRegisterForm nav {
+	display: flex;
+	justify-content: space-between;
+	padding: 5px 0 0 0;
+}
+
+.LoginRegisterForm #register,
+.LoginRegisterForm #recover {
+	color: grey;
+	cursor: pointer;
+}
+
+/*
+@media screen and (max-device-width: 400px) {
+	.DeviceList {
+		width: 100%;
+	}
+}
+*/

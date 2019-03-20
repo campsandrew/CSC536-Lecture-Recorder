@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "./css/HeaderBar.css";
 
-import Login from "./Login";
+//import Login from "./Login";
 import Logo from "./Logo";
 
 class HeaderBar extends Component {
@@ -34,9 +34,7 @@ class HeaderBar extends Component {
 			<header className="HeaderBar">
 				<Logo />
 				<span>{this.state.user}</span>
-				<nav>
-					<Login loggedIn={true} />
-				</nav>
+				<nav />
 			</header>
 		);
 	}
