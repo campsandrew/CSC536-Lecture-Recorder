@@ -2,6 +2,7 @@
 
 const express = require("express");
 const fileupload = require("express-fileupload");
+const { crossOrigin } = require("./middleware");
 const routes = require("./routes");
 const config = require("./config-server");
 
@@ -9,14 +10,7 @@ const app = express();
 
 // All cross origin resource sharing
 app.use(fileupload());
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+app.use(crossOrigin);
 
 // Routes defined
 app.use("/", routes);

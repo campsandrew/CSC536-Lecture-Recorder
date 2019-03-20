@@ -1,4 +1,18 @@
-const { Device, Video, User } = require("./models");
+const jwt = require("jwt-simple");
+const { Device, Video, Lecturer, Viewer } = require("./models");
+const { jwt_secret } = require("./secrets.json");
+
+/**
+ *
+ */
+function crossOrigin(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+}
 
 /**
  *
@@ -26,8 +40,27 @@ function getDevice(req, res, next) {
     });
 }
 
+/**
+ *
+ */
+function authUser(req, res, next) {
+  let token = req.headers.auth_token;
+  let payload = {
+    success: false,
+    message: "unauthorized access"
+  };
+
+  if (!token) return res.status(401).json(payload);
+  let decode = jwt.decode(token, jwt_secret);
+
+  // User query using token
+  next();
+}
+
 exports = {
-  getDevice
+  crossOrigin,
+  getDevice,
+  authUser
 };
 
 module.exports = exports;

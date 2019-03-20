@@ -1,8 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
-const { Device, Video, User } = require("./models");
-const { getDevice } = require("./middleware");
+const { Device, Video, Lecturer, Viewer } = require("./models");
+const { getDevice, authUser } = require("./middleware");
 
 const router = express.Router();
 
@@ -10,13 +10,21 @@ const router = express.Router();
 router.get("/:deviceid/ping", getDevice, devicePingRoute);
 router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
 
-// API Routes Frontend
+// API Frontend Routes - Users
+//router.put("/user");
+//router.get("/user/login");
+
+// API Frontend Routes - Devices
+//router.put("/device");
 router.get("/devices", getDevicesRoute);
-router.get("/videos", getVideosRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/record", getDevice, deviceRecordRoute);
-router.get("/:deviceid/rotate", getDevice, deviceRotateRoute);
+router.get("/:deviceid/rotate", getDevice, deviceRotateRoute); // This can eventually be removed
 router.get("/:deviceid/cleanup", deviceCleanupRoute);
+
+// API Frontend Routes - Videos
+//router.put("/video");
+router.get("/videos", getVideosRoute);
 
 /**
  *

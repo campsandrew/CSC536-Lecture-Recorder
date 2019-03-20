@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Route, Link, BrowserRouter } from "react-router-dom";
 import axios from "axios";
 import "./css/App.css";
 
@@ -6,18 +7,27 @@ import HeaderBar from "./HeaderBar";
 import ContentArea from "./ContentArea";
 
 class App extends Component {
+	/**
+	 *
+	 */
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			server: ""
+			server: "",
+			user: {}
 		};
 	}
 
+	/**
+	 *
+	 */
 	componentWillMount() {
-		const connector = "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
+		const connector =
+			"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
 
 		this.serverConnector(connector);
+		// TODO:
 	}
 
 	/**
@@ -44,15 +54,19 @@ class App extends Component {
 			.catch(err => console.log(err));
 	}
 
+	/**
+	 *
+	 */
 	render() {
 		const server = this.state.server;
+		return <div />;
 
-		return (
-			<div>
-				<HeaderBar loggedIn={true} />
-				<ContentArea server={server} />
-			</div>
-		);
+		// return (
+		// 	<div>
+		// 		<HeaderBar loggedIn={true} />
+		// 		<ContentArea server={server} />
+		// 	</div>
+		// );
 	}
 }
 
