@@ -1,0 +1,22 @@
+.FormTextInput label {
+	display: block;
+	margin: 10px 0 5px 0;
+
+	font-size: 14pt;
+	color: grey;
+}
+
+.FormTextInput input {
+	display: block;
+	box-sizing: border-box;
+	height: 40px;
+	width: 100%;
+	padding: 10px;
+	border: 1px solid grey;
+
+	font-size: 14pt;
+}
+
+.error input {
+	border: 2px solid red;
+}

@@ -33,28 +33,10 @@
 	border: 1px solid white;
 }
 
-.LoginRegisterForm label {
-	display: block;
-	margin: 10px 0 5px 0;
-
-	font-size: 14pt;
-	color: grey;
-}
-
-.LoginRegisterForm input {
-	display: block;
-	box-sizing: border-box;
-	height: 40px;
-	width: 100%;
-	padding: 10px;
-	border: 1px solid grey;
-
-	font-size: 14pt;
-}
-
-.LoginRegisterForm .user-type {
-	display: inline-block;
-	margin: 10px 10px 0 0;
+.LoginRegisterForm label[for="lecturer"],
+.LoginRegisterForm label[for="viewer"] {
+	display: inline;
+	font-size: 12pt;
 }
 
 .LoginRegisterForm input[type="radio"] {
@@ -65,10 +47,9 @@
 	width: auto;
 }
 
-.LoginRegisterForm label[for="lecturer"],
-.LoginRegisterForm label[for="viewer"] {
-	display: inline;
-	font-size: 12pt;
+.LoginRegisterForm .user-type {
+	display: inline-block;
+	margin: 10px 10px 0 0;
 }
 
 .LoginRegisterForm nav {

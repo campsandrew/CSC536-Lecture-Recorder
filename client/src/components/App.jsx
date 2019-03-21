@@ -23,7 +23,7 @@ class App extends Component {
 	/**
 	 *
 	 */
-	componentWillMount() {
+	componenDidMount() {
 		const connector =
 			"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
 

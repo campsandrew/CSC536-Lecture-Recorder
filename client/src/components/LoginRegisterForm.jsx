@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import axios from "axios";
-import TitleBar from "./TitleBar";
 
 import "./css/LoginRegisterForm.css";
+import TitleBar from "./TitleBar";
+import FormTextInput from "./FormTextInput";
 
 class LoginRegisterForm extends Component {
 	constructor(props) {
@@ -10,104 +11,128 @@ class LoginRegisterForm extends Component {
 
 		this.state = {
 			loginForm: true,
-			lecturerChecked: true
+			lecturerChecked: true,
+			currentRefs: ["password", "email"]
 		};
+
+		this.loginInputs = [
+			{
+				type: "text",
+				label: "Email",
+				ref: "email",
+				validation: null,
+				key: 0
+			},
+			{
+				type: "password",
+				label: "Password",
+				ref: "password",
+				validation: null,
+				key: 1
+			}
+		];
+		this.registerInputs = [
+			{
+				type: "text",
+				label: "First name",
+				ref: "firstName",
+				validation: null,
+				key: 2
+			},
+			{
+				type: "text",
+				label: "Last name",
+				ref: "lastName",
+				validation: null,
+				key: 3
+			},
+			{
+				type: "text",
+				label: "Email",
+				ref: "email",
+				validation: "create-email",
+				key: 4
+			},
+			{
+				type: "password",
+				label: "Password",
+				ref: "password",
+				validation: "create-password",
+				key: 5
+			}
+		];
+		this.viewerInput = [
+			{
+				type: "text",
+				label: "Lecturer email",
+				ref: "lecturer-email",
+				validation: null,
+				key: 6
+			}
+		];
+
+		this.formSubmit = this.formSubmit.bind(this);
+		this.onRadioChange = this.onRadioChange.bind(this);
 	}
 
-	getFormContent(loginForm) {
+	getFormContent() {
+		const loginForm = this.state.loginForm;
 		const lecturerChecked = this.state.lecturerChecked;
-		let lecturerInput = lecturerChecked ? (
-			""
-		) : (
-			<div>
-				<label htmlFor="lecturer-email">Lecturer email</label>
-				<input
-					type="text"
-					onBlur={this.focusOut.bind(this)}
-					id="lecturerEmail"
-					ref="lecturerEmail"
+		const mapInputs = input => {
+			return (
+				<FormTextInput
+					type={input.type}
+					label={input.label}
+					validation={input.validation}
+					ref={input.ref}
+					key={input.key}
 				/>
-			</div>
-		);
-		let content = loginForm ? (
-			<div className="content">
-				<label htmlFor="email">Email</label>
-				<input
-					type="text"
-					onBlur={this.focusOut.bind(this)}
-					id="email"
-					ref="email"
-				/>
-				<label htmlFor="password">Password</label>
-				<input
-					type="password"
-					onBlur={this.focusOut.bind(this)}
-					id="password"
-					ref="password"
-				/>
-			</div>
-		) : (
-			<div className="content">
-				<label htmlFor="firstName">First name</label>
-				<input
-					type="text"
-					onBlur={this.focusOut.bind(this)}
-					id="firstName"
-					ref="firstName"
-				/>
-				<label htmlFor="lastName">Last name</label>
-				<input
-					type="texg"
-					onBlur={this.focusOut.bind(this)}
-					id="lastName"
-					ref="lastName"
-				/>
-				<label htmlFor="email">Email</label>
-				<input
-					type="text"
-					onBlur={this.focusOut.bind(this)}
-					id="email"
-					ref="email"
-				/>
-				<label htmlFor="password">Password</label>
-				<input
-					type="password"
-					onBlur={this.focusOut.bind(this)}
-					id="password"
-					ref="password"
-				/>
+			);
+		};
+		const viewerInput = !lecturerChecked
+			? this.viewerInput.map(mapInputs)
+			: null;
 
-				<div className="user-type">
-					<input
-						type="radio"
-						name="user"
-						value="lecturer"
-						onChange={this.onCheck.bind(this)}
-						id="lecturer"
-						ref="lecturer"
-						defaultChecked
-					/>
-					<label htmlFor="lecturer">Lecturer</label>
+		// Get create form content
+		let content;
+		if (loginForm) {
+			content = (
+				<div className="content">{this.loginInputs.map(mapInputs)}</div>
+			);
+		} else {
+			content = (
+				<div className="content">
+					{this.registerInputs.map(mapInputs)}
+					<div className="user-type">
+						<input
+							type="radio"
+							name="user"
+							ref="lecturer"
+							checked={lecturerChecked}
+							onChange={this.onRadioChange}
+						/>
+						<label htmlFor="lecturer">Lecturer</label>
+					</div>
+					<div className="user-type">
+						<input
+							type="radio"
+							name="user"
+							ref="viewer"
+							checked={!lecturerChecked}
+							onChange={this.onRadioChange}
+						/>
+						<label htmlFor="viewer">Viewer</label>
+					</div>
+					{viewerInput}
 				</div>
-				<div className="user-type">
-					<input
-						type="radio"
-						name="user"
-						value="viewer"
-						onChange={this.onCheck.bind(this)}
-						id="viewer"
-						ref="viewer"
-					/>
-					<label htmlFor="viewer">Viewer</label>
-				</div>
-				{lecturerInput}
-			</div>
-		);
+			);
+		}
 
 		return content;
 	}
 
-	getFormNav(loginForm) {
+	getFormNav() {
+		const loginForm = this.state.loginForm;
 		const label = loginForm ? "Register" : "← Login";
 		let links = loginForm ? (
 			<nav>
@@ -128,64 +153,88 @@ class LoginRegisterForm extends Component {
 	}
 
 	switchForm(e) {
+		const login = this.state.loginForm;
+		let refs = [];
+
+		if (login) {
+			for (let i of this.registerInputs) {
+				refs.push(i.ref);
+			}
+		} else {
+			for (let i of this.loginInputs) {
+				refs.push(i.ref);
+			}
+		}
+
 		this.setState({
-			loginForm: !this.state.loginForm
+			loginForm: !login,
+			currentRefs: refs
 		});
 	}
 
 	formSubmit(e) {
-		const server = this.props.server;
-		const loginForm = this.state.loginForm;
-		const lecturerChecked = this.state.lecturerChecked;
 		const config = { crossdomain: true };
-		let url = server + "/user/login";
-		let body = {
-			email: this.refs.email.value,
-			password: this.refs.password.value
-		};
+		const server = this.props.server;
+		const url = this.state.loginForm
+			? server + "/user/login"
+			: server + "/user";
 
-		if (!loginForm) {
-			url = server + "/user";
-			body.firstName = this.refs.firstName.value;
-			body.lastName = this.refs.lastName.value;
-			body.userType = lecturerChecked
-				? this.refs.lecturer.value
-				: this.refs.viewer.value;
-		}
-
-		if (!lecturerChecked) {
-			body.lecturerEmail = this.refs.lecturerEmail.value;
-		}
-
-		for (let key in body) {
-			if (!body[key]) return;
+		if (!this.isFormValid()) {
+			return;
 		}
 
 		axios
-			.post(url, body, config)
+			.post(url, this.getFormValues(), config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
 					return;
 				}
-
-				console.log("HERE");
 			})
 			.catch(err => console.log(err));
 	}
 
-	focusOut(e) {
-		const value = e.target.value;
+	isFormValid() {
+		const refs = this.state.currentRefs;
+		let valid = true;
 
-		if (!value) {
-			e.target.style.border = "2px solid red";
-		} else {
-			e.target.style.border = "1px solid grey";
+		for (let ref of refs) {
+			if (!this.refs[ref].validateInput()) {
+				valid = false;
+			}
 		}
+
+		return valid;
 	}
 
-	onCheck(e) {
+	getFormValues() {
+		const refs = this.state.currentRefs;
+		const login = this.state.loginForm;
+		let values = {};
+
+		for (let ref of refs) {
+			values[ref] = this.refs[ref].getValue();
+		}
+
+		if (!login) {
+			values["isLecturer"] = this.state.lecturerChecked;
+		}
+
+		return values;
+	}
+
+	onRadioChange(e) {
+		const lecturer = this.state.lecturerChecked;
+		let refs = this.state.currentRefs;
+
+		if (lecturer) {
+			for (let i of this.viewerInput) {
+				refs.push(i.ref);
+			}
+		}
+
 		this.setState({
-			lecturerChecked: e.target.value === "lecturer" ? true : false
+			lecturerChecked: !lecturer,
+			currentRefs: refs
 		});
 	}
 
@@ -196,13 +245,13 @@ class LoginRegisterForm extends Component {
 		return (
 			<div className="LoginRegisterForm">
 				<TitleBar title={title} className="color-white text-center" />
-				{this.getFormContent(loginForm)}
+				{this.getFormContent()}
 				<div className="errors" id="errors" />
 				<hr />
-				<button onClick={this.formSubmit.bind(this)}>
+				<button onClick={this.formSubmit}>
 					{loginForm ? "Sign in" : "Register"}
 				</button>
-				{this.getFormNav(loginForm)}
+				{this.getFormNav()}
 			</div>
 		);
 	}

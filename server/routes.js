@@ -30,7 +30,7 @@ router.get("/videos", getVideosRoute);
  *
  */
 function userRoute(req, res) {
-  let required = ["email", "password", "firstName", "lastName", "userType"];
+  let required = ["email", "password", "firstName", "lastName", "isLecturer"];
   let payload = {
     success: true
   };
