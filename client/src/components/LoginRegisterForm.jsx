@@ -65,13 +65,14 @@ class LoginRegisterForm extends Component {
 			{
 				type: "text",
 				label: "Lecturer email",
-				ref: "lecturer-email",
+				ref: "lecturerEmail",
 				validation: null,
 				key: 6
 			}
 		];
 
 		this.formSubmit = this.formSubmit.bind(this);
+		this.formSwitch = this.formSwitch.bind(this);
 		this.onRadioChange = this.onRadioChange.bind(this);
 	}
 
@@ -136,14 +137,14 @@ class LoginRegisterForm extends Component {
 		const label = loginForm ? "Register" : "← Login";
 		let links = loginForm ? (
 			<nav>
-				<span id="register" onClick={e => this.switchForm(e)}>
+				<span id="register" onClick={this.formSwitch}>
 					{label}
 				</span>
 				<span id="recover">Forgot your password?</span>
 			</nav>
 		) : (
 			<nav>
-				<span id="register" onClick={e => this.switchForm(e)}>
+				<span id="register" onClick={this.formSwitch}>
 					{label}
 				</span>
 			</nav>
@@ -152,7 +153,7 @@ class LoginRegisterForm extends Component {
 		return links;
 	}
 
-	switchForm(e) {
+	formSwitch(e) {
 		const login = this.state.loginForm;
 		let refs = [];
 
@@ -187,6 +188,7 @@ class LoginRegisterForm extends Component {
 			.post(url, this.getFormValues(), config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
+					console.log(res.data);
 					return;
 				}
 
@@ -225,17 +227,19 @@ class LoginRegisterForm extends Component {
 	}
 
 	onRadioChange(e) {
-		const lecturer = this.state.lecturerChecked;
+		const lecturer = !this.state.lecturerChecked;
 		let refs = this.state.currentRefs;
 
-		if (lecturer) {
+		if (!lecturer) {
 			for (let i of this.viewerInput) {
 				refs.push(i.ref);
 			}
+		} else {
+			refs = refs.slice(0, -1);
 		}
 
 		this.setState({
-			lecturerChecked: !lecturer,
+			lecturerChecked: lecturer,
 			currentRefs: refs
 		});
 	}

@@ -44,15 +44,15 @@ const User = model("User", userSchema);
 
 // Lecturer Model
 const lecturerSchema = new Schema({
-  devices: [{ type: Schema.Types.ObjectId, ref: "Device" }],
-  videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
-  viewers: [{ type: Schema.Types.ObjectId, ref: "Viewer" }]
+  devices: { type: [Schema.Types.ObjectId], ref: "Device" },
+  videos: { type: [Schema.Types.ObjectId], ref: "Video" },
+  viewers: { type: [Schema.Types.ObjectId], ref: "Viewer" }
 });
 const Lecturer = User.discriminator("Lecturer", lecturerSchema);
 
 // Viewer Model
 const viewerSchema = new Schema({
-  lecturers: [{ type: Schema.Types.ObjectId, ref: "Lecturer" }]
+  lecturers: { type: [Schema.Types.ObjectId], ref: "Lecturer", require: true }
 });
 const Viewer = User.discriminator("Viewer", viewerSchema);
 
