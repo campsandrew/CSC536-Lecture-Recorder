@@ -27,7 +27,10 @@ for (let interface in interfaces) {
 // Connect to mongoDB
 mongoose
   .connect(mainDB, mongoose_options)
-  .then(db => setInterval(saveHost, 60000))
+  .then(db => {
+    saveHost();
+    setInterval(saveHost, 60000);
+  })
   .catch(err => console.log(err));
 
 /**

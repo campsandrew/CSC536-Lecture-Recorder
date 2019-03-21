@@ -15,6 +15,8 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 
+		this.connectorUrl =
+			"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
 		this.state = {
 			server: ""
 		};
@@ -23,18 +25,15 @@ class App extends Component {
 	/**
 	 *
 	 */
-	componenDidMount() {
-		const connector =
-			"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
-
-		this.serverConnector(connector);
+	componentDidMount() {
+		this.serverConnector();
 		// TODO:
 	}
 
 	/**
 	 *
 	 */
-	serverConnector(url) {
+	serverConnector() {
 		const self = this;
 		const config = {
 			crossdomain: true
@@ -42,7 +41,7 @@ class App extends Component {
 
 		// Get server address from connector
 		axios
-			.get(url, config)
+			.get(this.connectorUrl, config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
 					return;

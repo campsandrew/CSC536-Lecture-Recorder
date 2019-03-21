@@ -189,6 +189,8 @@ class LoginRegisterForm extends Component {
 				if (res.status !== 200 || !res.data.success) {
 					return;
 				}
+
+				console.log(res.data);
 			})
 			.catch(err => console.log(err));
 	}
