@@ -1,61 +1,21 @@
 const express = require("express");
 const axios = require("axios");
-const fs = require("fs");
-const { Device, Video, Lecturer, Viewer } = require("./models");
 const { getDevice, authUser } = require("./middleware");
+const { Device, Lecturer, Viewer } = require("./models");
 
 const router = express.Router();
 
-// API Routes Device
+// API Device Routes
 router.get("/:deviceid/ping", getDevice, devicePingRoute);
 router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
 
-// API Frontend Routes - Users
-router.post("/user", userRoute);
-//router.post("/user/login");
-
 // API Frontend Routes - Devices
 //router.put("/device");
-router.get("/devices", getDevicesRoute);
+router.get("/devices", devicesRoute);
 router.get("/:deviceid/status", getDevice, deviceStatusRoute);
 router.get("/:deviceid/record", getDevice, deviceRecordRoute);
 router.get("/:deviceid/rotate", getDevice, deviceRotateRoute); // This can eventually be removed
 router.get("/:deviceid/cleanup", deviceCleanupRoute);
-
-// API Frontend Routes - Videos
-//router.post("/video");
-router.get("/videos", getVideosRoute);
-
-/**
- *
- */
-function userRoute(req, res) {
-  let required = ["email", "password", "firstName", "lastName", "isLecturer"];
-  let payload = {
-    success: true
-  };
-
-  // Check for proper values in body
-  for (let key of required) {
-    if (key in req.body && key !== "userType") {
-      continue;
-    } else if (
-      key === "userType" &&
-      key in req.body &&
-      req.body[key] === "viewer"
-    ) {
-      if ("lecturerEmail" in req.body) {
-        continue;
-      }
-    }
-
-    payload.success = false;
-    payload.message = "not enough fields in body";
-    return res.json(payload);
-  }
-
-  res.json(payload);
-}
 
 /**
  *
@@ -102,7 +62,7 @@ function deviceUploadRoute(req, res) {
 
   let bitmap = Buffer.from(media.data, "base64");
   let filepath = "videos/" + req.files.media.name;
-  fs.writeFileSync(filepath, bitmap);
+  //fs.writeFileSync(filepath, bitmap);
 
   res.json(payload);
 }
@@ -110,7 +70,7 @@ function deviceUploadRoute(req, res) {
 /**
  * TODO: Add query for getting user devices
  */
-function getDevicesRoute(req, res) {
+function devicesRoute(req, res) {
   let payload = {
     success: true
   };
@@ -124,31 +84,6 @@ function getDevicesRoute(req, res) {
           name: doc.name
         };
         payload.devices.push(device);
-      }
-
-      res.json(payload);
-    })
-    .catch(function(err) {
-      payload.success = false;
-      payload.message = err.errmsg;
-      res.json(payload);
-    });
-}
-
-/**
- *
- */
-function getVideosRoute(req, res) {
-  let payload = {
-    success: true
-  };
-
-  Video.find({})
-    .then(function(docs) {
-      payload.videos = [];
-      for (let doc of docs) {
-        video = {};
-        payload.videos.push(video);
       }
 
       res.json(payload);

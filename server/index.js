@@ -3,8 +3,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const fileupload = require("express-fileupload");
+const deviceRouter = require("./deviceRoutes");
+const videoRouter = require("./videoRoutes");
+const userRouter = require("./userRoutes");
 const { crossOrigin } = require("./middleware");
-const routes = require("./routes");
+
 const config = require("./config-server");
 
 const app = express();
@@ -15,7 +18,9 @@ app.use(crossOrigin);
 app.use(bodyParser.json());
 
 // Routes defined
-app.use("/", routes);
+app.use("/", deviceRouter);
+app.use("/", videoRouter);
+app.use("/", userRouter);
 app.use(errorRoute);
 
 // Start server
