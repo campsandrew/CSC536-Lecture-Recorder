@@ -49,12 +49,18 @@ class FormTextInput extends Component {
 		const valid = this.state.validInput;
 		const label = this.props.label;
 		const type = this.props.type;
+		const onKeyPress = this.props.onKeyPress;
 		const className = valid ? "FormTextInput" : "FormTextInput error";
 
 		return (
 			<div className={className}>
 				<label htmlFor={this.textInput}>{label}</label>
-				<input type={type} onBlur={this.focusOut} ref={this.textInput} />
+				<input
+					type={type}
+					onBlur={this.focusOut}
+					ref={this.textInput}
+					onKeyPress={onKeyPress}
+				/>
 			</div>
 		);
 	}

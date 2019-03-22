@@ -74,6 +74,7 @@ class LoginRegisterForm extends Component {
 		this.formSubmit = this.formSubmit.bind(this);
 		this.formSwitch = this.formSwitch.bind(this);
 		this.onRadioChange = this.onRadioChange.bind(this);
+		this.onKeyPress = this.onKeyPress.bind(this);
 	}
 
 	getFormContent() {
@@ -87,6 +88,7 @@ class LoginRegisterForm extends Component {
 					validation={input.validation}
 					ref={input.ref}
 					key={input.key}
+					onKeyPress={this.onKeyPress}
 				/>
 			);
 		};
@@ -109,8 +111,10 @@ class LoginRegisterForm extends Component {
 							type="radio"
 							name="user"
 							ref="lecturer"
+							id="lecturer"
 							checked={lecturerChecked}
 							onChange={this.onRadioChange}
+							onKeyPress={this.onKeyPress}
 						/>
 						<label htmlFor="lecturer">Lecturer</label>
 					</div>
@@ -119,8 +123,10 @@ class LoginRegisterForm extends Component {
 							type="radio"
 							name="user"
 							ref="viewer"
+							id="viewer"
 							checked={!lecturerChecked}
 							onChange={this.onRadioChange}
+							onKeyPress={this.onKeyPress}
 						/>
 						<label htmlFor="viewer">Viewer</label>
 					</div>
@@ -188,7 +194,7 @@ class LoginRegisterForm extends Component {
 			.post(url, this.getFormValues(), config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
-					console.log(res.data);
+					console.log(res.data.message);
 					return;
 				}
 
@@ -220,14 +226,14 @@ class LoginRegisterForm extends Component {
 		}
 
 		if (!login) {
-			values["isLecturer"] = this.state.lecturerChecked;
+			values.isLecturer = this.state.lecturerChecked;
 		}
 
 		return values;
 	}
 
 	onRadioChange(e) {
-		const lecturer = !this.state.lecturerChecked;
+		const lecturer = e.target.id === "lecturer" && e.target.checked;
 		let refs = this.state.currentRefs;
 
 		if (!lecturer) {
@@ -242,6 +248,10 @@ class LoginRegisterForm extends Component {
 			lecturerChecked: lecturer,
 			currentRefs: refs
 		});
+	}
+
+	onKeyPress(e) {
+		if (e.key === "Enter") this.formSubmit(e);
 	}
 
 	render() {
