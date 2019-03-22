@@ -37,6 +37,10 @@
 	font-size: 20pt;
 }
 
+.HeaderBar button:hover {
+	border-color: #034377;
+}
+
 @media screen and (max-device-width: 500px) {
 	.HeaderBar span {
 		display: none;

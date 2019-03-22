@@ -8,13 +8,56 @@ const { Lecturer, Viewer } = require("./models");
 const router = express.Router();
 
 // API Frontend Routes
-router.post("/user", userRoute);
-router.post("/user/login", loginRoute);
+router.get("/user", authUser, getUserRoute);
+router.post("/user", addUserRoute);
+router.post("/user/login", loginUserRoute);
 
 /**
  *
  */
-function userRoute(req, res) {
+function getUserRoute(req, res) {
+  const queries = req.query;
+  const user = req.user;
+  const actions = {
+    name: user => {
+      return (
+        user.name.first.slice(0, 1).toUpperCase() +
+        user.name.first.slice(1) +
+        " " +
+        user.name.last.slice(0, 1).toUpperCase() +
+        user.name.last.slice(1)
+      );
+    },
+    email: user => {
+      return user.email;
+    },
+    type: user => {
+      return user.__t.toLowerCase();
+    }
+  };
+  let payload = {
+    success: true
+  };
+
+  if (!user) {
+    payload.success = false;
+    payload.message = "no user found";
+    return res.json(payload);
+  }
+
+  for (let query in queries) {
+    if (query in actions && queries[query] === "true") {
+      payload[query] = actions[query](user);
+    }
+  }
+
+  return res.json(payload);
+}
+
+/**
+ *
+ */
+function addUserRoute(req, res) {
   const isLecturer = req.body.isLecturer;
   let required = [
     "email",
@@ -79,7 +122,7 @@ function userRoute(req, res) {
 /**
  *
  */
-function loginRoute(req, res) {
+function loginUserRoute(req, res) {
   let payload = {
     success: true
   };

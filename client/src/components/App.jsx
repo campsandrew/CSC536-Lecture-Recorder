@@ -37,9 +37,7 @@ class App extends Component {
 	 */
 	serverConnector() {
 		const self = this;
-		const config = {
-			crossdomain: true
-		};
+		const config = { crossdomain: true };
 
 		// Get server address from connector
 		axios
@@ -63,7 +61,7 @@ class App extends Component {
 		const server = this.state.server;
 		const routing = (
 			<BrowserRouter>
-				<HeaderBar />
+				<HeaderBar server={server} />
 				<Switch>
 					<Route
 						exact

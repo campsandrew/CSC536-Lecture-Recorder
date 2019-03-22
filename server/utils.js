@@ -7,6 +7,18 @@ function getAuthToken(code, expires = 3600) {
   return jwt.encode(code, jwt_secret);
 }
 
+function decodeToken(token) {
+  let decode;
+
+  try {
+    decode = jwt.decode(token, jwt_secret);
+  } catch (err) {
+    // do nothing
+  }
+
+  return decode;
+}
+
 async function saveUser(data, lecturerEmail) {
   let promise;
 
@@ -26,6 +38,7 @@ async function saveUser(data, lecturerEmail) {
 
 exports = {
   saveUser,
+  decodeToken,
   getAuthToken
 };
 

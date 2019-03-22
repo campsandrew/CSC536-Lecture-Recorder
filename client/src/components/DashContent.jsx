@@ -3,6 +3,8 @@ import React, { Component } from "react";
 import DeviceList from "./DeviceList";
 import VideoList from "./VideoList";
 
+import "./css/ContentArea.css";
+
 class DashContent extends Component {
 	/**
 	 *
@@ -22,8 +24,10 @@ class DashContent extends Component {
 		document.title = "LectureFly | Dash";
 		return (
 			<div className="ContentArea">
+				{/*
 				<DeviceList server={server} onClick={this.onClick} />
 				<VideoList server={server} onClick={this.onClick} />
+				*/}
 			</div>
 		);
 	}

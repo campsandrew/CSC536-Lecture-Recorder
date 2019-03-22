@@ -1,6 +1,5 @@
-const jwt = require("jwt-simple");
-const { Device, Video, Lecturer, Viewer } = require("./models");
-const { jwt_secret } = require("./secrets.json");
+const { Device, Video, User, Lecturer, Viewer } = require("./models");
+const { decodeToken } = require("./utils");
 
 /**
  *
@@ -9,7 +8,7 @@ function crossOrigin(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "Origin, X-Requested-With, Content-Type, Accept, AccessToken"
   );
   next();
 }
@@ -44,17 +43,31 @@ function getDevice(req, res, next) {
  *
  */
 function authUser(req, res, next) {
-  let token = req.headers.auth_token;
+  let token = req.headers.accesstoken;
+  let decode = decodeToken(token);
   let payload = {
     success: false,
     message: "unauthorized access"
   };
 
-  if (!token) return res.status(401).json(payload);
-  let decode = jwt.decode(token, jwt_secret);
+  if (!decode || !decode.email) {
+    return res.status(401).json(payload);
+  }
 
-  // User query using token
-  next();
+  // Find device and attach to request object
+  User.findOne({ email: decode.email })
+    .then(function(doc) {
+      req.user = doc;
+      if (!doc) {
+        return res.status(403).json(payload);
+      }
+
+      next();
+    })
+    .catch(function(err) {
+      console.log(err.errmsg);
+      res.json(payload);
+    });
 }
 
 exports = {

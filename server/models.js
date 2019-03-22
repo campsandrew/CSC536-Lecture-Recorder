@@ -34,10 +34,10 @@ const Device = model("Device", deviceSchema);
 //const options = { discriminatorKey: "kind" };
 const userSchema = new Schema({
   name: {
-    first: { type: String, require: true, trim: true },
-    last: { type: String, require: true, trim: true }
+    first: { type: String, lowercase: true, require: true, trim: true },
+    last: { type: String, lowercase: true, require: true, trim: true }
   },
-  email: { type: String, require: true, unique: true },
+  email: { type: String, lowercase: true, require: true, unique: true },
   hash: { type: String, require: true }
 });
 const User = model("User", userSchema);
