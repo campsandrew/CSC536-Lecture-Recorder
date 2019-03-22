@@ -192,7 +192,6 @@ class LoginRegisterForm extends Component {
 			? server + "/user/login"
 			: server + "/user";
 		const self = this;
-		let errors = [];
 
 		if (!this.isFormValid()) {
 			return;

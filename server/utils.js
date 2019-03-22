@@ -27,7 +27,11 @@ async function saveUser(data, lecturerEmail) {
       if (!doc) return { message: "no lecturer found" };
 
       data.lecturers = [doc];
-      return new Viewer(data).save();
+      let viewer = new Viewer(data);
+
+      doc.viewers.push(viewer);
+      doc.save();
+      return viewer.save();
     });
   } else {
     promise = new Lecturer(data).save();

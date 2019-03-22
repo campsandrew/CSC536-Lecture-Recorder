@@ -53,7 +53,7 @@ class HeaderBar extends Component {
 				if (res.status !== 200 || !res.data.success) {
 					localStorage.removeItem("accessToken");
 					if (res.status === 401) {
-						return window.location.replace("/unauthorized");
+						//return window.location.replace("/unauthorized");
 					}
 
 					return;
@@ -64,7 +64,6 @@ class HeaderBar extends Component {
 				});
 			})
 			.catch(function(err) {
-				window.location.replace("/error");
 				localStorage.removeItem("accessToken");
 			});
 	}
