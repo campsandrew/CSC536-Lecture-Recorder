@@ -18,7 +18,7 @@
 }
 
 .LoginRegisterForm .content {
-	margin: 10px 0 20px 0;
+	margin: 10px 0 10px 0;
 }
 
 .LoginRegisterForm button {
@@ -64,7 +64,23 @@
 	cursor: pointer;
 }
 
+.LoginRegisterForm .loading {
+	padding: 0 0 5px 10px;
+	font-size: 14pt;
+	color: red;
+}
+
+.LoginRegisterForm .errors {
+	padding: 0 0 5px 10px;
+	font-size: 10pt;
+	color: red;
+}
+
+.cursor-wait {
+	cursor: wait;
+}
 /*
+}
 @media screen and (max-device-width: 400px) {
 	.DeviceList {
 		width: 100%;

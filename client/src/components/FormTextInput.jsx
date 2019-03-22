@@ -7,7 +7,8 @@ class FormTextInput extends Component {
 		super(props);
 
 		this.state = {
-			validInput: true
+			validInput: true,
+			error: this.props.label + " required"
 		};
 
 		this.textInput = React.createRef();
@@ -16,6 +17,10 @@ class FormTextInput extends Component {
 
 	getValue() {
 		return this.textInput.current.value;
+	}
+
+	getError() {
+		return this.state.error;
 	}
 
 	validateInput() {
@@ -38,6 +43,7 @@ class FormTextInput extends Component {
 
 	hasInput() {
 		const value = this.textInput.current.value;
+
 		return !value ? false : true;
 	}
 

@@ -1,23 +1,28 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import axios from "axios";
 
 import "./css/LoginRegisterForm.css";
 import TitleBar from "./TitleBar";
 import FormTextInput from "./FormTextInput";
+import ErrorStatus from "./ErrorStatus";
 
 class LoginRegisterForm extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
+			redirect: false,
 			loginForm: true,
 			lecturerChecked: true,
-			currentRefs: ["password", "email"]
+			currentRefs: ["password", "email"],
+			loading: false,
+			errors: []
 		};
 
 		this.loginInputs = [
 			{
-				type: "text",
+				type: "email",
 				label: "Email",
 				ref: "email",
 				validation: null,
@@ -47,7 +52,7 @@ class LoginRegisterForm extends Component {
 				key: 3
 			},
 			{
-				type: "text",
+				type: "email",
 				label: "Email",
 				ref: "email",
 				validation: "create-email",
@@ -63,7 +68,7 @@ class LoginRegisterForm extends Component {
 		];
 		this.viewerInput = [
 			{
-				type: "text",
+				type: "email",
 				label: "Lecturer email",
 				ref: "lecturerEmail",
 				validation: null,
@@ -175,7 +180,8 @@ class LoginRegisterForm extends Component {
 
 		this.setState({
 			loginForm: !login,
-			currentRefs: refs
+			currentRefs: refs,
+			errors: []
 		});
 	}
 
@@ -185,33 +191,56 @@ class LoginRegisterForm extends Component {
 		const url = this.state.loginForm
 			? server + "/user/login"
 			: server + "/user";
+		const self = this;
+		let errors = [];
 
 		if (!this.isFormValid()) {
 			return;
 		}
 
+		this.setState({
+			loading: true,
+			errors: []
+		});
+
 		axios
 			.post(url, this.getFormValues(), config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
-					console.log(res.data.message);
-					return;
+					return self.setState({
+						loading: false,
+						errors: [res.data.message ? res.data.message : ""]
+					});
 				}
 
-				console.log(res.data);
+				sessionStorage.accessToken = res.data.token;
+				self.setState({
+					redirect: true
+				});
 			})
-			.catch(err => console.log(err));
+			.catch(function(err) {
+				return self.setState({
+					loading: false,
+					errors: ["connection error"]
+				});
+			});
 	}
 
 	isFormValid() {
 		const refs = this.state.currentRefs;
 		let valid = true;
+		let errors = [];
 
 		for (let ref of refs) {
 			if (!this.refs[ref].validateInput()) {
+				errors.push(this.refs[ref].getError());
 				valid = false;
 			}
 		}
+
+		this.setState({
+			errors: errors
+		});
 
 		return valid;
 	}
@@ -255,14 +284,22 @@ class LoginRegisterForm extends Component {
 	}
 
 	render() {
+		const redirect = this.state.redirect;
 		const loginForm = this.state.loginForm;
+		const errors = this.state.errors;
+		const loading = this.state.loading;
 		const title = loginForm ? "Login" : "Create Account";
+		const className = "LoginRegisterForm" + (loading ? " cursor-wait" : "");
+
+		if (redirect) {
+			return <Redirect to="/dash" />;
+		}
 
 		return (
-			<div className="LoginRegisterForm">
+			<div className={className}>
 				<TitleBar title={title} className="color-white text-center" />
 				{this.getFormContent()}
-				<div className="errors" id="errors" />
+				<ErrorStatus errors={errors} loading={loading} />
 				<hr />
 				<button onClick={this.formSubmit}>
 					{loginForm ? "Sign in" : "Register"}

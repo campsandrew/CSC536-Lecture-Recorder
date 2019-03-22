@@ -1,4 +1,11 @@
+const jwt = require("jwt-simple");
 const { Lecturer, Viewer } = require("./models");
+const { jwt_secret } = require("./secrets.json");
+
+function getAuthToken(code, expires = 3600) {
+  code.expires = expires;
+  return jwt.encode(code, jwt_secret);
+}
 
 async function saveUser(data, lecturerEmail) {
   let promise;
@@ -18,7 +25,8 @@ async function saveUser(data, lecturerEmail) {
 }
 
 exports = {
-  saveUser
+  saveUser,
+  getAuthToken
 };
 
 module.exports = exports;

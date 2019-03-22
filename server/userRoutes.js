@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const bcrypt = require("bcrypt-nodejs");
 const { authUser } = require("./middleware");
-const { saveUser } = require("./utils");
+const { saveUser, getAuthToken } = require("./utils");
 const { Lecturer, Viewer } = require("./models");
 
 const router = express.Router();
@@ -62,12 +62,14 @@ function userRoute(req, res) {
         return res.json(payload);
       }
 
+      let code = { email: response.email };
+      payload.token = getAuthToken(code);
       return res.json(payload);
     })
     .catch(function(err) {
       payload.message = "error creating account";
       if (err.code === 11000) {
-        payload.message = "email already used";
+        payload.message = "email already registered";
       }
       payload.success = false;
       return res.json(payload);

@@ -8,6 +8,9 @@ import HomeContent from "./HomeContent";
 import DashContent from "./DashContent";
 import ErrorContent from "./ErrorContent";
 
+const CONNECTOR_URL =
+	"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
+
 class App extends Component {
 	/**
 	 *
@@ -15,8 +18,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 
-		this.connectorUrl =
-			"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
+		this.connectorUrl = CONNECTOR_URL;
 		this.state = {
 			server: ""
 		};
