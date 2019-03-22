@@ -35,7 +35,7 @@ class HeaderBar extends Component {
 
 	getUser() {
 		const url = this.state.server + "/user?name=true";
-		const token = sessionStorage.accessToken;
+		const token = localStorage.getItem("accessToken");
 		const config = {
 			crossdomain: true,
 			headers: { accessToken: token }
@@ -51,6 +51,11 @@ class HeaderBar extends Component {
 			.get(url, config)
 			.then(function(res) {
 				if (res.status !== 200 || !res.data.success) {
+					localStorage.removeItem("accessToken");
+					if (res.status === 401) {
+						return window.location.replace("/unauthorized");
+					}
+
 					return;
 				}
 
@@ -58,14 +63,17 @@ class HeaderBar extends Component {
 					user: res.data.name
 				});
 			})
-			.catch(err => console.log(err));
+			.catch(function(err) {
+				window.location.replace("/error");
+				localStorage.removeItem("accessToken");
+			});
 	}
 
 	onLogout(e) {
 		this.setState({
 			user: null
 		});
-		sessionStorage.removeItem("accessToken");
+		localStorage.removeItem("accessToken");
 		window.location.replace("/");
 	}
 

@@ -213,7 +213,7 @@ class LoginRegisterForm extends Component {
 					});
 				}
 
-				sessionStorage.accessToken = res.data.token;
+				localStorage.setItem("accessToken", res.data.token);
 				self.setState({
 					redirect: true
 				});

@@ -3,7 +3,7 @@ const axios = require("axios");
 const bcrypt = require("bcrypt-nodejs");
 const { authUser } = require("./middleware");
 const { saveUser, getAuthToken } = require("./utils");
-const { Lecturer, Viewer } = require("./models");
+const { User, Lecturer, Viewer } = require("./models");
 
 const router = express.Router();
 
@@ -59,7 +59,7 @@ function getUserRoute(req, res) {
  */
 function addUserRoute(req, res) {
   const isLecturer = req.body.isLecturer;
-  let required = [
+  const required = [
     "email",
     "password",
     "firstName",
@@ -82,7 +82,7 @@ function addUserRoute(req, res) {
       continue;
     }
 
-    payload.message = "not enough fields in body";
+    payload.message = "invalid fields";
     payload.success = false;
     return res.json(payload);
   }
@@ -123,11 +123,42 @@ function addUserRoute(req, res) {
  *
  */
 function loginUserRoute(req, res) {
+  const required = ["email", "password"];
+  const email = req.body.email;
+  const password = req.body.password;
   let payload = {
     success: true
   };
 
-  res.json(payload);
+  // Check for proper values in body
+  for (let key of required) {
+    if (key in req.body) {
+      continue;
+    }
+
+    payload.message = "invalid fields";
+    payload.success = false;
+    return res.json(payload);
+  }
+
+  // Find user
+  User.findOne({ email: email })
+    .then(function(doc) {
+      if (!doc || !bcrypt.compareSync(password, doc.hash)) {
+        payload.success = false;
+        payload.message = "invalid email or password";
+        return res.json(payload);
+      }
+
+      let code = { email: email };
+      payload.token = getAuthToken(code);
+      return res.json(payload);
+    })
+    .catch(function(err) {
+      payload.success = false;
+      payload.message = "invalid email or password";
+      return res.json(payload);
+    });
 }
 
 module.exports = router;
