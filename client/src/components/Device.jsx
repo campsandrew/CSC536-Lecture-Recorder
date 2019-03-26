@@ -22,12 +22,7 @@ class Device extends Component {
 		const server = this.props.server;
 		const statusUrl = server + "/" + id + "/status";
 
-		this.timer = setInterval(() => this.updateStatus(statusUrl), 5000);
 		this.updateStatus(statusUrl);
-	}
-
-	componentWillUnmount() {
-		clearInterval(this.timer);
 	}
 
 	updateStatus(url) {
@@ -62,11 +57,13 @@ class Device extends Component {
 	}
 
 	render() {
+		const server = this.props.server;
 		const id = this.props.id;
 		const click = this.props.onClick;
 		const name = this.props.name;
 		const statusColor = this.statusMap[this.state.status];
 		const status = this.state.status;
+		const statusUrl = server + "/" + id + "/status";
 
 		return (
 			<li
@@ -74,7 +71,7 @@ class Device extends Component {
 				onClick={e => click(e, id, this.type, name, status)}
 			>
 				{name}
-				<div id="status" style={{ backgroundColor: statusColor }} />
+				<div id="status" onClick={(e) => this.updateStatus(statusUrl)} style={{ backgroundColor: statusColor }} />
 			</li>
 		);
 	}

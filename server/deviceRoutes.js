@@ -1,21 +1,32 @@
 const express = require("express");
 const axios = require("axios");
-const { getDevice, authUser } = require("./middleware");
-const { Device, Lecturer, Viewer } = require("./models");
+const { hasValidFields, canAddDevice } = require("./utils");
+const { getDevice, getVideo, authUser } = require("./middleware");
+const { Device, Lecturer } = require("./models");
 
 const router = express.Router();
 
 // API Device Routes
-router.get("/:deviceid/ping", getDevice, devicePingRoute);
-router.post("/:deviceid/upload", getDevice, deviceUploadRoute);
+router.get("/device/:deviceid/ping", getDevice, devicePingRoute);
+router.post(
+  "/device/:deviceid/:videoid/upload",
+  getDevice,
+  getVideo,
+  deviceUploadRoute
+);
 
 // API Frontend Routes - Devices
-//router.put("/device");
-router.get("/devices", devicesRoute);
-router.get("/:deviceid/status", getDevice, deviceStatusRoute);
-router.get("/:deviceid/record", getDevice, deviceRecordRoute);
-router.get("/:deviceid/rotate", getDevice, deviceRotateRoute); // This can eventually be removed
-router.get("/:deviceid/cleanup", deviceCleanupRoute);
+router.post("/device", authUser, addDeviceRoute);
+router.get("/devices", authUser, getDevicesRoute);
+router.delete(
+  "/device/:deviceid/delete",
+  authUser,
+  getDevice,
+  deleteDeviceRoute
+);
+router.get("/device/:deviceid/status", authUser, getDevice, deviceStatusRoute);
+router.get("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
+router.get("/device/:deviceid/cleanup", authUser, deviceCleanupRoute);
 
 /**
  *
@@ -43,6 +54,8 @@ function devicePingRoute(req, res) {
  *
  */
 function deviceUploadRoute(req, res) {
+  const device = req.device;
+  const video = req.video;
   let payload = {
     success: true
   };
@@ -68,18 +81,100 @@ function deviceUploadRoute(req, res) {
 }
 
 /**
- * TODO: Add query for getting user devices
+ *
  */
-function devicesRoute(req, res) {
+function addDeviceRoute(req, res) {
+  const required = ["id", "name"];
+  const user = req.user;
   let payload = {
     success: true
   };
 
-  Device.find({})
-    .then(function(docs) {
+  // Check for proper values in body
+  if (!hasValidFields(req.body, required)) {
+    payload.message = "invalid fields";
+    payload.success = false;
+    return res.json(payload);
+  }
+
+  if (user.__t !== "Lecturer") {
+    payload.message = "invalid user request";
+    payload.success = false;
+    return res.status(401).json(payload);
+  }
+
+  // Create new device
+  let device = new Device({
+    id: req.body.id,
+    name: req.body.name
+  });
+
+  Lecturer.populate(user, { path: "devices" })
+    .then(function(lecturer) {
+      if (!canAddDevice(lecturer, device)) {
+        payload.message = "device already registered";
+        throw new Error();
+      }
+
+      lecturer.devices.push(device);
+      return lecturer.save();
+    })
+    .then(function(user) {
+      if (!user) {
+        payload.message = "error registering device with user";
+        throw new Error();
+      }
+
+      return device.save();
+    })
+    .then(function(device) {
+      if (!device) {
+        payload.message = "error registering device";
+        throw new Error();
+      }
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      if (err.code === 11000) {
+        payload.message = "device already registered";
+      }
+
+      if (!payload.message) {
+        payload.message = "unable to register device";
+      }
+
+      payload.success = false;
+      return res.json(payload);
+    });
+}
+
+/**
+ *
+ */
+function getDevicesRoute(req, res) {
+  const user = req.user;
+  let payload = {
+    success: true
+  };
+
+  if (user.__t !== "Lecturer") {
+    payload.message = "invalid user request";
+    payload.success = false;
+    return res.status(401).json(payload);
+  }
+
+  Lecturer.populate(user, "devices")
+    .then(function(lecturer) {
+      if (!lecturer) {
+        payload.message = "unable to get devices";
+        throw new Error();
+      }
+
+      // Populate devices in response
       payload.devices = [];
-      for (let doc of docs) {
-        device = {
+      for (let doc of lecturer.devices) {
+        let device = {
           id: doc.id,
           name: doc.name
         };
@@ -89,8 +184,57 @@ function devicesRoute(req, res) {
       res.json(payload);
     })
     .catch(function(err) {
+      if (!payload.message) {
+        payload.message = "unable to get devices";
+      }
       payload.success = false;
-      payload.message = err.errmsg;
+      res.json(payload);
+    });
+}
+
+function deleteDeviceRoute(req, res) {
+  const user = req.user;
+  const device = req.device;
+  let payload = {
+    success: true
+  };
+
+  if (user.__t !== "Lecturer") {
+    payload.message = "invalid user request";
+    payload.success = false;
+    return res.status(401).json(payload);
+  }
+
+  Lecturer.populate(user, "devices")
+    .then(function(lecturer) {
+      if (!lecturer) throw new Error();
+
+      let index = 0;
+      for (let d of lecturer.devices) {
+        if (device._id.equals(d._id)) {
+          lecturer.devices.splice(index, 1);
+          break;
+        }
+        index++;
+      }
+
+      return lecturer.save();
+    })
+    .then(function(lecturer) {
+      if (!lecturer) throw new Error();
+
+      return device.remove();
+    })
+    .then(function(device) {
+      if (!device) throw new Error();
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      if (!payload.message) {
+        payload.message = "unable to remove device";
+      }
+      payload.success = false;
       res.json(payload);
     });
 }
@@ -147,46 +291,6 @@ function deviceRecordRoute(req, res) {
   // Send device status request
   axios
     .get(`${device.address}/${action}`)
-    .then(function(response) {
-      if (response.data.success) {
-        delete response.data.success;
-        for (let k in response.data) {
-          payload[k] = response.data[k];
-        }
-      } else {
-        payload.success = false;
-        payload.message = response.data.message;
-      }
-
-      res.json(payload);
-    })
-    .catch(function(err) {
-      payload.success = false;
-      payload.message = "no communication with device";
-      res.json(payload);
-    });
-}
-
-/**
- *
- */
-function deviceRotateRoute(req, res) {
-  let direction = req.query.direction.toLowerCase();
-  let device = req.device;
-  let payload = {
-    success: true
-  };
-
-  // Check for valid query action
-  if (direction !== "left" && direction !== "right") {
-    payload.success = false;
-    payload.message = "invalid rotation direction";
-    return res.json(payload);
-  }
-
-  // Send device status request
-  axios
-    .get(`${device.address}/rotate?direction=${direction}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;

@@ -11,12 +11,11 @@ const Host = model("Host", hostSchema);
 // Video Model
 const videoSchema = new Schema({
   name: { type: String, require: true },
-  video: { data: Buffer, contentType: String },
-  duration: { type: Number },
+  filename: { type: String, require: true },
   date: { type: Date, default: Date.now },
   description: { type: String },
   views: { type: Number, default: 0 },
-  camera: { type: Schema.Types.ObjectId, ref: "Device" },
+  device: { type: String },
   lecturer: { type: Schema.Types.ObjectId, ref: "Lecturer" }
 });
 const Video = model("Video", videoSchema);
@@ -24,9 +23,8 @@ const Video = model("Video", videoSchema);
 // Device Model
 const deviceSchema = new Schema({
   id: { type: Number, unique: true, required: true },
-  address: { type: String, require: true },
-  name: { type: String },
-  api: { type: String }
+  address: { type: String },
+  name: { type: String }
 });
 const Device = model("Device", deviceSchema);
 
@@ -44,15 +42,22 @@ const User = model("User", userSchema);
 
 // Lecturer Model
 const lecturerSchema = new Schema({
-  devices: { type: [Schema.Types.ObjectId], ref: "Device" },
-  videos: { type: [Schema.Types.ObjectId], ref: "Video" },
-  viewers: { type: [Schema.Types.ObjectId], ref: "Viewer" }
+  devices: [{ type: Schema.Types.ObjectId, ref: "Device" }],
+  videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
+  viewers: [{ type: Schema.Types.ObjectId, ref: "Viewer" }]
 });
 const Lecturer = User.discriminator("Lecturer", lecturerSchema);
 
 // Viewer Model
 const viewerSchema = new Schema({
-  lecturers: { type: [Schema.Types.ObjectId], ref: "Lecturer", require: true }
+  lecturers: [
+    {
+      type: Schema.Types.ObjectId,
+      require: true,
+      unique: true,
+      ref: "Lecturer"
+    }
+  ]
 });
 const Viewer = User.discriminator("Viewer", viewerSchema);
 

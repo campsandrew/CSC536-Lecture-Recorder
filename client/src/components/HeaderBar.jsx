@@ -33,56 +33,56 @@ class HeaderBar extends Component {
 		}
 	}
 
-	getUser() {
-		const url = this.state.server + "/user?name=true";
-		const token = localStorage.getItem("accessToken");
-		const config = {
-			crossdomain: true,
-			headers: { accessToken: token }
-		};
-		const self = this;
+	// getUser() {
+	// 	const url = this.state.server + "/user?name=true";
+	// 	const token = localStorage.getItem("accessToken");
+	// 	const config = {
+	// 		crossdomain: true,
+	// 		headers: { accessToken: token }
+	// 	};
+	// 	const self = this;
 
-		if (!token) {
-			return;
-		}
+	// 	if (!token) {
+	// 		return;
+	// 	}
 
-		// Try to get user
-		axios
-			.get(url, config)
-			.then(function(res) {
-				if (res.status !== 200 || !res.data.success) {
-					localStorage.removeItem("accessToken");
-					if (res.status === 401) {
-						//return window.location.replace("/unauthorized");
-					}
+	// 	// Try to get user
+	// 	axios
+	// 		.get(url, config)
+	// 		.then(function(res) {
+	// 			if (res.status !== 200 || !res.data.success) {
+	// 				localStorage.removeItem("accessToken");
+	// 				if (res.status === 401) {
+	// 					//return window.location.replace("/unauthorized");
+	// 				}
 
-					return;
-				}
+	// 				return;
+	// 			}
 
-				self.setState({
-					user: res.data.name
-				});
-			})
-			.catch(function(err) {
-				localStorage.removeItem("accessToken");
-			});
-	}
+	// 			self.setState({
+	// 				user: res.data.name
+	// 			});
+	// 		})
+	// 		.catch(function(err) {
+	// 			localStorage.removeItem("accessToken");
+	// 		});
+	// }
 
-	onLogout(e) {
-		this.setState({
-			user: null
-		});
-		localStorage.removeItem("accessToken");
-		window.location.replace("/");
-	}
+	// onLogout(e) {
+	// 	this.setState({
+	// 		user: null
+	// 	});
+	// 	localStorage.removeItem("accessToken");
+	// 	window.location.replace("/");
+	// }
 
 	render() {
 		const user = this.state.user;
 		let logout = null;
 
-		if (user) {
-			logout = <button onClick={this.onLogout}>Logout</button>;
-		}
+		// if (user) {
+		// 	logout = <button onClick={this.onLogout}>Logout</button>;
+		// }
 
 		return (
 			<header className="HeaderBar">

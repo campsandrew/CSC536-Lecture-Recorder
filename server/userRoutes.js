@@ -2,8 +2,13 @@ const express = require("express");
 const axios = require("axios");
 const bcrypt = require("bcrypt-nodejs");
 const { authUser } = require("./middleware");
-const { saveUser, getAuthToken } = require("./utils");
 const { User, Lecturer, Viewer } = require("./models");
+const {
+  saveUser,
+  getAuthToken,
+  hasValidFields,
+  canAddLecturer
+} = require("./utils");
 
 const router = express.Router();
 
@@ -11,6 +16,65 @@ const router = express.Router();
 router.get("/user", authUser, getUserRoute);
 router.post("/user", addUserRoute);
 router.post("/user/login", loginUserRoute);
+router.put("/user/lecturer", authUser, addLecturerRoute);
+
+function addLecturerRoute(req, res) {
+  const user = req.user;
+  const required = ["lecturerEmail"];
+  const lecturerEmail = req.body.lecturerEmail;
+  let payload = {
+    success: true
+  };
+
+  // Check for proper values in body
+  if (!hasValidFields(req.body, required)) {
+    payload.message = "invalid fields";
+    payload.success = false;
+    return res.json(payload);
+  }
+
+  if (user.__t !== "Viewer") {
+    payload.message = "invalid user request";
+    payload.success = false;
+    return res.status(401).json(payload);
+  }
+
+  // Add lecturer to viewer
+  Lecturer.findOne({ email: lecturerEmail })
+    .then(function(lecturer) {
+      if (!lecturer) {
+        payload.message = "no lecturer found";
+        throw new Error();
+      }
+
+      if (!canAddLecturer(user, lecturer)) {
+        payload.message = "lecturer already registered";
+        throw new Error();
+      }
+
+      lecturer.viewers.push(user);
+      return lecturer.save();
+    })
+    .then(function(lecturer) {
+      if (!lecturer) throw new Error();
+
+      user.lecturers.push(lecturer);
+      return user.save();
+    })
+    .then(function(viewer) {
+      if (!viewer) throw new Error();
+
+      res.json(payload);
+    })
+    .catch(function(err) {
+      console.log(err);
+      if (!payload.message) {
+        payload.message = "unable to add lecturer";
+      }
+      payload.success = false;
+      res.json(payload);
+    });
+}
 
 /**
  *
@@ -38,12 +102,6 @@ function getUserRoute(req, res) {
   let payload = {
     success: true
   };
-
-  if (!user) {
-    payload.success = false;
-    payload.message = "no user found";
-    return res.json(payload);
-  }
 
   for (let query in queries) {
     if (query in actions && queries[query] === "true") {
@@ -91,7 +149,7 @@ function addUserRoute(req, res) {
   userData.name.last = req.body.lastName;
   userData.email = req.body.email;
   userData.hash = bcrypt.hashSync(req.body.password);
-  saveUser(userData, req.body.lecturerEmail)
+  saveUser(userData, req.body)
     .then(function(response) {
       if (!response) {
         payload.message = "error creating account";
@@ -131,11 +189,7 @@ function loginUserRoute(req, res) {
   };
 
   // Check for proper values in body
-  for (let key of required) {
-    if (key in req.body) {
-      continue;
-    }
-
+  if (!hasValidFields(req.body, required)) {
     payload.message = "invalid fields";
     payload.success = false;
     return res.json(payload);

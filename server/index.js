@@ -9,6 +9,7 @@ const userRouter = require("./userRoutes");
 const { crossOrigin } = require("./middleware");
 
 const config = require("./config-server");
+global.config = config;
 
 const app = express();
 

@@ -2,11 +2,13 @@
     "development": {
         "node_port": 4000,
         "server_name": "homeserver",
-        "database": "mongodb://andrewcamps:password1!@ds349455.mlab.com:49455/lecture-fly"
+        "database": "mongodb://andrewcamps:password1!@ds349455.mlab.com:49455/lecture-fly",
+        "video_path": "videos"
     },
     "production": {
         "node_port": 8080,
         "server_name": "homeserver",
-        "database": "mongodb://andrewcamps:password1!@ds349455.mlab.com:49455/lecture-fly"
+        "database": "mongodb://andrewcamps:password1!@ds349455.mlab.com:49455/lecture-fly",
+        "video_path": "videos"
     }
 }

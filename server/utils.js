@@ -2,11 +2,54 @@ const jwt = require("jwt-simple");
 const { Lecturer, Viewer } = require("./models");
 const { jwt_secret } = require("./secrets.json");
 
+/**
+ *
+ */
+function formatDate(date) {
+  let day = date.getDate();
+  let month = date.getMonth();
+  let year = date.getFullYear();
+
+  return month + "/" + day + "/" + year;
+}
+
+/**
+ *
+ */
 function getAuthToken(code, expires = 3600) {
   code.expires = expires;
   return jwt.encode(code, jwt_secret);
 }
 
+/**
+ *
+ */
+function canAddLecturer(user, lecturer) {
+  for (let l of user.lecturers) {
+    if (l._id.equals(lecturer._id)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ *
+ */
+function canAddDevice(user, newDevice) {
+  for (let device of user.devices) {
+    if (newDevice.id === device.id) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ *
+ */
 function decodeToken(token) {
   let decode;
 
@@ -19,20 +62,43 @@ function decodeToken(token) {
   return decode;
 }
 
-async function saveUser(data, lecturerEmail) {
+/**
+ *
+ */
+function hasValidFields(fields, required) {
+  for (let key of required) {
+    if (key in fields) {
+      continue;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ *
+ */
+async function saveUser(data, body) {
   let promise;
 
-  if (lecturerEmail) {
-    promise = Lecturer.findOne({ email: lecturerEmail }).then(function(doc) {
-      if (!doc) return { message: "no lecturer found" };
+  if (body.isLecturer == "false") {
+    let viewer;
+    promise = Lecturer.findOne({ email: body.lecturerEmail })
+      .then(function(lecturer) {
+        if (!lecturer) return { message: "lecturer not found" };
 
-      data.lecturers = [doc];
-      let viewer = new Viewer(data);
+        viewer = new Viewer(data);
+        lecturer.viewers.push(viewer);
+        return lecturer.save();
+      })
+      .then(function(lecturer) {
+        if (!lecturer) return { message: "error adding viewer to lecturer" };
 
-      doc.viewers.push(viewer);
-      doc.save();
-      return viewer.save();
-    });
+        viewer.lecturers = [lecturer];
+        return viewer.save();
+      });
   } else {
     promise = new Lecturer(data).save();
   }
@@ -42,8 +108,12 @@ async function saveUser(data, lecturerEmail) {
 
 exports = {
   saveUser,
+  canAddDevice,
+  canAddLecturer,
+  hasValidFields,
   decodeToken,
-  getAuthToken
+  getAuthToken,
+  formatDate
 };
 
 module.exports = exports;
