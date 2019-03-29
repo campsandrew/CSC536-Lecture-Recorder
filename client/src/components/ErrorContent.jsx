@@ -4,16 +4,16 @@ class ErrorContent extends Component {
 	/**
 	 *
 	 */
-	constructor(props) {
-		super(props);
-	}
+	// constructor(props) {
+	// 	super(props);
+	// }
 
 	/**
 	 *
 	 */
 	render() {
 		document.title = "LectureFly | Error";
-		return "";
+		return <div />;
 	}
 }
 

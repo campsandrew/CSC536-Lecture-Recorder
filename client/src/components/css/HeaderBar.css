@@ -18,6 +18,7 @@
 
 	/* Text */
 	/* Other */
+	user-select: none;
 }
 
 .HeaderBar img {

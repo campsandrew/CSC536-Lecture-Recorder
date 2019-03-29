@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
-import axios from "axios";
+//import { Redirect } from "react-router-dom";
+//import axios from "axios";
 import "./css/HeaderBar.css";
 
 import Logo from "./Logo";
@@ -13,8 +13,6 @@ class HeaderBar extends Component {
 			server: null,
 			user: null
 		};
-
-		this.onLogout = this.onLogout.bind(this);
 	}
 
 	static getDerivedStateFromProps(props, state) {
@@ -26,7 +24,6 @@ class HeaderBar extends Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		if (prevState.server !== this.state.server) {
-			this.getUser();
 			this.setState({
 				server: this.state.server
 			});

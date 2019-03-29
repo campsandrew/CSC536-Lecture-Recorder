@@ -58,6 +58,7 @@ class App extends Component {
 	 *
 	 */
 	render() {
+		const server = this.state.server;
 		const routing = (
 			<BrowserRouter>
 				<HeaderBar server={server} />

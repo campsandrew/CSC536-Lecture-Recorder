@@ -1,25 +1,29 @@
 import React from "react";
 import "./css/TitleBar.css";
 
-function TitleBar({ title, className, action }) {
-	function getAction() {
-		let content = "";
+import DeviceStatus from "./DeviceStatus";
 
-		switch (action) {
+function TitleBar({ title, action, className }) {
+	function getActionContent() {
+		if (!action) return null;
+
+		switch (action.type) {
 			case "add":
-				break;
+				return (
+					<div onClick={action.onClick} className="add">
+						+
+					</div>
+				);
 			case "status":
-				break;
+				return <DeviceStatus status={action.status} onClick={action.onClick} />;
 			default:
 		}
-
-		return content;
 	}
 
 	return (
 		<h2 className={"TitleBar " + className}>
 			{title}
-			{getAction()}
+			{getActionContent()}
 		</h2>
 	);
 }

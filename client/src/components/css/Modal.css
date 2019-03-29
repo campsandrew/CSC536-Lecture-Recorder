@@ -19,11 +19,10 @@
 	left: 50%;
 	transform: translate(-50%, -50%);
 	/* Display & Box Model */
-	width: auto;
-	height: auto;
 	border-radius: 10px;
 	overflow: hidden;
 	box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.4), 0 6px 20px 0 rgba(0, 0, 0, 0.4);
+	box-sizing: border-box;
 
 	/* Color */
 	background: white;
@@ -33,8 +32,7 @@
 
 .Modal .ModalContent {
 	position: relative;
-	height: 100%;
-	padding: 10px;
+	padding: 15px;
 }
 
 .display-block {
@@ -47,6 +45,7 @@
 
 .Modal #buttons {
 	text-align: right;
+	margin: 0 10px 10px 10px;
 }
 
 .Modal button {
@@ -70,4 +69,10 @@
 	border-width: 1px;
 	border-color: grey;
 	color: black;
+}
+
+@media screen and (max-device-width: 400px) {
+	.Modal section {
+		width: 95%;
+	}
 }

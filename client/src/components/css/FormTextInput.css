@@ -4,6 +4,7 @@
 
 	font-size: 14pt;
 	color: grey;
+	user-select: none;
 }
 
 .FormTextInput input {

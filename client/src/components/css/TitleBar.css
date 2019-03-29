@@ -1,7 +1,9 @@
 .TitleBar {
 	/* Positioning */
 	/* Display & Box Model */
-	padding: 8px 20px;
+	display: flex;
+	justify-content: space-between;
+	padding: 8px 10px 8px 20px;
 	margin: 0;
 
 	/* Color */
@@ -10,6 +12,7 @@
 
 	/* Text */
 	/* Other */
+	user-select: none;
 }
 
 .text-center {
@@ -28,4 +31,28 @@
 
 .large {
 	padding: 14px 20px;
+}
+
+.TitleBar .add {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	width: 25px;
+	height: 25px;
+	color: #034377;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+	font-size: 25pt;
+	user-select: none;
+}
+
+.TitleBar .add:hover {
+	color: #405a84;
+}
+
+.TitleBar .status {
+	margin: 5px 0 0 10px;
+	cursor: pointer;
+	user-select: none;
 }

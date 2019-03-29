@@ -16,7 +16,7 @@ function Video(props) {
 	}
 
 	return (
-		<div className="Video" onClick={e => click(e, id, "video", name)}>
+		<div className="Video" onClick={e => click(e, this)}>
 			<iframe
 				title={name}
 				src={url}

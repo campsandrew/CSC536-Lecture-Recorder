@@ -3,88 +3,103 @@ import "./css/VideoList.css";
 
 import TitleBar from "./TitleBar";
 import Video from "./Video";
+import Modal from "./Modal";
+import ModalContent from "./ModalContent";
 
 class VideoList extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			videos: []
+			videos: [
+				{
+					id: 0,
+					name: "Sample Video",
+					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+					camera: "Test Device",
+					date: new Date(),
+					length: 22,
+					description: "Sample video pulled from youtube"
+				},
+				{
+					id: 1,
+					name: "Test Device",
+					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+					camera: "My Camera",
+					date: new Date(),
+					length: 22,
+					description: "Sample video pulled from youtube"
+				},
+				{
+					id: 2,
+					name: "Test Device",
+					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+					camera: "Backup",
+					date: new Date(),
+					length: 22,
+					description: "Sample video pulled from youtube"
+				}
+			],
+			modal: {
+				show: false,
+				title: "",
+				content: null,
+				primary: null
+			}
 		};
+
+		this.onVideoClick = this.onVideoClick.bind(this);
 	}
 
-	componentDidMount() {
+	onVideoClick(e, video) {
 		this.setState({
-			videos: this.getVideos()
+			modal: {
+				show: true,
+				title: video.getName(),
+				content: "video",
+				primary: "Delete"
+				// action: {
+				// 	type: "status",
+				// 	status: device.getStatus(),
+				// 	onClick: device.onStatusUpdate
+				// }
+			}
 		});
 	}
 
-	/**
-	 * Ajax request for recordings of current user
-	 */
-	getVideos() {
-		var videos = [
-			{
-				id: 0,
-				name: "Sample Video",
-				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				camera: "My Camera",
-				date: new Date(),
-				length: 22,
-				description: "Sample video pulled from youtube"
-			},
-			{
-				id: 1,
-				name: "Sample Video",
-				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				camera: "My Camera",
-				date: new Date(),
-				length: 22,
-				description: "Sample video pulled from youtube"
-			},
-			{
-				id: 2,
-				name: "Sample Video",
-				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				camera: "Backup",
-				date: new Date(),
-				length: 22,
-				description: "Sample video pulled from youtube"
-			},
-			{
-				id: 3,
-				name: "Sample Video",
-				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				camera: "My Camera",
-				date: new Date(),
-				length: 22,
-				description: "Sample video pulled from youtube"
-			},
-			{
-				id: 4,
-				name: "Sample Video",
-				url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				camera: "My Camera",
-				date: new Date(),
-				length: 22,
-				description: "Sample video pulled from youtube"
-			}
-		];
+	renderVideoContent() {
+		const videos = this.state.videos;
 
-		//TODO: Ajax request
-		return videos;
+		if (!videos.length) {
+			return <div className="no-device">no registered devices</div>;
+		}
+
+		return (
+			<ul>
+				{videos.map(video => (
+					<Video details={video} onClick={this.onVideoClick} key={video.id} />
+				))}
+			</ul>
+		);
 	}
 
 	render() {
-		const click = this.props.onClick;
-		const videoList = this.state.videos.map(video => (
-			<Video details={video} onClick={click} key={video.id} />
-		));
+		const modal = this.state.modal;
 
 		return (
 			<div className="VideoList">
 				<TitleBar title="Recordings" />
-				<ul>{videoList}</ul>
+				<ul>{this.renderVideoContent()}</ul>
+				<Modal
+					show={modal.show}
+					title={modal.title}
+					primary={modal.primary}
+					onClose={this.onModalClose}
+					onPrimary={this.onPrimaryClick}
+					action={modal.action}
+				>
+					<ModalContent content={modal.content} />
+				</Modal>
 			</div>
 		);
 	}

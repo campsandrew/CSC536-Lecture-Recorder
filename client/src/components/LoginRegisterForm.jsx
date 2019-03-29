@@ -76,13 +76,152 @@ class LoginRegisterForm extends Component {
 			}
 		];
 
-		this.formSubmit = this.formSubmit.bind(this);
-		this.formSwitch = this.formSwitch.bind(this);
+		this.onFormSubmit = this.onFormSubmit.bind(this);
+		this.onFormSwitch = this.onFormSwitch.bind(this);
 		this.onRadioChange = this.onRadioChange.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
 	}
 
-	getFormContent() {
+	isFormValid() {
+		const refs = this.state.currentRefs;
+		let valid = true;
+		let errors = [];
+
+		for (let ref of refs) {
+			if (!this.refs[ref].validateInput()) {
+				errors.push(this.refs[ref].getError());
+				valid = false;
+			}
+		}
+
+		this.setState({
+			errors: errors
+		});
+
+		return valid;
+	}
+
+	getFormValues() {
+		const refs = this.state.currentRefs;
+		const login = this.state.loginForm;
+		let values = {};
+
+		for (let ref of refs) {
+			values[ref] = this.refs[ref].getValue();
+		}
+
+		if (!login) {
+			values.isLecturer = this.state.lecturerChecked;
+		}
+
+		return values;
+	}
+
+	onFormSwitch(e) {
+		const login = this.state.loginForm;
+		let refs = [];
+
+		if (login) {
+			for (let i of this.registerInputs) {
+				refs.push(i.ref);
+			}
+		} else {
+			for (let i of this.loginInputs) {
+				refs.push(i.ref);
+			}
+		}
+
+		this.setState({
+			loginForm: !login,
+			currentRefs: refs,
+			errors: []
+		});
+	}
+
+	onFormSubmit(e) {
+		const config = { crossdomain: true };
+		const server = this.props.server;
+		const url = this.state.loginForm
+			? server + "/user/login"
+			: server + "/user";
+		const self = this;
+
+		if (!this.isFormValid()) {
+			return;
+		}
+
+		this.setState({
+			loading: true,
+			errors: []
+		});
+
+		axios
+			.post(url, this.getFormValues(), config)
+			.then(function(res) {
+				if (res.status !== 200 || !res.data.success) {
+					return self.setState({
+						loading: false,
+						errors: [res.data.message ? res.data.message : ""]
+					});
+				}
+
+				localStorage.setItem("accessToken", res.data.token);
+				self.setState({
+					redirect: true
+				});
+			})
+			.catch(function(err) {
+				return self.setState({
+					loading: false,
+					errors: ["connection error"]
+				});
+			});
+	}
+
+	onRadioChange(e) {
+		const lecturer = e.target.id === "lecturer" && e.target.checked;
+		let refs = this.state.currentRefs;
+
+		if (!lecturer) {
+			for (let i of this.viewerInput) {
+				refs.push(i.ref);
+			}
+		} else {
+			refs = refs.slice(0, -1);
+		}
+
+		this.setState({
+			lecturerChecked: lecturer,
+			currentRefs: refs
+		});
+	}
+
+	onKeyPress(e) {
+		if (e.key === "Enter") this.onFormSubmit(e);
+	}
+
+	renderFormNav() {
+		const loginForm = this.state.loginForm;
+		const label = loginForm ? "Register" : "← Login";
+		let links = loginForm ? (
+			<nav>
+				<span id="register" onClick={this.onFormSwitch}>
+					{label}
+				</span>
+				<span id="recover">Forgot your password?</span>
+			</nav>
+		) : (
+			<nav>
+				<span id="register" onClick={this.onFormSwitch}>
+					{label}
+				</span>
+			</nav>
+		);
+
+		return links;
+	}
+
+	renderFormContent() {
 		const loginForm = this.state.loginForm;
 		const lecturerChecked = this.state.lecturerChecked;
 		const mapInputs = input => {
@@ -143,145 +282,6 @@ class LoginRegisterForm extends Component {
 		return content;
 	}
 
-	getFormNav() {
-		const loginForm = this.state.loginForm;
-		const label = loginForm ? "Register" : "← Login";
-		let links = loginForm ? (
-			<nav>
-				<span id="register" onClick={this.formSwitch}>
-					{label}
-				</span>
-				<span id="recover">Forgot your password?</span>
-			</nav>
-		) : (
-			<nav>
-				<span id="register" onClick={this.formSwitch}>
-					{label}
-				</span>
-			</nav>
-		);
-
-		return links;
-	}
-
-	formSwitch(e) {
-		const login = this.state.loginForm;
-		let refs = [];
-
-		if (login) {
-			for (let i of this.registerInputs) {
-				refs.push(i.ref);
-			}
-		} else {
-			for (let i of this.loginInputs) {
-				refs.push(i.ref);
-			}
-		}
-
-		this.setState({
-			loginForm: !login,
-			currentRefs: refs,
-			errors: []
-		});
-	}
-
-	formSubmit(e) {
-		const config = { crossdomain: true };
-		const server = this.props.server;
-		const url = this.state.loginForm
-			? server + "/user/login"
-			: server + "/user";
-		const self = this;
-
-		if (!this.isFormValid()) {
-			return;
-		}
-
-		this.setState({
-			loading: true,
-			errors: []
-		});
-
-		axios
-			.post(url, this.getFormValues(), config)
-			.then(function(res) {
-				if (res.status !== 200 || !res.data.success) {
-					return self.setState({
-						loading: false,
-						errors: [res.data.message ? res.data.message : ""]
-					});
-				}
-
-				localStorage.setItem("accessToken", res.data.token);
-				self.setState({
-					redirect: true
-				});
-			})
-			.catch(function(err) {
-				return self.setState({
-					loading: false,
-					errors: ["connection error"]
-				});
-			});
-	}
-
-	isFormValid() {
-		const refs = this.state.currentRefs;
-		let valid = true;
-		let errors = [];
-
-		for (let ref of refs) {
-			if (!this.refs[ref].validateInput()) {
-				errors.push(this.refs[ref].getError());
-				valid = false;
-			}
-		}
-
-		this.setState({
-			errors: errors
-		});
-
-		return valid;
-	}
-
-	getFormValues() {
-		const refs = this.state.currentRefs;
-		const login = this.state.loginForm;
-		let values = {};
-
-		for (let ref of refs) {
-			values[ref] = this.refs[ref].getValue();
-		}
-
-		if (!login) {
-			values.isLecturer = this.state.lecturerChecked;
-		}
-
-		return values;
-	}
-
-	onRadioChange(e) {
-		const lecturer = e.target.id === "lecturer" && e.target.checked;
-		let refs = this.state.currentRefs;
-
-		if (!lecturer) {
-			for (let i of this.viewerInput) {
-				refs.push(i.ref);
-			}
-		} else {
-			refs = refs.slice(0, -1);
-		}
-
-		this.setState({
-			lecturerChecked: lecturer,
-			currentRefs: refs
-		});
-	}
-
-	onKeyPress(e) {
-		if (e.key === "Enter") this.formSubmit(e);
-	}
-
 	render() {
 		const redirect = this.state.redirect;
 		const loginForm = this.state.loginForm;
@@ -297,13 +297,13 @@ class LoginRegisterForm extends Component {
 		return (
 			<div className={className}>
 				<TitleBar title={title} className="color-white text-center" />
-				{this.getFormContent()}
+				{this.renderFormContent()}
 				<ErrorStatus errors={errors} loading={loading} />
 				<hr />
-				<button onClick={this.formSubmit}>
+				<button onClick={this.onFormSubmit}>
 					{loginForm ? "Sign in" : "Register"}
 				</button>
-				{this.getFormNav()}
+				{this.renderFormNav()}
 			</div>
 		);
 	}

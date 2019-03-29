@@ -12,6 +12,7 @@
 
 	/* Text */
 	/* Other */
+	user-select: none;
 }
 
 .DeviceList ul {
@@ -23,6 +24,13 @@
 	/* Color */
 	/* Text */
 	/* Other */
+}
+
+.DeviceList .no-device {
+	text-align: center;
+	margin: 10px;
+	font-style: italic;
+	color: grey;
 }
 
 @media screen and (max-device-width: 400px) {
