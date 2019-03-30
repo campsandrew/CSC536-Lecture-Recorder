@@ -206,6 +206,7 @@ function loginUserRoute(req, res) {
 
       let code = { email: email };
       payload.token = getAuthToken(code);
+      payload.user = doc;
       return res.json(payload);
     })
     .catch(function(err) {

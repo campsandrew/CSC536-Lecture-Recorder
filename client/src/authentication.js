@@ -18,6 +18,10 @@ class Auth {
     return new Date().getTime() < JSON.parse(this.expiresAt);
   }
 
+  authHeader() {
+    return { accesstoken: this.accessToken };
+  }
+
   setSession(authResult) {
     this.expiresAt = JSON.stringify(
       authResult.expiresIn * 1000 + new Date().getTime()

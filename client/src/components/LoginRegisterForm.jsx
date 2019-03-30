@@ -1,18 +1,16 @@
 import React, { Component } from "react";
-import { Redirect } from "react-router-dom";
-//import axios from "axios";
-
 import "./css/LoginRegisterForm.css";
+
 import TitleBar from "./TitleBar";
 import FormTextInput from "./FormTextInput";
 import ErrorStatus from "./ErrorStatus";
+import API from "../api";
 
 class LoginRegisterForm extends Component {
 	constructor(props) {
 		super(props);
 
 		this.state = {
-			redirect: false,
 			loginForm: true,
 			lecturerChecked: true,
 			currentRefs: ["password", "email"],
@@ -81,6 +79,7 @@ class LoginRegisterForm extends Component {
 		this.onRadioChange = this.onRadioChange.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
 		this.onInputFocusOut = this.onInputFocusOut.bind(this);
+		this.api = null;
 	}
 
 	isFormValid() {
@@ -140,44 +139,29 @@ class LoginRegisterForm extends Component {
 	}
 
 	onFormSubmit(e) {
-		//const config = { crossdomain: true };
-		//const server = this.props.server;
-		// const url = this.state.loginForm
-		// 	? server + "/user/login"
-		// 	: server + "/user";
-		//const self = this;
-
-		if (!this.isFormValid()) {
-			return;
-		}
+		if (!this.isFormValid()) return;
 
 		this.setState({
 			loading: true,
 			errors: []
 		});
 
-		// axios
-		// 	.post(url, this.getFormValues(), config)
-		// 	.then(function(res) {
-		// 		if (res.status !== 200 || !res.data.success) {
-		// 			return self.setState({
-		// 				loading: false,
-		// 				errors: [res.data.message ? res.data.message : ""]
-		// 			});
-		// 		}
-
-		// 		localStorage.setItem("accessToken", res.data.token);
-		// 		self.setState({
-		// 			redirect: true
-		// 		});
-		// 	})
-		// 	.catch(function(err) {
-		// 		return self.setState({
-		// 			loading: false,
-		// 			errors: ["connection error"]
-		// 		});
-		// 	});
+		if (this.state.loginForm) {
+			// TODO:
+		} else {
+			this.api.registerUser(
+				this.getFormValues(),
+				this.registerSuccess,
+				this.apiError
+			);
+		}
 	}
+
+	registerSuccess(data) {
+		console.log(data);
+	}
+
+	apiError(err) {}
 
 	onRadioChange(e) {
 		const lecturer = e.target.id === "lecturer" && e.target.checked;
@@ -311,15 +295,16 @@ class LoginRegisterForm extends Component {
 	}
 
 	render() {
-		const redirect = this.state.redirect;
+		const server = this.props.server;
 		const loginForm = this.state.loginForm;
 		const errors = this.state.errors;
 		const loading = this.state.loading;
 		const title = loginForm ? "Login" : "Create Account";
 		const className = "LoginRegisterForm" + (loading ? " cursor-wait" : "");
 
-		if (redirect) {
-			return <Redirect to="/dash" />;
+		// Initialize api only if there is a server
+		if (this.api === null && server) {
+			this.api = new API(server);
 		}
 
 		return (
