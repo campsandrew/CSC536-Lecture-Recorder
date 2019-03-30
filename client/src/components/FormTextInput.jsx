@@ -58,6 +58,7 @@ class FormTextInput extends Component {
 	render() {
 		const valid = this.state.validInput;
 		const label = this.props.label;
+		const disabled = this.props.disabled;
 		const type = this.props.type;
 		const onKeyPress = this.props.onKeyPress;
 		const className = valid ? "FormTextInput" : "FormTextInput error";
@@ -70,6 +71,7 @@ class FormTextInput extends Component {
 					onBlur={this.focusOut}
 					ref={this.textInput}
 					onKeyPress={onKeyPress}
+					disabled={disabled}
 				/>
 			</div>
 		);

@@ -119,8 +119,9 @@ class LoginRegisterForm extends Component {
 
 	onFormSwitch(e) {
 		const login = this.state.loginForm;
-		let refs = [];
+		if (this.state.loading) return;
 
+		let refs = [];
 		if (login) {
 			for (let i of this.registerInputs) {
 				refs.push(i.ref);
@@ -157,9 +158,7 @@ class LoginRegisterForm extends Component {
 		}
 	}
 
-	registerSuccess(data) {
-		console.log(data);
-	}
+	registerSuccess(data) {}
 
 	apiError(err) {}
 
@@ -233,6 +232,7 @@ class LoginRegisterForm extends Component {
 	}
 
 	renderFormContent() {
+		const loading = this.state.loading;
 		const loginForm = this.state.loginForm;
 		const lecturerChecked = this.state.lecturerChecked;
 		const mapInputs = input => {
@@ -245,6 +245,7 @@ class LoginRegisterForm extends Component {
 					key={input.key}
 					onKeyPress={this.onKeyPress}
 					onFocusOut={this.onInputFocusOut}
+					disabled={loading}
 				/>
 			);
 		};
@@ -271,6 +272,7 @@ class LoginRegisterForm extends Component {
 							checked={lecturerChecked}
 							onChange={this.onRadioChange}
 							onKeyPress={this.onKeyPress}
+							disabled={loading}
 						/>
 						<label htmlFor="lecturer">Lecturer</label>
 					</div>
@@ -283,6 +285,7 @@ class LoginRegisterForm extends Component {
 							checked={!lecturerChecked}
 							onChange={this.onRadioChange}
 							onKeyPress={this.onKeyPress}
+							disabled={loading}
 						/>
 						<label htmlFor="viewer">Viewer</label>
 					</div>
@@ -313,7 +316,7 @@ class LoginRegisterForm extends Component {
 				{this.renderFormContent()}
 				<ErrorStatus errors={errors} loading={loading} />
 				<hr />
-				<button onClick={this.onFormSubmit}>
+				<button onClick={this.onFormSubmit} disabled={loading}>
 					{loginForm ? "Sign in" : "Register"}
 				</button>
 				{this.renderFormNav()}
