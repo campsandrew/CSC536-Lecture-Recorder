@@ -19,16 +19,13 @@ class DeviceList extends Component {
 				}
 			],
 			modal: {
-				show: false,
-				title: "",
-				content: null,
-				primary: null
+				show: false
 			}
 		};
 
 		this.onAddDeviceClick = this.onAddDeviceClick.bind(this);
 		this.onModalClose = this.onModalClose.bind(this);
-		this.onPrimaryClick = this.onPrimaryClick.bind(this);
+		this.onModalAddClick = this.onModalAddClick.bind(this);
 		this.onDeviceClick = this.onDeviceClick.bind(this);
 	}
 
@@ -71,7 +68,8 @@ class DeviceList extends Component {
 				show: true,
 				title: device.getName(),
 				content: "device",
-				primary: "Delete",
+				primary: "Record",
+				secondary: "Close",
 				action: {
 					type: "status",
 					status: device.getStatus(),
@@ -87,7 +85,8 @@ class DeviceList extends Component {
 				show: true,
 				title: "New Device",
 				content: "add-device",
-				primary: "Add"
+				primary: "Add",
+				secondary: "Close"
 			}
 		});
 	}
@@ -95,17 +94,15 @@ class DeviceList extends Component {
 	onModalClose(e) {
 		this.setState({
 			modal: {
-				show: false,
-				title: ""
+				show: false
 			}
 		});
 	}
 
-	onPrimaryClick(e) {
+	onModalAddClick(e) {
 		this.setState({
 			modal: {
-				show: false,
-				title: ""
+				show: false
 			}
 		});
 	}
@@ -146,8 +143,9 @@ class DeviceList extends Component {
 					show={modal.show}
 					title={modal.title}
 					primary={modal.primary}
-					onClose={this.onModalClose}
-					onPrimary={this.onPrimaryClick}
+					secondary={modal.secondary}
+					onPrimary={this.onModalAddClick}
+					onSecondary={this.onModalClose}
 					action={modal.action}
 				>
 					<ModalContent content={modal.content} />

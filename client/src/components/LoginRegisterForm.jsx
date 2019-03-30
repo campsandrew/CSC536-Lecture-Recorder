@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
-import axios from "axios";
+//import axios from "axios";
 
 import "./css/LoginRegisterForm.css";
 import TitleBar from "./TitleBar";
@@ -139,12 +139,12 @@ class LoginRegisterForm extends Component {
 	}
 
 	onFormSubmit(e) {
-		const config = { crossdomain: true };
-		const server = this.props.server;
-		const url = this.state.loginForm
-			? server + "/user/login"
-			: server + "/user";
-		const self = this;
+		//const config = { crossdomain: true };
+		//const server = this.props.server;
+		// const url = this.state.loginForm
+		// 	? server + "/user/login"
+		// 	: server + "/user";
+		//const self = this;
 
 		if (!this.isFormValid()) {
 			return;
@@ -155,31 +155,32 @@ class LoginRegisterForm extends Component {
 			errors: []
 		});
 
-		axios
-			.post(url, this.getFormValues(), config)
-			.then(function(res) {
-				if (res.status !== 200 || !res.data.success) {
-					return self.setState({
-						loading: false,
-						errors: [res.data.message ? res.data.message : ""]
-					});
-				}
+		// axios
+		// 	.post(url, this.getFormValues(), config)
+		// 	.then(function(res) {
+		// 		if (res.status !== 200 || !res.data.success) {
+		// 			return self.setState({
+		// 				loading: false,
+		// 				errors: [res.data.message ? res.data.message : ""]
+		// 			});
+		// 		}
 
-				localStorage.setItem("accessToken", res.data.token);
-				self.setState({
-					redirect: true
-				});
-			})
-			.catch(function(err) {
-				return self.setState({
-					loading: false,
-					errors: ["connection error"]
-				});
-			});
+		// 		localStorage.setItem("accessToken", res.data.token);
+		// 		self.setState({
+		// 			redirect: true
+		// 		});
+		// 	})
+		// 	.catch(function(err) {
+		// 		return self.setState({
+		// 			loading: false,
+		// 			errors: ["connection error"]
+		// 		});
+		// 	});
 	}
 
 	onRadioChange(e) {
 		const lecturer = e.target.id === "lecturer" && e.target.checked;
+		let errors = this.state.errors;
 		let refs = this.state.currentRefs;
 
 		if (!lecturer) {
@@ -187,6 +188,12 @@ class LoginRegisterForm extends Component {
 				refs.push(i.ref);
 			}
 		} else {
+			let err = this.refs[refs.slice(-1)].getError();
+			for (let i = 0; i < errors.length; i++) {
+				if (errors[i] === err) {
+					errors.splice(i, 1);
+				}
+			}
 			refs = refs.slice(0, -1);
 		}
 

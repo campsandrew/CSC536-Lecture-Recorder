@@ -15,17 +15,27 @@ class ModalContent extends Component {
 		this.addDeviceInputs = [
 			{
 				type: "text",
-				label: "Device name",
-				ref: "deviceName",
+				label: "ID",
+				ref: "deviceId",
 				validation: null,
 				key: 0
 			},
 			{
 				type: "text",
-				label: "ID",
-				ref: "deviceId",
+				label: "Device name",
+				ref: "deviceName",
 				validation: null,
 				key: 1
+			}
+		];
+
+		this.addLecturerInputs = [
+			{
+				type: "email",
+				label: "Lecturer email",
+				ref: "lecturerEmail",
+				validation: null,
+				key: 2
 			}
 		];
 	}
@@ -114,7 +124,7 @@ class ModalContent extends Component {
 	// }
 
 	renderVideoContent() {
-		return "";
+		return null;
 	}
 
 	renderDeviceContent() {
@@ -146,6 +156,27 @@ class ModalContent extends Component {
 		);
 	}
 
+	renderAddLecturerContent() {
+		const errors = this.state.errors;
+		const loading = this.state.loading;
+		const inputs = this.addLecturerInputs.map(input => (
+			<FormTextInput
+				type={input.type}
+				label={input.label}
+				validation={input.validation}
+				ref={input.ref}
+				key={input.key}
+			/>
+		));
+
+		return (
+			<div className="ModalContent">
+				{inputs}
+				<ErrorStatus errors={errors} loading={loading} />
+			</div>
+		);
+	}
+
 	render() {
 		const contentType = this.props.content;
 
@@ -154,6 +185,8 @@ class ModalContent extends Component {
 				return this.renderAddDeviceContent();
 			case "device":
 				return this.renderDeviceContent();
+			case "add-lecturer":
+				return this.renderAddLecturerContent();
 			case "video":
 				return this.renderVideoContent();
 			default:

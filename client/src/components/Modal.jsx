@@ -3,18 +3,41 @@ import "./css/Modal.css";
 
 import TitleBar from "./TitleBar";
 
-function Modal({ show, title, primary, action, onClose, onPrimary, children }) {
+function Modal(props) {
+	const {
+		show,
+		title,
+		primary,
+		secondary,
+		onPrimary,
+		onSecondary,
+		action,
+		children
+	} = props;
 	const className = show ? "Modal display-block" : "Modal display-none";
 
-	function renderPrimary() {
-		if (primary) {
-			return (
-				<button id="primary" onClick={onPrimary}>
-					{primary}
+	function renderButtons() {
+		let button1 = (
+			<button id="primary" onClick={onPrimary}>
+				{primary}
+			</button>
+		);
+		let button2 = null;
+
+		if (secondary) {
+			button2 = (
+				<button id="secondary" onClick={onSecondary}>
+					{secondary}
 				</button>
 			);
 		}
-		return null;
+
+		return (
+			<div id="buttons">
+				{button2}
+				{button1}
+			</div>
+		);
 	}
 
 	return (
@@ -23,12 +46,7 @@ function Modal({ show, title, primary, action, onClose, onPrimary, children }) {
 				<TitleBar title={title} className="color-dark large" action={action} />
 				{children}
 				<hr />
-				<div id="buttons">
-					<button id="secondary" onClick={onClose}>
-						Close
-					</button>
-					{renderPrimary()}
-				</div>
+				{renderButtons()}
 			</section>
 		</div>
 	);

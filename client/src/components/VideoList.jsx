@@ -10,45 +10,56 @@ class VideoList extends Component {
 	constructor(props) {
 		super(props);
 
+		//   name: { type: String, require: true },
+		// filename: { type: String, require: true },
+		// date: { type: Date, default: Date.now },
+		// description: { type: String },
+		// views: { type: Number, default: 0 },
+		// device: { type: String },
+		// lecturer: { type: Schema.Types.ObjectId, ref: "Lecturer" }
+
 		this.state = {
 			videos: [
 				{
 					id: 0,
 					name: "Sample Video",
 					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					camera: "Test Device",
-					date: new Date(),
-					length: 22,
+					device: "Test Device",
+					lecturer: "Lecturer Name",
+					views: 10,
+					date: "2/29/2019",
 					description: "Sample video pulled from youtube"
 				},
 				{
 					id: 1,
 					name: "Test Device",
 					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					camera: "My Camera",
-					date: new Date(),
-					length: 22,
+					device: "My Camera",
+					date: "2/29/2019",
+					lecturer: "Lecturer Name",
+					views: 10,
 					description: "Sample video pulled from youtube"
 				},
 				{
 					id: 2,
 					name: "Test Device",
 					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					camera: "Backup",
-					date: new Date(),
-					length: 22,
+					device: "Backup",
+					date: "2/29/2019",
+					lecturer: "Lecturer Name",
+					views: 10,
 					description: "Sample video pulled from youtube"
 				}
 			],
 			modal: {
-				show: false,
-				title: "",
-				content: null,
-				primary: null
+				show: false
 			}
 		};
 
 		this.onVideoClick = this.onVideoClick.bind(this);
+		this.onAddLecturerClick = this.onAddLecturerClick.bind(this);
+		this.onModalClose = this.onModalClose.bind(this);
+		this.onDeleteClick = this.onDeleteClick.bind(this);
 	}
 
 	onVideoClick(e, video) {
@@ -57,7 +68,8 @@ class VideoList extends Component {
 				show: true,
 				title: video.getName(),
 				content: "video",
-				primary: "Delete"
+				primary: "Close",
+				secondary: "Delete"
 				// action: {
 				// 	type: "status",
 				// 	status: device.getStatus(),
@@ -67,16 +79,44 @@ class VideoList extends Component {
 		});
 	}
 
-	renderVideoContent() {
-		const videos = this.state.videos;
+	onAddLecturerClick(e) {
+		this.setState({
+			modal: {
+				show: true,
+				title: "New Lecturer",
+				content: "add-lecturer",
+				primary: "Add",
+				secondary: "Close"
+			}
+		});
+	}
 
-		if (!videos.length) {
-			return <div className="no-device">no registered devices</div>;
+	onModalClose(e) {
+		this.setState({
+			modal: {
+				show: false
+			}
+		});
+	}
+
+	onDeleteClick(e) {
+		this.setState({
+			modal: {
+				show: false
+			}
+		});
+	}
+
+	renderVideoContent() {
+		const videoDetails = this.state.videos;
+
+		if (!videoDetails.length) {
+			return <div className="no-video">no recorder lecturers</div>;
 		}
 
 		return (
 			<ul>
-				{videos.map(video => (
+				{videoDetails.map(video => (
 					<Video details={video} onClick={this.onVideoClick} key={video.id} />
 				))}
 			</ul>
@@ -85,17 +125,29 @@ class VideoList extends Component {
 
 	render() {
 		const modal = this.state.modal;
+		let titleBar = <TitleBar title="Recordings" />;
+
+		// Change this based on user type true for Viewer
+		if (true) {
+			titleBar = (
+				<TitleBar
+					title="Recordings"
+					action={{ type: "add", onClick: this.onAddLecturerClick }}
+				/>
+			);
+		}
 
 		return (
 			<div className="VideoList">
-				<TitleBar title="Recordings" />
-				<ul>{this.renderVideoContent()}</ul>
+				{titleBar}
+				{this.renderVideoContent()}
 				<Modal
 					show={modal.show}
 					title={modal.title}
 					primary={modal.primary}
-					onClose={this.onModalClose}
-					onPrimary={this.onPrimaryClick}
+					secondary={modal.secondary}
+					onPrimary={this.onModalClose}
+					onSecondary={this.onDeleteClick}
 					action={modal.action}
 				>
 					<ModalContent content={modal.content} />
