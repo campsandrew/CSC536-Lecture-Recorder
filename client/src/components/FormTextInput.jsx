@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import "./css/FormTextInput.css";
 
 class FormTextInput extends Component {
-	constructor(props, ref) {
+	constructor(props) {
 		super(props);
 
 		this.state = {
@@ -49,6 +49,10 @@ class FormTextInput extends Component {
 
 	focusOut(e) {
 		this.validateInput();
+
+		if (this.props.onFocusOut) {
+			this.props.onFocusOut(e, this);
+		}
 	}
 
 	render() {

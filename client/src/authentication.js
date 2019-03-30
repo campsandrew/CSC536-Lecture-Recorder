@@ -1,13 +1,31 @@
-export default class Auth {
-  login() {}
+class Auth {
+  constructor() {
+    this.accessToken = localStorage.getItem("access_token");
+    this.expiresAt = localStorage.getItem("expires_at");
+  }
 
-  logout() {}
+  authenticate() {}
 
-  isAuthenticated(server) {
-    const token = localStorage.getItem("accessToken");
+  handleAuthentication() {}
 
-    if (!token) {
-      return false;
-    }
+  logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("expires_at");
+    //history.replace("/");
+  }
+
+  isAuthenticated() {
+    return new Date().getTime() < JSON.parse(this.expiresAt);
+  }
+
+  setSession(authResult) {
+    this.expiresAt = JSON.stringify(
+      authResult.expiresIn * 1000 + new Date().getTime()
+    );
+    this.accessToken = authResult.accessToken;
+    localStorage.setItem("access_token", this.accessToken);
+    localStorage.setItem("expires_at", this.expiresAt);
   }
 }
+
+export default Auth;

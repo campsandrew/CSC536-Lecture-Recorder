@@ -80,6 +80,7 @@ class LoginRegisterForm extends Component {
 		this.onFormSwitch = this.onFormSwitch.bind(this);
 		this.onRadioChange = this.onRadioChange.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
+		this.onInputFocusOut = this.onInputFocusOut.bind(this);
 	}
 
 	isFormValid() {
@@ -189,7 +190,7 @@ class LoginRegisterForm extends Component {
 			}
 		} else {
 			let err = this.refs[refs.slice(-1)].getError();
-			for (let i = 0; i < errors.length; i++) {
+			for (let i in errors) {
 				if (errors[i] === err) {
 					errors.splice(i, 1);
 				}
@@ -205,6 +206,25 @@ class LoginRegisterForm extends Component {
 
 	onKeyPress(e) {
 		if (e.key === "Enter") this.onFormSubmit(e);
+	}
+
+	onInputFocusOut(e, input) {
+		let errors = this.state.errors;
+
+		if (!input.validateInput()) {
+			let err = input.getError();
+
+			for (let i in errors) {
+				if (errors[i] === err) {
+					return;
+				}
+			}
+
+			errors.push(err);
+			this.setState({
+				errors: errors
+			});
+		}
 	}
 
 	renderFormNav() {
@@ -240,6 +260,7 @@ class LoginRegisterForm extends Component {
 					ref={input.ref}
 					key={input.key}
 					onKeyPress={this.onKeyPress}
+					onFocusOut={this.onInputFocusOut}
 				/>
 			);
 		};

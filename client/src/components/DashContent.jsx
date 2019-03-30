@@ -18,12 +18,19 @@ class DashContent extends Component {
 	 */
 	render() {
 		const server = this.props.server;
+		const lecturer = true;
+		let deviceList = null;
+
+		// if viewer then dont render devices
+		if (lecturer) {
+			deviceList = <DeviceList server={server} />;
+		}
 
 		document.title = "LectureFly | Dash";
 		return (
 			<div className="ContentArea">
-				<DeviceList server={server} />
-				<VideoList server={server} />
+				{deviceList}
+				<VideoList server={server} isLecturer={lecturer} />
 			</div>
 		);
 	}

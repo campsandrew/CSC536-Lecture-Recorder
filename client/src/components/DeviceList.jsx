@@ -6,7 +6,6 @@ import "./css/DeviceList.css";
 import Device from "./Device";
 import TitleBar from "./TitleBar";
 import Modal from "./Modal";
-import ModalContent from "./ModalContent";
 
 class DeviceList extends Component {
 	constructor(props) {
@@ -147,9 +146,8 @@ class DeviceList extends Component {
 					onPrimary={this.onModalAddClick}
 					onSecondary={this.onModalClose}
 					action={modal.action}
-				>
-					<ModalContent content={modal.content} />
-				</Modal>
+					content={modal.content}
+				/>
 			</div>
 		);
 	}

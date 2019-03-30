@@ -24,11 +24,12 @@ class Video extends Component {
 	}
 
 	renderVideoInfo() {
+		const lecturer = this.props.isLecturer;
 		const info = this.props.details;
 		let creator = info.device;
 
 		// Check if user if a viewer
-		if (false) {
+		if (!lecturer) {
 			creator = info.lecturer;
 		}
 

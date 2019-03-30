@@ -2,6 +2,7 @@ import React from "react";
 import "./css/Modal.css";
 
 import TitleBar from "./TitleBar";
+import ModalContent from "./ModalContent";
 
 function Modal(props) {
 	const {
@@ -12,9 +13,23 @@ function Modal(props) {
 		onPrimary,
 		onSecondary,
 		action,
-		children
+		content
 	} = props;
 	const className = show ? "Modal display-block" : "Modal display-none";
+
+	function getAction() {
+		const status = {
+			0: "Ready",
+			1: "Recording",
+			2: "Offline"
+		};
+
+		if (action && action.status in status) {
+			return status[action.status];
+		}
+
+		return null;
+	}
 
 	function renderButtons() {
 		let button1 = (
@@ -44,9 +59,12 @@ function Modal(props) {
 		<div className={className}>
 			<section>
 				<TitleBar title={title} className="color-dark large" action={action} />
-				{children}
+				{show ? <ModalContent content={content} action={action} /> : null}
 				<hr />
-				{renderButtons()}
+				<div className="footer">
+					<div id="status">{getAction()}</div>
+					{renderButtons()}
+				</div>
 			</section>
 		</div>
 	);

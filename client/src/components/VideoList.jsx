@@ -4,52 +4,43 @@ import "./css/VideoList.css";
 import TitleBar from "./TitleBar";
 import Video from "./Video";
 import Modal from "./Modal";
-import ModalContent from "./ModalContent";
 
 class VideoList extends Component {
 	constructor(props) {
 		super(props);
 
-		//   name: { type: String, require: true },
-		// filename: { type: String, require: true },
-		// date: { type: Date, default: Date.now },
-		// description: { type: String },
-		// views: { type: Number, default: 0 },
-		// device: { type: String },
-		// lecturer: { type: Schema.Types.ObjectId, ref: "Lecturer" }
-
 		this.state = {
 			videos: [
-				{
-					id: 0,
-					name: "Sample Video",
-					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					device: "Test Device",
-					lecturer: "Lecturer Name",
-					views: 10,
-					date: "2/29/2019",
-					description: "Sample video pulled from youtube"
-				},
-				{
-					id: 1,
-					name: "Test Device",
-					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					device: "My Camera",
-					date: "2/29/2019",
-					lecturer: "Lecturer Name",
-					views: 10,
-					description: "Sample video pulled from youtube"
-				},
-				{
-					id: 2,
-					name: "Test Device",
-					url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-					device: "Backup",
-					date: "2/29/2019",
-					lecturer: "Lecturer Name",
-					views: 10,
-					description: "Sample video pulled from youtube"
-				}
+				// {
+				// 	id: 0,
+				// 	name: "Sample Video",
+				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				// 	device: "Test Device",
+				// 	lecturer: "Lecturer Name",
+				// 	views: 10,
+				// 	date: "2/29/2019",
+				// 	description: "Sample video pulled from youtube"
+				// },
+				// {
+				// 	id: 1,
+				// 	name: "Test Device",
+				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				// 	device: "My Camera",
+				// 	date: "2/29/2019",
+				// 	lecturer: "Lecturer Name",
+				// 	views: 10,
+				// 	description: "Sample video pulled from youtube"
+				// },
+				// {
+				// 	id: 2,
+				// 	name: "Test Device",
+				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
+				// 	device: "Backup",
+				// 	date: "2/29/2019",
+				// 	lecturer: "Lecturer Name",
+				// 	views: 10,
+				// 	description: "Sample video pulled from youtube"
+				// }
 			],
 			modal: {
 				show: false
@@ -108,27 +99,34 @@ class VideoList extends Component {
 	}
 
 	renderVideoContent() {
+		const lecturer = this.props.isLecturer;
 		const videoDetails = this.state.videos;
 
 		if (!videoDetails.length) {
-			return <div className="no-video">no recorder lecturers</div>;
+			return <div className="no-video">no recorded lectures</div>;
 		}
 
 		return (
 			<ul>
 				{videoDetails.map(video => (
-					<Video details={video} onClick={this.onVideoClick} key={video.id} />
+					<Video
+						isLecturer={lecturer}
+						details={video}
+						onClick={this.onVideoClick}
+						key={video.id}
+					/>
 				))}
 			</ul>
 		);
 	}
 
 	render() {
+		const lecturer = this.props.isLecturer;
 		const modal = this.state.modal;
 		let titleBar = <TitleBar title="Recordings" />;
 
 		// Change this based on user type true for Viewer
-		if (true) {
+		if (!lecturer) {
 			titleBar = (
 				<TitleBar
 					title="Recordings"
@@ -149,9 +147,8 @@ class VideoList extends Component {
 					onPrimary={this.onModalClose}
 					onSecondary={this.onDeleteClick}
 					action={modal.action}
-				>
-					<ModalContent content={modal.content} />
-				</Modal>
+					content={modal.content}
+				/>
 			</div>
 		);
 	}

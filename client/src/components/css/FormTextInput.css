@@ -18,6 +18,22 @@
 	font-size: 14pt;
 }
 
+.FormTextInput textarea {
+	box-sizing: border-box;
+	padding: 10px;
+	width: 100%;
+	border: 1px solid grey;
+	font-size: 14pt;
+}
+
 .error input {
 	border: 2px solid red;
 }
+
+@media screen and (max-device-width: 800px) {
+	.FormTextInput textarea {
+		width: 100%;
+	}
+}
+
+

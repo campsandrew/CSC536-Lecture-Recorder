@@ -27,6 +27,13 @@
 	/* Other */
 }
 
+.VideoList .no-video {
+	text-align: center;
+	margin: 10px;
+	font-style: italic;
+	color: grey;
+}
+
 @media screen and (max-device-width: 1050px) {
 	.VideoList {
 		width: 100%;
