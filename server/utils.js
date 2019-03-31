@@ -16,9 +16,9 @@ function formatDate(date) {
 /**
  *
  */
-function getAuthToken(code, expires = 3600) {
-  code.expires = expires;
-  return jwt.encode(code, jwt_secret);
+function getAuthToken(code, expires = 300) {
+  code.expires = expires * 1000 + new Date().getTime();
+  return { accessToken: jwt.encode(code, jwt_secret), expiresAt: code.expires };
 }
 
 /**

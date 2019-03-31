@@ -1,21 +1,20 @@
 import React, { Component } from "react";
-//import axios from "axios";
-
 import "./css/DeviceList.css";
 
 import Device from "./Device";
 import TitleBar from "./TitleBar";
 import Modal from "./Modal";
+import API from "../api";
 
 class DeviceList extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			devices: [
-				{
-					id: 1,
-					name: "Test Device"
-				}
+				// {
+				// 	id: 1,
+				// 	name: "Test Device"
+				// }
 			],
 			modal: {
 				show: false
@@ -26,40 +25,29 @@ class DeviceList extends Component {
 		this.onModalClose = this.onModalClose.bind(this);
 		this.onModalAddClick = this.onModalAddClick.bind(this);
 		this.onDeviceClick = this.onDeviceClick.bind(this);
+		this.apiGetDevicesSuccess = this.apiGetDevicesSuccess.bind(this);
+		this.apiError = this.apiError.bind(this);
+		this.api = null;
 	}
 
-	/**
-	 * Ajax request for devices of current user
-	 */
-	// loadDevices() {
-	// 	const url = this.props.server + "/devices";
-	// 	const self = this;
-	// 	const config = {
-	// 		crossdomain: true
-	// 	};
+	componentDidUpdate(prevProps) {
+		if (this.api === null && this.props.server) {
+			this.api = new API(this.props.server);
+			this.api.getDevices(this.apiGetDevicesSuccess, this.apiError);
+		}
+	}
 
-	// 	// Check if there is a server to get devices from
-	// 	if (!this.props.server) return;
+	apiGetDevicesSuccess(data) {
+		this.setState({
+			devices: data.devices
+		});
+	}
 
-	// 	axios
-	// 		.get(url, config)
-	// 		.then(function(res) {
-	// 			if (res.status !== 200 || !res.data.success) {
-	// 				return;
-	// 			}
+	apiAddDeviceSuccess(data) {}
 
-	// 			// TODO: For demo purposes
-	// 			res.data.devices.push({
-	// 				id: 1,
-	// 				name: "Backup"
-	// 			});
-
-	// 			self.setState({
-	// 				devices: res.data.devices
-	// 			});
-	// 		})
-	// 		.catch(err => console.log(err));
-	// }
+	apiError(err) {
+		//TODO:
+	}
 
 	onDeviceClick(e, device) {
 		this.setState({
@@ -98,12 +86,14 @@ class DeviceList extends Component {
 		});
 	}
 
-	onModalAddClick(e) {
+	onModalAddClick(e, modalContent) {
 		this.setState({
 			modal: {
 				show: false
 			}
 		});
+
+		this.api.addDevice(modalContent);
 	}
 
 	renderDeviceContent() {

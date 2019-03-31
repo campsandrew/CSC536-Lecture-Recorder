@@ -33,7 +33,7 @@ function Modal(props) {
 
 	function renderButtons() {
 		let button1 = (
-			<button id="primary" onClick={onPrimary}>
+			<button id="primary" onClick={e => onPrimary(e)}>
 				{primary}
 			</button>
 		);
@@ -41,7 +41,7 @@ function Modal(props) {
 
 		if (secondary) {
 			button2 = (
-				<button id="secondary" onClick={onSecondary}>
+				<button id="secondary" onClick={e => onSecondary(e)}>
 					{secondary}
 				</button>
 			);

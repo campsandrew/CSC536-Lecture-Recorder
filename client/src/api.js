@@ -2,7 +2,7 @@ import axios from "axios";
 import Auth from "./authentication";
 
 class API {
-  constructor(server, auth = false) {
+  constructor(server, auth = true) {
     this.server = server;
     this.config = {
       crossdomain: true,
@@ -15,19 +15,43 @@ class API {
     }
   }
 
-  loginUser(body, cbSuccess, cbError, validate = null) {
-    //const url = this.server + "/user/login";
+  serverConnector(cbSuccess, cbError, validate = null) {
+    axios
+      .get(this.server, this.config)
+      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+      .catch(err => this.catchError(err, cbError));
+  }
 
-    this.auth.authenticate();
+  loginUser(body, cbSuccess, cbError, validate = null) {
+    const url = this.server + "/user/login";
+
+    axios
+      .post(url, body, this.config)
+      .then(res => {
+        this.auth.authenticate(res, cbSuccess, cbError, validate);
+        this.config.headers = this.auth.authHeader();
+      })
+      .catch(err => this.catchError(err, cbError));
+  }
+
+  getUser(cbSuccess, cbError, validate = null) {
+    const url = this.server + "/user?name=true";
+
+    axios
+      .get(url, this.config)
+      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+      .catch(err => this.catchError(err, cbError));
   }
 
   registerUser(body, cbSuccess, cbError, validate = null) {
     const url = this.server + "/user";
-    console.log(url);
 
     axios
       .post(url, body, this.config)
-      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+      .then(res => {
+        this.auth.authenticate(res, cbSuccess, cbError, validate);
+        this.config.headers = this.auth.authHeader();
+      })
       .catch(err => this.catchError(err, cbError));
   }
 
@@ -159,7 +183,7 @@ class API {
         return cbSuccess(res.data);
       }
 
-      return cbError();
+      return cbError("field validation error");
     }
 
     // Good status but bad success status
@@ -180,7 +204,7 @@ class API {
     if (res.status === 404) {
     }
 
-    return cbError();
+    return cbError("unknown error");
   }
 
   catchError(err, callback) {

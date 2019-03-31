@@ -79,7 +79,16 @@ class LoginRegisterForm extends Component {
 		this.onRadioChange = this.onRadioChange.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
 		this.onInputFocusOut = this.onInputFocusOut.bind(this);
+		this.apiError = this.apiError.bind(this);
+		this.apiRegisterSuccess = this.apiRegisterSuccess.bind(this);
+		this.apiLoginSuccess = this.apiLoginSuccess.bind(this);
 		this.api = null;
+	}
+
+	componentDidUpdate(prevProps) {
+		if (this.api === null && this.props.server) {
+			this.api = new API(this.props.server);
+		}
 	}
 
 	isFormValid() {
@@ -148,19 +157,39 @@ class LoginRegisterForm extends Component {
 		});
 
 		if (this.state.loginForm) {
-			// TODO:
+			this.api.loginUser(
+				this.getFormValues(),
+				this.apiLoginSuccess,
+				this.apiError
+			);
 		} else {
 			this.api.registerUser(
 				this.getFormValues(),
-				this.registerSuccess,
+				this.apiRegisterSuccess,
 				this.apiError
 			);
 		}
 	}
 
-	registerSuccess(data) {}
+	apiLoginSuccess(user) {
+		this.setState({
+			loading: false
+		});
+		window.location.replace("/dash");
+	}
 
-	apiError(err) {}
+	apiRegisterSuccess(user) {
+		this.setState({
+			loading: false
+		});
+	}
+
+	apiError(err) {
+		this.setState({
+			loading: false,
+			errors: [err]
+		});
+	}
 
 	onRadioChange(e) {
 		const lecturer = e.target.id === "lecturer" && e.target.checked;
@@ -298,17 +327,11 @@ class LoginRegisterForm extends Component {
 	}
 
 	render() {
-		const server = this.props.server;
 		const loginForm = this.state.loginForm;
 		const errors = this.state.errors;
 		const loading = this.state.loading;
 		const title = loginForm ? "Login" : "Create Account";
 		const className = "LoginRegisterForm" + (loading ? " cursor-wait" : "");
-
-		// Initialize api only if there is a server
-		if (this.api === null && server) {
-			this.api = new API(server);
-		}
 
 		return (
 			<div className={className}>

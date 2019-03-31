@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-//import axios from "axios";
+import API from "../api";
 
 import FormTextInput from "./FormTextInput";
 import ErrorStatus from "./ErrorStatus";
@@ -70,7 +70,9 @@ class ModalContent extends Component {
 		};
 
 		this.onInputFocusOut = this.onInputFocusOut.bind(this);
+		this.api = null;
 	}
+
 	// startStopRecording(e) {
 	// 	const self = this;
 	// 	const server = this.props.server;
