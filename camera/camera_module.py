@@ -1,12 +1,18 @@
+import centroidtracker
 import module
 
+from imutils.video import VideoStream
 import threading
 import datetime
 import logging
+import imutils
+import numpy
 import cv2
 
 # Camera Module Specific Constants
-SAVE_FILE = "save_file"
+SAVE_FOLDER = "save_folder"
+MODEL_FILE = "model_file"
+PROTO_FILE = "proto_file"
 
 #--------------------
 # Camera Module Class
@@ -43,7 +49,8 @@ class Camera(module.Module):
         self._send_message = callback
         self._config = config
         self._filepath = ""
-        self._cap = VideoCaptureAsync(0, self._config[SAVE_FILE])
+        self._cap = VideoCaptureAsync(
+            0, model=self._config[MODEL_FILE], proto=self._config[PROTO_FILE])
         self._cap.start()
 
         self.logger.debug("initialize() returned")
@@ -57,7 +64,7 @@ class Camera(module.Module):
         return True
 
     def get_frame(self):
-        grabbed, frame = self._cap.read()
+        frame = self._cap.read()
         data = cv2.imencode(".jpg", frame)[1].tobytes()
 
         return data
@@ -121,7 +128,7 @@ class Camera(module.Module):
 #--------------------------
 class VideoCaptureAsync:
 
-    def __init__(self, src=0, filepath="video/", fps=30):
+    def __init__(self, src=0, model=None, proto=None, fps=30):
         """
         """
 
@@ -130,17 +137,26 @@ class VideoCaptureAsync:
 
         # Private
         self._started = False
-        self._cap = cv2.VideoCapture(src)
-        self._grabbed, self._frame = self._cap.read()
-        #self._fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
-        self._frame_size = (int(self._cap.get(3)), int(self._cap.get(4)))
+        self._cap = VideoStream(src).start()
+        self._ct = centroidtracker.CentroidTracker()
+        self._read_lock = threading.Lock()
+        self._thread = threading.Thread(target=self._update, args=())
+        self._net = None
+
+        frame = self._cap.read()
+        self._frame = imutils.resize(frame, width=300)
+        (self._H, self._W) = self._frame.shape[:2]
+
+        # Initialize neural net
+        if model is not None or proto is not None:
+            self._net = cv2.dnn.readNetFromCaffe(proto, model)
+
         # self._filepath = filepath + \
         #    str(datetime.datetime.now()).replace(
         #        ":", "-").replace(" ", ".") + ".m4v"
         # self._out = cv2.VideoWriter(
         #    self._filepath, self._fourcc, fps, self._frame_size)
-        self._read_lock = threading.Lock()
-        self._thread = threading.Thread(target=self._update, args=())
+        #self._fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
 
         return None
 
@@ -160,21 +176,59 @@ class VideoCaptureAsync:
     def read(self):
         with self._read_lock:
             frame = self._frame.copy()
-            grabbed = self._grabbed
 
-        return grabbed, frame
+        return frame
 
     def _update(self):
         """
         """
+        #fps = FPS().start()
 
         while self._started:
-            grabbed, frame = self._cap.read()
+            frame = self._cap.read()
+            frame = imutils.resize(frame, width=300)
             frame = cv2.flip(frame, 1)
+
+            blob = cv2.dnn.blobFromImage(
+                frame, 1.0, (self._W, self._H), (104.0, 177.0, 123.0))
+            self._net.setInput(blob)
+            detections = self._net.forward()
+            rects = []
+            # fps.update()
+
+            # loop over the detections
+            for i in range(0, detections.shape[2]):
+                if detections[0, 0, i, 2] > 0.5:  # 50% confidence
+                    box = detections[0, 0, i, 3:7] * \
+                        numpy.array([self._W, self._H, self._W, self._H])
+                    rects.append(box.astype("int"))
+
+                    # Draws bounding box
+                    (startX, startY, endX, endY) = box.astype("int")
+                    cv2.rectangle(frame, (startX, startY), (endX, endY),
+                                  (0, 255, 0), 2)
+
+            # update our centroid tracker using the computed set of bounding
+            # box rectangles
+            objects = self._ct.update(rects)
+
+            # loop over the tracked objects
+            for (objectID, centroid) in objects.items():
+                # draw both the ID of the object and the centroid of the
+                # object on the output frame
+                text = "ID {}".format(objectID)
+                cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.circle(frame, (centroid[0], centroid[
+                           1]), 4, (0, 255, 0), -1)
+
             # self._out.write(frame)
             with self._read_lock:
-                self._grabbed = grabbed
                 self._frame = frame
+
+        # fps.stop()
+        #print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+        #print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
         return None
 
@@ -184,10 +238,40 @@ class VideoCaptureAsync:
 
         self._started = False
         self._thread.join()
-        self._cap.release()
+        self._cap.stop()
         # self._out.release()
 
         return
 
-    def __exit__(self, exec_type, exc_value, traceback):
-        self._cap.release()
+
+class FPS:
+
+    def __init__(self):
+        # store the start time, end time, and total number of frames
+        # that were examined between the start and end intervals
+        self._start = None
+        self._end = None
+        self._numFrames = 0
+
+    def start(self):
+        # start the timer
+        self._start = datetime.datetime.now()
+        return self
+
+    def stop(self):
+        # stop the timer
+        self._end = datetime.datetime.now()
+
+    def update(self):
+        # increment the total number of frames examined during the
+        # start and end intervals
+        self._numFrames += 1
+
+    def elapsed(self):
+        # return the total number of seconds between the start and
+        # end interval
+        return (self._end - self._start).total_seconds()
+
+    def fps(self):
+        # compute the (approximate) frames per second
+        return self._numFrames / self.elapsed()

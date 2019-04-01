@@ -4,7 +4,9 @@
 			"debug": false
 		},
 		"camera": {
-			"save_file": "videos/"
+			"save_folder": "videos/",
+			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
+			"proto_file": "model/deploy.prototxt"
 		},
 		"motor": {},
 		"input": {
