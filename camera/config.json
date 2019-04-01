@@ -1,7 +1,7 @@
 {
 	"development": {
 		"controller": {
-			"debug": true
+			"debug": false
 		},
 		"camera": {
 			"save_file": "videos/"

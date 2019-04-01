@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-//import axios from "axios";
 import "./css/Device.css";
 
 import DeviceStatus from "./DeviceStatus";
+import API from "../api";
 
 class Device extends Component {
 	constructor(props) {
@@ -13,6 +13,16 @@ class Device extends Component {
 
 		this.onClick = this.onClick.bind(this);
 		this.onStatusUpdate = this.onStatusUpdate.bind(this);
+		this.apiStatusSuccess = this.apiStatusSuccess.bind(this);
+		this.apiError = this.apiError.bind(this);
+		this.api = null;
+	}
+
+	componentDidMount() {
+		if (this.api === null && this.props.server) {
+			this.api = new API(this.props.server);
+			this.onStatusUpdate();
+		}
 	}
 
 	getName() {
@@ -23,49 +33,33 @@ class Device extends Component {
 		return this.state.status;
 	}
 
-	// updateStatus(url) {
-	// 	const self = this;
-	// 	const config = {
-	// 		crossdomain: true
-	// 	};
+	apiError(err) {
+		this.setState({
+			status: 2
+		});
+	}
 
-	// 	axios
-	// 		.get(url, config)
-	// 		.then(function(res) {
-	// 			let status = 2;
-	// 			if (res.status !== 200 || !res.data.success) {
-	// 				return self.setState({
-	// 					status: status
-	// 				});
-	// 			}
+	apiStatusSuccess(data) {
+		this.setState({
+			status: data.status
+		});
+	}
 
-	// 			if (res.data.status in self.statusMap) {
-	// 				status = res.data.status;
-	// 			}
-
-	// 			self.setState({
-	// 				status: status
-	// 			});
-	// 		})
-	// 		.catch(function(err) {
-	// 			self.setState({
-	// 				status: 2
-	// 			});
-	// 		});
-	// }
-
-	onStatusUpdate() {}
+	onStatusUpdate(e) {
+		const id = this.props.id;
+		this.api.statusDevice(id, this.apiStatusSuccess, this.apiError);
+	}
 
 	onClick(e) {
 		const click = this.props.onClick;
 
 		if (e.target.id !== "status") {
+			this.onStatusUpdate();
 			click(e, this);
 		}
 	}
 
 	render() {
-		//const id = this.props.id;
 		const name = this.props.name;
 		const status = this.state.status;
 

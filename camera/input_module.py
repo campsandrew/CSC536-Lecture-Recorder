@@ -41,7 +41,7 @@ class Input(module.Module):
         # to server
         deviceId = controller.deviceId
         server = Input.server_address_lookup(config[CONNECTOR])
-        parts = [server, deviceId, "ping"]
+        parts = [server, "device", deviceId, "ping"]
         status_url = "/".join(s.strip("/") for s in parts)
         params = {"address": "http://" + Input.get_ip_address() +
                   ":" + str(config[PORT])}
@@ -62,6 +62,23 @@ class Input(module.Module):
             logger.debug("status_route() return payload: " + str(payload))
             return flask.jsonify(payload)
 
+        @service.route("/live", methods=["GET"])
+        def live_stream_route():
+            """
+            """
+
+            payload = {
+                "success": True,
+            }
+
+            # Check if device is alreaady recording
+            msg = {module.LOCATION: module.CAMERA_MODULE,
+                   module.DATA: {"frame": True}}
+            frame = controller.module_message(msg, from_module=Input())
+
+            logger.debug("live_stream_route() return payload: " + str(payload))
+            return flask.Response(b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n\r\n", mimetype="multipart/x-mixed-replace; boundary=frame")
+
         @service.route("/start", methods=["GET"])
         def start_recording_route():
             """
@@ -78,7 +95,7 @@ class Input(module.Module):
                 payload["message"] = "device currently recording"
             else:
                 msg = {module.LOCATION: module.CAMERA_MODULE,
-                       module.DATA: {"recording": "start"}}
+                       module.DATA: {"record": True}}
                 success = controller.module_message(msg, from_module=Input())
                 controller.status = 1
 
@@ -101,7 +118,7 @@ class Input(module.Module):
                 payload["message"] = "device not recording"
             else:
                 msg = {module.LOCATION: module.CAMERA_MODULE,
-                       module.DATA: {"recording": "stop"}}
+                       module.DATA: {"record": False}}
                 success = controller.module_message(msg, from_module=Input())
                 controller.status = 0
 
@@ -174,9 +191,10 @@ class Input(module.Module):
             logger.debug("error_route() return payload: " + str(payload))
             return flask.jsonify(payload)
 
-        # Starting service and initialize
-        # modules in controller
+        # initialize modules in controller
         controller.initialize()
+
+        # Starting service
         service.run(**kwargs)
         return service
 
@@ -253,7 +271,7 @@ class Input(module.Module):
             server = Input.server_address_lookup(input_config[CONNECTOR])
             parts = [server, deviceId, "upload"]
             url = "/".join(s.strip("/") for s in parts)
-            print(data["upload"])
+            # print(data["upload"])
             #Input.uploadVideo(url, data["upload"])
 
         logger.debug("message data - " + str(data))
@@ -277,7 +295,8 @@ class Input(module.Module):
         # Attempt to make connection with server
         try:
             status = requests.head(url=url, params=ping_data).status_code
-            connected = True
+            if status == 200:
+                connected = True
         except:
             connected = False
 

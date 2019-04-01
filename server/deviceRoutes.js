@@ -133,6 +133,10 @@ function addDeviceRoute(req, res) {
         throw new Error();
       }
 
+      payload.device = {
+        id: device.id,
+        name: device.name
+      };
       res.json(payload);
     })
     .catch(function(err) {

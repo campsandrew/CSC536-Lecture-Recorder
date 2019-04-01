@@ -132,9 +132,7 @@ class Controller:
             loc = message[LOCATION]
             return_message[SUCCESS] = "message sent to " + loc
             self.logger.debug("message sent to " + loc)
-            self._modules[loc].controller_message(message)
-            directed = True
-
+            directed = self._modules[loc].controller_message(message)
         else:
             return_message[ERROR] = "no message location"
             self.logger.error("no message location from: " + str(from_module))

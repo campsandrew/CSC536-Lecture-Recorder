@@ -10,12 +10,7 @@ class DeviceList extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			devices: [
-				// {
-				// 	id: 1,
-				// 	name: "Test Device"
-				// }
-			],
+			devices: [],
 			modal: {
 				show: false
 			}
@@ -26,6 +21,8 @@ class DeviceList extends Component {
 		this.onModalAddClick = this.onModalAddClick.bind(this);
 		this.onDeviceClick = this.onDeviceClick.bind(this);
 		this.apiGetDevicesSuccess = this.apiGetDevicesSuccess.bind(this);
+		this.apiAddDeviceSuccess = this.apiAddDeviceSuccess.bind(this);
+		this.apiStartRecordingSuccess = this.apiStartRecordingSuccess.bind(this);
 		this.apiError = this.apiError.bind(this);
 		this.api = null;
 	}
@@ -43,10 +40,21 @@ class DeviceList extends Component {
 		});
 	}
 
-	apiAddDeviceSuccess(data) {}
+	apiAddDeviceSuccess(data) {
+		let devices = this.state.devices;
+		devices.push(data.device);
+
+		this.setState({
+			devices: devices
+		});
+	}
 
 	apiError(err) {
 		//TODO:
+	}
+
+	apiStartRecordingSuccess(data) {
+		console.log(data);
 	}
 
 	onDeviceClick(e, device) {
@@ -57,6 +65,8 @@ class DeviceList extends Component {
 				content: "device",
 				primary: "Record",
 				secondary: "Close",
+				onPrimary: this.onModalRecordClick,
+				onSecondary: this.onModalClose,
 				action: {
 					type: "status",
 					status: device.getStatus(),
@@ -73,7 +83,9 @@ class DeviceList extends Component {
 				title: "New Device",
 				content: "add-device",
 				primary: "Add",
-				secondary: "Close"
+				secondary: "Close",
+				onPrimary: this.onModalAddClick,
+				onSecondary: this.onModalClose
 			}
 		});
 	}
@@ -93,10 +105,15 @@ class DeviceList extends Component {
 			}
 		});
 
-		this.api.addDevice(modalContent);
+		this.api.addDevice(modalContent, this.apiAddDeviceSuccess, this.apiError);
+	}
+
+	onModalRecordClick(e, modalContent) {
+		console.log("On Record");
 	}
 
 	renderDeviceContent() {
+		const server = this.props.server;
 		const devices = this.state.devices;
 
 		if (!devices.length) {
@@ -110,7 +127,7 @@ class DeviceList extends Component {
 						id={device.id}
 						name={device.name}
 						onClick={this.onDeviceClick}
-						server={null}
+						server={server}
 						key={device.id}
 					/>
 				))}
@@ -133,8 +150,8 @@ class DeviceList extends Component {
 					title={modal.title}
 					primary={modal.primary}
 					secondary={modal.secondary}
-					onPrimary={this.onModalAddClick}
-					onSecondary={this.onModalClose}
+					onPrimary={modal.onPrimary}
+					onSecondary={modal.onSecondary}
 					action={modal.action}
 					content={modal.content}
 				/>

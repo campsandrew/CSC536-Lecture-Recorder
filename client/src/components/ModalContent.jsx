@@ -1,9 +1,8 @@
 import React, { Component } from "react";
-import API from "../api";
 
 import FormTextInput from "./FormTextInput";
 import ErrorStatus from "./ErrorStatus";
-import testing from "./images/teaching.jpg";
+import CameraFeed from "./CameraFeed";
 
 class ModalContent extends Component {
 	constructor(props) {
@@ -17,14 +16,14 @@ class ModalContent extends Component {
 					{
 						type: "text",
 						label: "ID",
-						ref: "deviceId",
+						ref: "id",
 						validation: null,
 						key: 0
 					},
 					{
 						type: "text",
 						label: "Device name",
-						ref: "deviceName",
+						ref: "name",
 						validation: null,
 						key: 1
 					}
@@ -70,60 +69,18 @@ class ModalContent extends Component {
 		};
 
 		this.onInputFocusOut = this.onInputFocusOut.bind(this);
-		this.api = null;
 	}
 
-	// startStopRecording(e) {
-	// 	const self = this;
-	// 	const server = this.props.server;
-	// 	const { id } = this.props.content;
-	// 	const recording = this.state.recording;
-	// 	const action = recording ? "stop" : "start";
-	// 	const url = server + "/" + id + "/record?action=" + action;
-	// 	const config = { crossdomain: true };
+	getFields() {
+		const refs = this.state.currentRefs;
+		let values = {};
 
-	// 	this.refs.record.setAttribute("disabled", true);
+		for (let ref of refs) {
+			values[ref] = this.refs[ref].getValue();
+		}
 
-	// 	axios
-	// 		.get(url, config)
-	// 		.then(function(res) {
-	// 			let cur = !recording;
-	// 			if (res.status !== 200 || !res.data.success) {
-	// 				console.log(res.data.message);
-	// 				cur = false;
-	// 			}
-
-	// 			self.setState({
-	// 				recording: cur
-	// 			});
-	// 			self.refs.record.removeAttribute("disabled");
-	// 		})
-	// 		.catch(function(err) {
-	// 			console.log(err);
-	// 			self.setState({
-	// 				recording: false
-	// 			});
-	// 			self.refs.record.removeAttribute("disabled");
-	// 		});
-	// }
-
-	// rotateCamera(e, left) {
-	// 	const server = this.props.server;
-	// 	const { id } = this.props.content;
-	// 	const direction = left ? "left" : "right";
-	// 	const url = server + "/" + id + "/rotate?direction=" + direction;
-	// 	const config = { crossdomain: true };
-
-	// 	axios
-	// 		.get(url, config)
-	// 		.then(function(res) {
-	// 			if (res.status !== 200 || !res.data.success) {
-	// 				console.log(res.data.message);
-	// 				return;
-	// 			}
-	// 		})
-	// 		.catch(err => console.log(err));
-	// }
+		return values;
+	}
 
 	isValidForm() {
 		const refs = this.state.currentRefs;
@@ -191,7 +148,7 @@ class ModalContent extends Component {
 						<label htmlFor="description">Description</label>
 						<textarea rows="2" ref="description" />
 					</div>
-					<img src={testing} alt="live camera feed" />
+					<CameraFeed feed={"http://10.142.163.212:5000/live"} fps={20} />
 					<ErrorStatus errors={errors} loading={loading} />
 				</div>
 			);

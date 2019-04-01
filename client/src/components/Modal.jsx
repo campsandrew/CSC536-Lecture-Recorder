@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import "./css/Modal.css";
 
 import TitleBar from "./TitleBar";
@@ -16,6 +16,7 @@ function Modal(props) {
 		content
 	} = props;
 	const className = show ? "Modal display-block" : "Modal display-none";
+	const contentRef = useRef(null);
 
 	function getAction() {
 		const status = {
@@ -33,7 +34,10 @@ function Modal(props) {
 
 	function renderButtons() {
 		let button1 = (
-			<button id="primary" onClick={e => onPrimary(e)}>
+			<button
+				id="primary"
+				onClick={e => onPrimary(e, contentRef.current.getFields())}
+			>
 				{primary}
 			</button>
 		);
@@ -41,7 +45,10 @@ function Modal(props) {
 
 		if (secondary) {
 			button2 = (
-				<button id="secondary" onClick={e => onSecondary(e)}>
+				<button
+					id="secondary"
+					onClick={e => onSecondary(e, contentRef.current.getFields())}
+				>
 					{secondary}
 				</button>
 			);
@@ -59,7 +66,9 @@ function Modal(props) {
 		<div className={className}>
 			<section>
 				<TitleBar title={title} className="color-dark large" action={action} />
-				{show ? <ModalContent content={content} action={action} /> : null}
+				{show ? (
+					<ModalContent content={content} action={action} ref={contentRef} />
+				) : null}
 				<hr />
 				<div className="footer">
 					<div id="status">{getAction()}</div>
