@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./css/ContentArea.css";
 
 import AddFormModal from "./AddFormModal";
+import DeviceModal from "./DeviceModal";
 import DeviceList from "./DeviceList";
 import VideoList from "./VideoList";
 import API from "../api";
@@ -20,6 +21,8 @@ class DashContent extends Component {
 		this.addDeviceClick = this.addDeviceClick.bind(this);
 		this.addDeviceClick = this.addDeviceClick.bind(this);
 		this.addLecturerClick = this.addLecturerClick.bind(this);
+		this.deviceStatusClick = this.deviceStatusClick.bind(this);
+		this.deviceClick = this.deviceClick.bind(this);
 		this.videoClick = this.videoClick.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.onFormSubmit = this.onFormSubmit.bind(this);
@@ -48,7 +51,7 @@ class DashContent extends Component {
 		}
 	}
 
-	onFormSubmit(content) {
+	onFormSubmit(content, id) {
 		const modal = this.state.modal;
 
 		if (this.api === null) {
@@ -64,6 +67,9 @@ class DashContent extends Component {
 				this.api.addLecturer(content, this.apiSuccess, this.apiError);
 				break;
 			case "device":
+				this.api.addVideo(id, content, this.apiSuccess, this.apiError);
+				//this.api.recordDevice(id, this.apiSuccess, this.apiError);
+				break;
 			case "video":
 			default:
 		}
@@ -89,7 +95,11 @@ class DashContent extends Component {
 
 	apiError(error) {
 		const modal = this.state.modal;
-		this.refs[modal].submitError(error);
+		const show = this.state.show;
+
+		if (show) {
+			this.refs[modal].submitError(error);
+		}
 	}
 
 	addDeviceClick() {
@@ -98,7 +108,21 @@ class DashContent extends Component {
 
 	addLecturerClick() {}
 
-	deviceClick() {}
+	deviceClick(id, name, status, statusUpdate) {
+		this.setState({
+			show: true,
+			modal: "device",
+			device: { id: id, name: name, status: status, callback: statusUpdate }
+		});
+	}
+
+	deviceStatusClick(id, callbacks, errorCallback) {
+		if (!errorCallback) {
+			return this.api.statusDevice(id, callbacks, this.apiError);
+		}
+
+		this.api.statusDevice(id, callbacks, errorCallback);
+	}
 
 	videoClick() {}
 
@@ -107,6 +131,7 @@ class DashContent extends Component {
 	}
 
 	renderModal() {
+		const device = this.state.device;
 		const modal = this.state.modal;
 
 		if (!this.state.show) {
@@ -135,6 +160,18 @@ class DashContent extends Component {
 					/>
 				);
 			case "device":
+				return (
+					<DeviceModal
+						title={device.name}
+						deviceId={device.id}
+						onClose={this.closeModal}
+						submit={this.onFormSubmit}
+						onStatusClick={this.deviceStatusClick}
+						deviceCallback={device.callback}
+						status={device.status}
+						ref={modal}
+					/>
+				);
 			case "video":
 			default:
 				return null;
@@ -153,6 +190,7 @@ class DashContent extends Component {
 				<DeviceList
 					devices={devices}
 					deviceClick={this.deviceClick}
+					statusClick={this.deviceStatusClick}
 					addClick={this.addDeviceClick}
 				/>
 			);

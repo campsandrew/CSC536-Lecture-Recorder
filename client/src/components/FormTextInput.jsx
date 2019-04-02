@@ -63,16 +63,32 @@ class FormTextInput extends Component {
 		const onKeyPress = this.props.onKeyPress;
 		const className = valid ? "FormTextInput" : "FormTextInput error";
 
+		// Input or text area options
+		let input = (
+			<input
+				type={type}
+				onBlur={this.focusOut}
+				onKeyPress={onKeyPress}
+				disabled={disabled}
+				ref={this.textInput}
+			/>
+		);
+		if (type === "textarea") {
+			input = (
+				<textarea
+					rows="2"
+					onBlur={this.focusOut}
+					onKeyPress={onKeyPress}
+					disabled={disabled}
+					ref={this.textInput}
+				/>
+			);
+		}
+
 		return (
 			<div className={className}>
 				<label htmlFor={this.textInput}>{label}</label>
-				<input
-					type={type}
-					onBlur={this.focusOut}
-					ref={this.textInput}
-					onKeyPress={onKeyPress}
-					disabled={disabled}
-				/>
+				{input}
 			</div>
 		);
 	}

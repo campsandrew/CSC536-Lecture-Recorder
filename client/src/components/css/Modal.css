@@ -82,11 +82,11 @@
 	text-align: right;
 }
 
-/*.Modal .footer .status {
+.Modal .footer .status-code {
 	margin: 8px 0 0 20px;
 	color: red;
 	font-weight: bold;
-}*/
+}
 
 @media screen and (max-device-width: 400px) {
 	.Modal section {

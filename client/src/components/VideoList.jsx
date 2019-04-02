@@ -122,7 +122,7 @@ class VideoList extends Component {
 
 	render() {
 		const lecturer = this.props.lecturer;
-		const modal = this.state.modal;
+		//const modal = this.state.modal;
 		let titleBar = <TitleBar title="Recordings" />;
 
 		// Change this based on user type true for Viewer

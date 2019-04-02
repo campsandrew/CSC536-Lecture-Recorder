@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "./css/Device.css";
 
 import DeviceStatus from "./DeviceStatus";
-import API from "../api";
 
 class Device extends Component {
 	constructor(props) {
@@ -11,51 +10,36 @@ class Device extends Component {
 			status: 2
 		};
 
+		this.statusUpdate = this.statusUpdate.bind(this);
+		this.onStatusClick = this.onStatusClick.bind(this);
 		this.onClick = this.onClick.bind(this);
-		this.onStatusUpdate = this.onStatusUpdate.bind(this);
-		this.apiStatusSuccess = this.apiStatusSuccess.bind(this);
-		this.apiError = this.apiError.bind(this);
-		this.api = null;
 	}
 
 	componentDidMount() {
-		if (this.api === null && this.props.server) {
-			this.api = new API(this.props.server);
-			this.onStatusUpdate();
+		const id = this.props.deviceId;
+		this.props.onStatusClick(id, this.statusUpdate);
+	}
+
+	onStatusClick(e) {
+		const id = this.props.deviceId;
+		this.props.onStatusClick(id, this.statusUpdate, this.statusUpdate);
+	}
+
+	statusUpdate(data) {
+		if (data.hasOwnProperty("status")) {
+			return this.setState({ status: data.status });
 		}
-	}
 
-	getName() {
-		return this.props.name;
-	}
-
-	getStatus() {
-		return this.state.status;
-	}
-
-	apiError(err) {
-		this.setState({
-			status: 2
-		});
-	}
-
-	apiStatusSuccess(data) {
-		this.setState({
-			status: data.status
-		});
-	}
-
-	onStatusUpdate(e) {
-		const id = this.props.id;
-		this.api.statusDevice(id, this.apiStatusSuccess, this.apiError);
+		this.setState({ status: 2 });
 	}
 
 	onClick(e) {
-		const click = this.props.onClick;
+		const name = this.props.name;
+		const id = this.props.deviceId;
+		const status = this.state.status;
 
 		if (e.target.id !== "status") {
-			this.onStatusUpdate();
-			click(e, this);
+			this.props.onClick(id, name, status, this.statusUpdate); //TODO: Add id possibly
 		}
 	}
 
@@ -66,7 +50,7 @@ class Device extends Component {
 		return (
 			<li className="Device" onClick={this.onClick}>
 				{name}
-				<DeviceStatus status={status} onClick={this.onStatusUpdate} />
+				<DeviceStatus status={status} onClick={this.onStatusClick} />
 			</li>
 		);
 	}

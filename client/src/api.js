@@ -174,13 +174,23 @@ class API {
   }
 
   successResponse(res, cbSuccess, cbError, validate) {
+    let callbackArray = (callback, data) => {
+      if (Array.isArray(callback)) {
+        for (let cb of callback) {
+          cb(data);
+        }
+      } else {
+        callback(data);
+      }
+    };
+
     if (res.status === 200 && res.data.success) {
       if (validate === null) {
-        return cbSuccess(res.data);
+        return callbackArray(cbSuccess, res.data);
       }
 
       if (validate !== null && validate(res.data)) {
-        return cbSuccess(res.data);
+        return callbackArray(cbSuccess, res.data);
       }
 
       return cbError("field validation error");
