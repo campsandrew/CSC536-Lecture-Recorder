@@ -16,7 +16,7 @@ function formatDate(date) {
 /**
  *
  */
-function getAuthToken(code, expires = 300) {
+function getAuthToken(code, expires = 3000) {
   code.expires = expires * 1000 + new Date().getTime();
   return { accessToken: jwt.encode(code, jwt_secret), expiresAt: code.expires };
 }
@@ -24,28 +24,28 @@ function getAuthToken(code, expires = 300) {
 /**
  *
  */
-function canAddLecturer(user, lecturer) {
-  for (let l of user.lecturers) {
-    if (l._id.equals(lecturer._id)) {
-      return false;
-    }
-  }
+// function canAddLecturer(user, lecturer) {
+//   for (let l of user.lecturers) {
+//     if (l._id.equals(lecturer._id)) {
+//       return false;
+//     }
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 /**
  *
  */
-function canAddDevice(user, newDevice) {
-  for (let device of user.devices) {
-    if (newDevice.id === device.id) {
-      return false;
-    }
-  }
+// function canAddDevice(user, newDevice) {
+//   for (let device of user.devices) {
+//     if (newDevice.id === device.id) {
+//       return false;
+//     }
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 /**
  *
@@ -77,39 +77,9 @@ function hasValidFields(fields, required) {
   return true;
 }
 
-/**
- *
- */
-async function saveUser(data, body) {
-  let promise;
-
-  if (body.isLecturer == "false") {
-    let viewer;
-    promise = Lecturer.findOne({ email: body.lecturerEmail })
-      .then(function(lecturer) {
-        if (!lecturer) return { message: "lecturer not found" };
-
-        viewer = new Viewer(data);
-        lecturer.viewers.push(viewer);
-        return lecturer.save();
-      })
-      .then(function(lecturer) {
-        if (!lecturer) return { message: "error adding viewer to lecturer" };
-
-        viewer.lecturers = [lecturer];
-        return viewer.save();
-      });
-  } else {
-    promise = new Lecturer(data).save();
-  }
-
-  return await promise;
-}
-
 exports = {
-  saveUser,
-  canAddDevice,
-  canAddLecturer,
+  //canAddDevice,
+  //canAddLecturer,
   hasValidFields,
   decodeToken,
   getAuthToken,

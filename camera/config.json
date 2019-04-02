@@ -1,7 +1,7 @@
 {
 	"development": {
 		"controller": {
-			"debug": false
+			"debug": true
 		},
 		"camera": {
 			"save_folder": "videos/",
@@ -17,12 +17,12 @@
 	},
 	"production": {
 		"controller": {
-			"debug": false,
-			"server": "",
-			"port": 5000
+			"debug": false
 		},
 		"camera": {
-			"save_file": "videos/"
+			"save_file": "videos/",
+			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
+			"proto_file": "model/deploy.prototxt"
 		},
 		"motor": {},
 		"input": {

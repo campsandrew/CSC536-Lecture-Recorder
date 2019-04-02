@@ -35,7 +35,7 @@ class API {
   }
 
   getUser(cbSuccess, cbError, validate = null) {
-    const url = this.server + "/user?name=true";
+    const url = this.server + "/user?name=true&type=true";
 
     axios
       .get(url, this.config)
@@ -193,15 +193,15 @@ class API {
     }
 
     // Unauthorized
-    if (res.status === 401) {
-    }
-
-    // Forbidden
-    if (res.status === 403) {
+    if (res.status === 401 || res.status === 403) {
+      window.location.replace("/unauthorized");
+      cbError("unauthorized access");
     }
 
     // Not found
     if (res.status === 404) {
+      window.location.replace("/error");
+      cbError("page not found");
     }
 
     return cbError("unknown error");

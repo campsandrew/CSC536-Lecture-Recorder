@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Route, BrowserRouter, Switch } from "react-router-dom";
-import "./css/App.css";
 
 import HeaderBar from "./HeaderBar";
 import HomeContent from "./HomeContent";
@@ -22,7 +21,7 @@ class App extends Component {
 		this.state = {
 			server: "",
 			authenticated: false,
-			userName: ""
+			user: {}
 		};
 
 		this.apiGetUserSuccess = this.apiGetUserSuccess.bind(this);
@@ -44,15 +43,28 @@ class App extends Component {
 	 *
 	 */
 	apiConnectorSuccess(data) {
+		const authenticated = this.auth.isAuthenticated();
+		const authState = this.state.authenticated;
+
 		this.setState({
 			server: data.address
 		});
 
 		this.api = new API(data.address);
-		if (this.auth.isAuthenticated()) {
-			this.api.getUser(this.apiGetUserSuccess, this.apiError);
-		} else {
-			// TODO: redirect?
+		if (authenticated && !authState) {
+			this.setState({
+				authenticated: true
+			});
+
+			return this.api.getUser(this.apiGetUserSuccess, this.apiError);
+		}
+
+		if (!authenticated && authState) {
+			this.setState({
+				authenticated: false
+			});
+
+			return;
 		}
 	}
 
@@ -61,7 +73,10 @@ class App extends Component {
 	 */
 	apiGetUserSuccess(data) {
 		this.setState({
-			userName: data.name
+			user: {
+				name: data.name,
+				lecturer: data.type.toLowerCase() === "lecturer"
+			}
 		});
 	}
 
@@ -74,7 +89,6 @@ class App extends Component {
 
 	onLogout(e) {
 		this.auth.logout();
-		window.location.replace("/");
 	}
 
 	/**
@@ -82,12 +96,10 @@ class App extends Component {
 	 */
 	render() {
 		const server = this.state.server;
-		const user = this.state.userName;
-		const auth = this.auth.isAuthenticated();
-
+		const user = this.state.user;
+		const auth = this.state.authenticated;
 		const routing = (
 			<BrowserRouter>
-				<HeaderBar auth={auth} user={user} onLogout={this.onLogout} />
 				<Switch>
 					<Route
 						exact
@@ -97,14 +109,25 @@ class App extends Component {
 					<Route
 						exact
 						path="/dash"
-						render={() => <DashContent server={server} />}
+						render={() => (
+							<DashContent
+								server={server}
+								auth={auth}
+								lecturer={user.lecturer}
+							/>
+						)}
 					/>
 					<Route render={() => <ErrorContent />} />
 				</Switch>
 			</BrowserRouter>
 		);
 
-		return routing;
+		return (
+			<div>
+				<HeaderBar auth={auth} user={user} onLogout={this.onLogout} />
+				{routing}
+			</div>
+		);
 	}
 }
 

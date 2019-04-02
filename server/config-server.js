@@ -31,7 +31,7 @@ mongoose
     saveHost();
     setInterval(saveHost, 60000);
   })
-  .catch(err => console.log(err));
+  .catch(err => {});
 
 /**
  *

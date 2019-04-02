@@ -3,12 +3,7 @@ const axios = require("axios");
 const bcrypt = require("bcrypt-nodejs");
 const { authUser } = require("./middleware");
 const { User, Lecturer, Viewer } = require("./models");
-const {
-  saveUser,
-  getAuthToken,
-  hasValidFields,
-  canAddLecturer
-} = require("./utils");
+const { getAuthToken, hasValidFields } = require("./utils");
 
 const router = express.Router();
 
@@ -33,7 +28,7 @@ function addLecturerRoute(req, res) {
     return res.json(payload);
   }
 
-  if (user.__t !== "Viewer") {
+  if (user.kind !== "Viewer") {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -47,22 +42,12 @@ function addLecturerRoute(req, res) {
         throw new Error();
       }
 
-      if (!canAddLecturer(user, lecturer)) {
-        payload.message = "lecturer already registered";
-        throw new Error();
-      }
-
       lecturer.viewers.push(user);
-      return lecturer.save();
-    })
-    .then(function(lecturer) {
-      if (!lecturer) throw new Error();
-
       user.lecturers.push(lecturer);
-      return user.save();
+      return Promise.all([lecturer.save(), user.save()]);
     })
-    .then(function(viewer) {
-      if (!viewer) throw new Error();
+    .then(function(response) {
+      if (!response[0 || !response[1]]) throw new Error();
 
       res.json(payload);
     })
@@ -96,7 +81,7 @@ function getUserRoute(req, res) {
       return user.email;
     },
     type: user => {
-      return user.__t.toLowerCase();
+      return user.kind.toLowerCase();
     }
   };
   let payload = {
@@ -149,27 +134,53 @@ function addUserRoute(req, res) {
   userData.name.last = req.body.lastName;
   userData.email = req.body.email;
   userData.hash = bcrypt.hashSync(req.body.password);
-  saveUser(userData, req.body)
-    .then(function(response) {
-      if (!response) {
+  if (isLecturer) {
+    return Lecturer.create(userData)
+      .then(function(lecturer) {
+        if (!lecturer) throw new Error();
+
+        payload.auth = getAuthToken({ email: lecturer.email });
+        payload.user = lecturer;
+        return res.json(payload);
+      })
+      .catch(function(err) {
+        console.log(err);
         payload.message = "error creating account";
+        if (err.code === 11000) {
+          payload.message = "email already registered";
+        }
         payload.success = false;
         return res.json(payload);
+      });
+  }
+
+  // Find lecturer so viewer can add them
+  let viewer;
+  Lecturer.findOne({ email: req.body.lecturerEmail })
+    .then(function(lecturer) {
+      if (!lecturer) {
+        payload.message = "no lecturer found";
+        throw new Error();
       }
 
-      if (response.message) {
-        payload.message = response.message;
-        payload.success = false;
-        return res.json(payload);
-      }
+      viewer = new Viewer(userData);
+      lecturer.viewers.push(viewer);
+      viewer.lecturers.push(lecturer.email);
+      return Promise.all([viewer.save(), lecturer.save()]);
+    })
+    .then(function(response) {
+      if (!response[0] || !response[1]) throw new Error();
 
-      let code = { email: response.email };
-      payload.auth = getAuthToken(code);
-      payload.user = response;
+      payload.auth = getAuthToken({ email: response[0].email });
+      payload.user = response[0];
       return res.json(payload);
     })
     .catch(function(err) {
-      payload.message = "error creating account";
+      console.log(err);
+      if (!payload.message) {
+        payload.message = "error creating account";
+      }
+
       if (err.code === 11000) {
         payload.message = "email already registered";
       }

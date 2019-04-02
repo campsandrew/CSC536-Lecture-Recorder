@@ -12,7 +12,7 @@
 	/* Other */
 }
 
-.Modal section {
+.Modal .form {
 	/* Positioning */
 	position: fixed;
 	top: 50%;
@@ -23,6 +23,7 @@
 	overflow: hidden;
 	box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.4), 0 6px 20px 0 rgba(0, 0, 0, 0.4);
 	box-sizing: border-box;
+	min-width: 300px;
 
 	/* Color */
 	background: white;
@@ -30,17 +31,9 @@
 	/* Other */
 }
 
-.Modal .ModalContent {
+.Modal .content {
 	position: relative;
 	padding: 5px 20px 10px 20px;
-}
-
-.display-block {
-	display: block;
-}
-
-.display-none {
-	display: none;
 }
 
 .Modal button {
@@ -54,12 +47,12 @@
 	font-weight: normal;
 }
 
-.Modal #primary {
+.Modal .primary {
 	background-color: #689fff;
 	color: white;
 }
 
-.Modal #secondary {
+.Modal .secondary {
 	background-color: white;
 	border-width: 1px;
 	border-color: grey;
@@ -83,15 +76,17 @@
 	justify-content: space-between;
 }
 
-.Modal #buttons {
+.Modal .footer .buttons {
+	flex-basis: 100%;
 	margin: 0 10px 10px 10px;
+	text-align: right;
 }
 
-.footer #status {
+/*.Modal .footer .status {
 	margin: 8px 0 0 20px;
 	color: red;
 	font-weight: bold;
-}
+}*/
 
 @media screen and (max-device-width: 400px) {
 	.Modal section {

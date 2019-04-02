@@ -23,7 +23,7 @@ class FormTextInput extends Component {
 		return this.state.error;
 	}
 
-	validateInput() {
+	isValid() {
 		const validation = this.props.validation;
 		let valid = true;
 
@@ -48,10 +48,10 @@ class FormTextInput extends Component {
 	}
 
 	focusOut(e) {
-		this.validateInput();
+		const onFocusOut = this.props.onFocusOut;
 
-		if (this.props.onFocusOut) {
-			this.props.onFocusOut(e, this);
+		if (!this.isValid() && onFocusOut) {
+			onFocusOut(this.state.error);
 		}
 	}
 

@@ -47,3 +47,42 @@ button {
 button:focus {
 	outline: none;
 }
+
+.cursor-wait {
+	cursor: wait;
+}
+
+.no-side-padding {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.space-around {
+	justify-content: space-around;
+}
+
+.text-center {
+	font-size: 22pt;
+	text-align: center;
+}
+
+.color-dark {
+	background-color: #689fff;
+	color: black;
+}
+
+.color-white {
+	background-color: white;
+}
+
+.large {
+	padding: 14px 20px;
+}
+
+.display-block {
+	display: block;
+}
+
+.display-none {
+	display: none;
+}

@@ -10,8 +10,8 @@ const Host = model("Host", hostSchema);
 
 // Video Model
 const videoSchema = new Schema({
-  name: { type: String, require: true },
-  filename: { type: String, require: true },
+  name: { type: String, required: true },
+  filename: { type: String, required: true },
   date: { type: Date, default: Date.now },
   description: { type: String },
   views: { type: Number, default: 0 },
@@ -22,44 +22,42 @@ const Video = model("Video", videoSchema);
 
 // Device Model
 const deviceSchema = new Schema({
-  id: { type: Number, unique: true, required: true },
+  id: { type: Number, required: true },
   address: { type: String },
   name: { type: String }
 });
 const Device = model("Device", deviceSchema);
 
-// User Model
-//const options = { discriminatorKey: "kind" };
-const userSchema = new Schema({
-  name: {
-    first: { type: String, lowercase: true, require: true, trim: true },
-    last: { type: String, lowercase: true, require: true, trim: true }
+const options = { discriminatorKey: "kind" };
+const userSchema = new Schema(
+  {
+    name: {
+      first: { type: String, lowercase: true, required: true, trim: true },
+      last: { type: String, lowercase: true, required: true, trim: true }
+    },
+    email: { type: String, required: true, unique: true },
+    hash: { type: String, required: true }
   },
-  email: { type: String, lowercase: true, require: true, unique: true },
-  hash: { type: String, require: true }
-});
+  options
+);
 const User = model("User", userSchema);
 
 // Lecturer Model
-const lecturerSchema = new Schema({
-  devices: [{ type: Schema.Types.ObjectId, ref: "Device" }],
-  videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
-  viewers: [{ type: Schema.Types.ObjectId, ref: "Viewer" }]
-});
-const Lecturer = User.discriminator("Lecturer", lecturerSchema);
+const lecturerSchema = new Schema(
+  {
+    devices: [{ type: Schema.Types.ObjectId, unique: true, ref: "Device" }],
+    videos: [{ type: Schema.Types.ObjectId, ref: "Video" }],
+    viewers: [{ type: Schema.Types.ObjectId, unique: true, ref: "Viewer" }]
+  },
+  options
+);
+const Lecturer = User.discriminator("Lecturer", lecturerSchema, "lecturer");
 
 // Viewer Model
 const viewerSchema = new Schema({
-  lecturers: [
-    {
-      type: Schema.Types.ObjectId,
-      require: true,
-      unique: true,
-      ref: "Lecturer"
-    }
-  ]
+  lecturers: [{ type: String, unique: true, required: true }]
 });
-const Viewer = User.discriminator("Viewer", viewerSchema);
+const Viewer = User.discriminator("Viewer", viewerSchema, "viewer");
 
 exports = {
   Host,

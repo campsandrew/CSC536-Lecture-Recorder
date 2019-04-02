@@ -1,4 +1,4 @@
-.LoginRegisterForm {
+.Form {
 	/* Positioning */
 
 	/* Display & Box Model */
@@ -15,31 +15,33 @@
 
 	/* Text */
 	/* Other */
+	user-select: none;
 }
 
-.LoginRegisterForm .content {
+.Form .content {
 	margin: 10px 0 10px 0;
 }
 
-.LoginRegisterForm button {
+.Form button {
 	height: 35px;
 	width: 100%;
 	border-radius: 3px;
 	border: none;
 }
 
-.LoginRegisterForm button:hover {
+.Form button:hover {
 	color: white;
 	border: 1px solid white;
 }
 
-.LoginRegisterForm label[for="lecturer"],
-.LoginRegisterForm label[for="viewer"] {
+.Form label[for="lecturer"],
+.Form label[for="viewer"] {
 	display: inline;
 	font-size: 12pt;
+	margin-left: 2px;
 }
 
-.LoginRegisterForm input[type="radio"] {
+.Form input[type="radio"] {
 	display: inline;
 	vertical-align: middle;
 	margin-top: -1px;
@@ -47,35 +49,36 @@
 	width: auto;
 }
 
-.LoginRegisterForm .user-type {
+.Form p {
+	width: 80%;
+	margin: auto;
+	text-align: center;
+}
+
+.Form .user-type {
 	display: inline-block;
 	margin: 10px 10px 0 0;
 }
 
-.LoginRegisterForm nav {
+.Form .form-nav {
 	display: flex;
 	justify-content: space-between;
 	padding: 5px 0 0 0;
 }
 
-.LoginRegisterForm #register,
-.LoginRegisterForm #recover {
+.Form .nav-button {
 	color: grey;
 	cursor: pointer;
 }
 
-.LoginRegisterForm .loading {
-	padding: 0 0 5px 10px;
+.Form .loading {
+	padding: 5px 0 5px 10px;
 	font-size: 14pt;
 	color: red;
 }
 
-.LoginRegisterForm .errors {
-	padding: 0 0 5px 10px;
+.Form .errors {
+	padding: 5px 0 5px 10px;
 	font-size: 10pt;
 	color: red;
-}
-
-.cursor-wait {
-	cursor: wait;
 }

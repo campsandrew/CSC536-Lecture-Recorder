@@ -100,7 +100,6 @@ function authUser(req, res, next) {
       next();
     })
     .catch(function(err) {
-      console.log(err.errmsg);
       res.json(payload);
     });
 }

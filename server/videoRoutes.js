@@ -24,12 +24,10 @@ function getVideosRoute(req, res) {
     success: true
   };
 
-  if (user.__t === "Lecturer") {
+  if (user instanceof Lecturer) {
     Lecturer.populate(user, "videos")
       .then(function(lecturer) {
-        if (!lecturer) {
-          throw new Error();
-        }
+        if (!lecturer) throw new Error();
 
         let videos = [];
         for (let v of lecturer.videos) {
@@ -56,54 +54,54 @@ function getVideosRoute(req, res) {
         payload.success = false;
         res.json(payload);
       });
+
+    return;
   }
 
-  if (user.__t === "Viewer") {
-    Viewer.populate(user, "lecturers")
-      .then(function(viewer) {
-        if (!viewer) {
-          throw new Error();
-        }
+  // Viewer.populate(user, "lecturers")
+  //   .then(function(viewer) {
+  //     if (!viewer) {
+  //       throw new Error();
+  //     }
 
-        let promises = [];
-        for (let lecturer of viewer.lecturers) {
-          promises.push(Lecturer.populate(lecturer, "videos"));
-        }
+  //     let promises = [];
+  //     for (let lecturer of viewer.lecturers) {
+  //       promises.push(Lecturer.populate(lecturer, "videos"));
+  //     }
 
-        return Promise.all(promises);
-      })
-      .then(function(docs) {
-        if (!docs) throw new Error();
+  //     return Promise.all(promises);
+  //   })
+  //   .then(function(docs) {
+  //     if (!docs) throw new Error();
 
-        let videos = [];
-        for (let l of docs) {
-          for (let v of l.videos) {
-            let video = {
-              id: v._id,
-              name: v.name,
-              filename: v.filename,
-              date: formatDate(v.date),
-              description: v.description,
-              views: v.views,
-              device: v.device,
-              lecturer: l.name.first + " " + l.name.last
-            };
-            videos.push(video);
-          }
-        }
+  //     let videos = [];
+  //     for (let l of docs) {
+  //       for (let v of l.videos) {
+  //         let video = {
+  //           id: v._id,
+  //           name: v.name,
+  //           filename: v.filename,
+  //           date: formatDate(v.date),
+  //           description: v.description,
+  //           views: v.views,
+  //           device: v.device,
+  //           lecturer: l.name.first + " " + l.name.last
+  //         };
+  //         videos.push(video);
+  //       }
+  //     }
 
-        payload.videos = videos;
-        res.json(payload);
-      })
-      .catch(function(err) {
-        console.log(err);
-        if (!payload.message) {
-          payload.message = "unable to get videos";
-        }
-        payload.success = false;
-        res.json(payload);
-      });
-  }
+  //     payload.videos = videos;
+  //     res.json(payload);
+  //   })
+  //   .catch(function(err) {
+  //     console.log(err);
+  //     if (!payload.message) {
+  //       payload.message = "unable to get videos";
+  //     }
+  //     payload.success = false;
+  //     res.json(payload);
+  //   });
 }
 
 /**

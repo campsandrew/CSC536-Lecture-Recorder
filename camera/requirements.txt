@@ -2,3 +2,4 @@ cv2
 flask
 requests
 RPi.GPIO
+imutils

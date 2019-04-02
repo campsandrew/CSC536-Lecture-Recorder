@@ -148,7 +148,7 @@ class ModalContent extends Component {
 						<label htmlFor="description">Description</label>
 						<textarea rows="2" ref="description" />
 					</div>
-					<CameraFeed feed={"http://10.142.163.212:5000/live"} fps={20} />
+					<CameraFeed feed={"http://10.132.170.53:5000/live"} fps={10} />
 					<ErrorStatus errors={errors} loading={loading} />
 				</div>
 			);

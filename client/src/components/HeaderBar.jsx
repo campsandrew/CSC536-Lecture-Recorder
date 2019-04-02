@@ -13,7 +13,7 @@ function HeaderBar({ auth, user, onLogout }) {
 	return (
 		<header className="HeaderBar">
 			<Logo path={path} />
-			<span>{user}</span>
+			<span>{auth && user.name ? user.name : ""}</span>
 			<nav>{auth ? <button onClick={onLogout}>Logout</button> : null}</nav>
 		</header>
 	);

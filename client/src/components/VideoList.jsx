@@ -3,7 +3,7 @@ import "./css/VideoList.css";
 
 import TitleBar from "./TitleBar";
 import Video from "./Video";
-import Modal from "./Modal";
+//import Modal from "./Modal";
 
 class VideoList extends Component {
 	constructor(props) {
@@ -121,7 +121,7 @@ class VideoList extends Component {
 	}
 
 	render() {
-		const lecturer = this.props.isLecturer;
+		const lecturer = this.props.lecturer;
 		const modal = this.state.modal;
 		let titleBar = <TitleBar title="Recordings" />;
 
@@ -139,7 +139,7 @@ class VideoList extends Component {
 			<div className="VideoList">
 				{titleBar}
 				{this.renderVideoContent()}
-				<Modal
+				{/*				<Modal
 					show={modal.show}
 					title={modal.title}
 					primary={modal.primary}
@@ -148,7 +148,7 @@ class VideoList extends Component {
 					onSecondary={this.onDeleteClick}
 					action={modal.action}
 					content={modal.content}
-				/>
+				/>*/}
 			</div>
 		);
 	}

@@ -1,8 +1,8 @@
 const express = require("express");
 const axios = require("axios");
-const { hasValidFields, canAddDevice } = require("./utils");
+const { hasValidFields } = require("./utils");
 const { getDevice, getVideo, authUser } = require("./middleware");
-const { Device, Lecturer } = require("./models");
+const { Device, Lecturer, Viewer } = require("./models");
 
 const router = express.Router();
 
@@ -97,7 +97,7 @@ function addDeviceRoute(req, res) {
     return res.json(payload);
   }
 
-  if (user.__t !== "Lecturer") {
+  if (user.kind instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -109,37 +109,19 @@ function addDeviceRoute(req, res) {
     name: req.body.name
   });
 
-  Lecturer.populate(user, { path: "devices" })
-    .then(function(lecturer) {
-      if (!canAddDevice(lecturer, device)) {
-        payload.message = "device already registered";
-        throw new Error();
-      }
-
-      lecturer.devices.push(device);
-      return lecturer.save();
-    })
-    .then(function(user) {
-      if (!user) {
-        payload.message = "error registering device with user";
-        throw new Error();
-      }
-
-      return device.save();
-    })
-    .then(function(device) {
-      if (!device) {
-        payload.message = "error registering device";
-        throw new Error();
-      }
+  user.devices.push(device);
+  Promise.all([device.save(), user.save()])
+    .then(function(response) {
+      if (!response[0] || !response[1]) throw new Error();
 
       payload.device = {
-        id: device.id,
-        name: device.name
+        id: response[0].id,
+        name: response[0].name
       };
       res.json(payload);
     })
     .catch(function(err) {
+      console.log(err);
       if (err.code === 11000) {
         payload.message = "device already registered";
       }
@@ -162,7 +144,7 @@ function getDevicesRoute(req, res) {
     success: true
   };
 
-  if (user.__t !== "Lecturer") {
+  if (user instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
