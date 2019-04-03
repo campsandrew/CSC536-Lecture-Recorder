@@ -25,7 +25,7 @@ router.delete(
   deleteDeviceRoute
 );
 router.get("/device/:deviceid/status", authUser, getDevice, deviceStatusRoute);
-router.post("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
+router.get("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
 router.get("/device/:deviceid/cleanup", authUser, deviceCleanupRoute);
 
 /**
@@ -276,7 +276,7 @@ function deviceRecordRoute(req, res) {
 
   // Send device status request
   axios
-    .post(`${device.address}/${action}`)
+    .get(`${device.address}/${action}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;

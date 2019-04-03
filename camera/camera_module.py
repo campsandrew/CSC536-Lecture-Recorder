@@ -56,7 +56,7 @@ class Camera(module.Module):
         self.logger.debug("initialize() returned")
         return None
 
-    def start_recording(self, filename):
+    def start_recording(self):
 
         return True
 

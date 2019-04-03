@@ -110,7 +110,7 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  recordDevice(id, start, body, cbSuccess, cbError, validate = null) {
+  recordDevice(id, start, cbSuccess, cbError, validate = null) {
     let url = this.server + "/device/" + id + "/record?action=";
     if (start) {
       url = url + "start";
@@ -118,11 +118,8 @@ class API {
       url = url + "stop";
     }
 
-    console.log(body);
-    return;
-
     axios
-      .post(url, body, this.config)
+      .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
       .catch(err => this.catchError(err, cbError));
   }
