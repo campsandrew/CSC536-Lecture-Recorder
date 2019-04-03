@@ -25,7 +25,7 @@ router.delete(
   deleteDeviceRoute
 );
 router.get("/device/:deviceid/status", authUser, getDevice, deviceStatusRoute);
-router.get("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
+router.post("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
 router.get("/device/:deviceid/cleanup", authUser, deviceCleanupRoute);
 
 /**
@@ -97,7 +97,7 @@ function addDeviceRoute(req, res) {
     return res.json(payload);
   }
 
-  if (user.kind instanceof Viewer) {
+  if (user instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -185,7 +185,7 @@ function deleteDeviceRoute(req, res) {
     success: true
   };
 
-  if (user.__t !== "Lecturer") {
+  if (user instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -204,16 +204,12 @@ function deleteDeviceRoute(req, res) {
         index++;
       }
 
-      return lecturer.save();
+      return Promise.all([device.remove(), lecturer.save()]);
     })
-    .then(function(lecturer) {
-      if (!lecturer) throw new Error();
+    .then(function(response) {
+      if (!response[0] || !response[1]) throw new Error();
 
-      return device.remove();
-    })
-    .then(function(device) {
-      if (!device) throw new Error();
-
+      payload.device = response[0];
       res.json(payload);
     })
     .catch(function(err) {
@@ -248,10 +244,14 @@ function deviceStatusRoute(req, res) {
         payload.message = response.data.message;
       }
 
+      payload.id = device.id;
+      payload.address = device.address;
       res.json(payload);
     })
     .catch(function(err) {
       payload.success = false;
+      payload.id = device.id;
+      payload.address = device.address;
       payload.message = "no communication with device";
       res.json(payload);
     });
@@ -276,7 +276,7 @@ function deviceRecordRoute(req, res) {
 
   // Send device status request
   axios
-    .get(`${device.address}/${action}`)
+    .post(`${device.address}/${action}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;
@@ -288,9 +288,11 @@ function deviceRecordRoute(req, res) {
         payload.message = response.data.message;
       }
 
+      payload.id = device.id;
       res.json(payload);
     })
     .catch(function(err) {
+      payload.id = device.id;
       payload.success = false;
       payload.message = "no communication with device";
       res.json(payload);

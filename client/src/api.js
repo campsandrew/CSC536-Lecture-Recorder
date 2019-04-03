@@ -91,15 +91,15 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  // TODO: add to api on server
-  streamDevice(id, cbSuccess, cbError, validate = null) {
-    const url = this.server + "/device/" + id + "/stream";
+  // // TODO: add to api on server
+  // streamDevice(id, cbSuccess, cbError, validate = null) {
+  //   const url = this.server + "/device/" + id + "/stream";
 
-    axios
-      .get(url, this.config)
-      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
-      .catch(err => this.catchError(err, cbError));
-  }
+  //   axios
+  //     .get(url, this.config)
+  //     .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+  //     .catch(err => this.catchError(err, cbError));
+  // }
 
   statusDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/status";
@@ -110,11 +110,19 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  recordDevice(id, cbSuccess, cbError, validate = null) {
-    const url = this.server + "/device/" + id + "/record";
+  recordDevice(id, start, body, cbSuccess, cbError, validate = null) {
+    let url = this.server + "/device/" + id + "/record?action=";
+    if (start) {
+      url = url + "start";
+    } else {
+      url = url + "stop";
+    }
+
+    console.log(body);
+    return;
 
     axios
-      .get(url, this.config)
+      .post(url, body, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
       .catch(err => this.catchError(err, cbError));
   }
@@ -155,13 +163,17 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  viewVideo(id, name, cbSuccess, cbError, validate = null) {
-    const url = this.server + "/video/" + id + "/view/" + name;
+  getVideoSrc(id, filename) {
+    const url =
+      this.server +
+      "/video/" +
+      id +
+      "/view/" +
+      filename +
+      "?accesstoken=" +
+      this.config.headers.accessToken;
 
-    axios
-      .get(url, this.config)
-      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
-      .catch(err => this.catchError(err, cbError));
+    return url;
   }
 
   addViewVideo(id, cbSuccess, cbError, validate = null) {
@@ -174,13 +186,13 @@ class API {
   }
 
   successResponse(res, cbSuccess, cbError, validate) {
-    let callbackArray = (callback, data) => {
+    let callbackArray = (callback, data, data2) => {
       if (Array.isArray(callback)) {
         for (let cb of callback) {
-          cb(data);
+          cb(data, data2);
         }
       } else {
-        callback(data);
+        callback(data, data2);
       }
     };
 
@@ -193,33 +205,43 @@ class API {
         return callbackArray(cbSuccess, res.data);
       }
 
-      return cbError("field validation error");
+      return callbackArray(cbError, "field validation error");
     }
 
     // Good status but bad success status
     if (res.status === 200 && !res.data.success) {
       console.log(res.data.message);
-      return cbError(res.data.message);
+      return callbackArray(cbError, res.data.message, res.data);
     }
 
     // Unauthorized
     if (res.status === 401 || res.status === 403) {
       window.location.replace("/unauthorized");
-      cbError("unauthorized access");
+      callbackArray(cbError, "unauthorized access");
     }
 
     // Not found
     if (res.status === 404) {
       window.location.replace("/error");
-      cbError("page not found");
+      callbackArray(cbError, "page not found");
     }
 
-    return cbError("unknown error");
+    return callbackArray(cbError, "unknown error");
   }
 
-  catchError(err, callback) {
+  catchError(err, cb) {
+    let callbackArray = (callbacks, data) => {
+      if (Array.isArray(callbacks)) {
+        for (let callback of callbacks) {
+          callback(data);
+        }
+      } else {
+        callbacks(data);
+      }
+    };
+
     console.log(err);
-    return callback("error connecting to server");
+    return callbackArray(cb, "error connecting to server");
   }
 }
 

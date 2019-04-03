@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const { hasValidFields, formatDate } = require("./utils");
+const { hasValidFields, formatDate, formatName } = require("./utils");
 const { authUser, getVideo, getDevice } = require("./middleware");
 const { Video, Lecturer, Viewer } = require("./models");
 
@@ -38,7 +38,8 @@ function getVideosRoute(req, res) {
             date: formatDate(v.date),
             description: v.description,
             views: v.views,
-            device: v.device
+            device: v.device,
+            creator: formatName(user)
           };
           videos.push(video);
         }
@@ -58,50 +59,55 @@ function getVideosRoute(req, res) {
     return;
   }
 
-  // Viewer.populate(user, "lecturers")
-  //   .then(function(viewer) {
-  //     if (!viewer) {
-  //       throw new Error();
-  //     }
+  // Get all videos for viewer
+  let promiseList = [];
+  for (let lecturer of user.lecturers) {
+    promiseList.push(Lecturer.findOne({ email: lecturer }));
+  }
 
-  //     let promises = [];
-  //     for (let lecturer of viewer.lecturers) {
-  //       promises.push(Lecturer.populate(lecturer, "videos"));
-  //     }
+  Promise.all(promiseList)
+    .then(function(response) {
+      if (!response) throw new Error();
 
-  //     return Promise.all(promises);
-  //   })
-  //   .then(function(docs) {
-  //     if (!docs) throw new Error();
+      // Populate all the videos for each lecturer
+      let populateList = [];
+      for (let lecturer of response) {
+        populateList.push(Lecturer.populate(lecturer, "videos"));
+      }
 
-  //     let videos = [];
-  //     for (let l of docs) {
-  //       for (let v of l.videos) {
-  //         let video = {
-  //           id: v._id,
-  //           name: v.name,
-  //           filename: v.filename,
-  //           date: formatDate(v.date),
-  //           description: v.description,
-  //           views: v.views,
-  //           device: v.device,
-  //           lecturer: l.name.first + " " + l.name.last
-  //         };
-  //         videos.push(video);
-  //       }
-  //     }
+      return Promise.all(populateList);
+    })
+    .then(function(response) {
+      if (!response) throw new Error();
 
-  //     payload.videos = videos;
-  //     res.json(payload);
-  //   })
-  //   .catch(function(err) {
-  //     console.log(err);
-  //     if (!payload.message) {
-  //       payload.message = "unable to get videos";
-  //     }
-  //     payload.success = false;
-  //     res.json(payload);
-  //   });
+      let videos = [];
+      for (let lecturer of response) {
+        for (let v of lecturer.videos) {
+          let video = {
+            id: v._id,
+            name: v.name,
+            filename: v.filename,
+            date: formatDate(v.date),
+            description: v.description,
+            views: v.views,
+            device: v.device,
+            creator: formatName(lecturer)
+          };
+          videos.push(video);
+        }
+      }
+
+      payload.videos = videos;
+      res.json(payload);
+    })
+    .catch(function(err) {
+      console.log(err);
+      if (!payload.message) {
+        payload.message = "unable to get videos";
+      }
+      payload.success = false;
+      res.json(payload);
+    });
 }
 
 /**
@@ -139,11 +145,16 @@ function addViewRoute(req, res) {
  * TODO: add view from user if play button clicked
  */
 function viewVideoRoute(req, res) {
-  const videoPath = path.join(
-    global.config.video_path,
-    req.params.filename + ".mp4"
-  );
-  const stat = fs.statSync(videoPath);
+  const videoPath = path.join(global.config.video_path, req.params.filename);
+
+  // Try to open video file
+  let stat;
+  try {
+    stat = fs.statSync(videoPath);
+  } catch (e) {
+    return res.status(404).send();
+  }
+
   const fileSize = stat.size;
   const range = req.headers.range;
   const user = req.user;
@@ -190,7 +201,7 @@ function addVideoRoute(req, res) {
     return res.json(payload);
   }
 
-  if (user.__t !== "Lecturer") {
+  if (user instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -200,33 +211,31 @@ function addVideoRoute(req, res) {
   let video = new Video({
     name: req.body.name,
     description: req.body.description,
-    lecturer: user,
     device: device.name
   });
   video.filename = video._id + ".mp4";
-  video
-    .save()
-    .then(function(video) {
-      if (!video) {
-        payload.message = "error saving video";
-        throw new Error();
-      }
+  user.videos.push(video);
 
-      user.videos.push(video);
-      return user.save();
-    })
-    .then(function(user) {
-      if (!user) {
-        payload.message = "error saving video to user";
-        throw new Error();
-      }
+  // Save video
+  Promise.all([video.save(), user.save()])
+    .then(function(response) {
+      if (!response[0] || !response[1]) throw new Error();
 
+      payload.video = {
+        id: response[0]._id,
+        name: response[0].name,
+        filename: response[0].filename,
+        date: formatDate(response[0].date),
+        description: response[0].description,
+        views: response[0].views,
+        device: response[0].device
+      };
       res.json(payload);
     })
     .catch(function(err) {
       console.log(err);
       if (!payload.message) {
-        payload.message = "unable to save video";
+        payload.message = "error saving lecture";
       }
 
       payload.success = false;
@@ -244,7 +253,7 @@ function deleteVideoRoute(req, res) {
     success: true
   };
 
-  if (user.__t !== "Lecturer") {
+  if (user instanceof Viewer) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -265,16 +274,26 @@ function deleteVideoRoute(req, res) {
         index++;
       }
 
-      return lecturer.save();
+      return Promise.all([video.remove(), lecturer.save()]);
     })
-    .then(function(lecturer) {
-      if (!lecturer) throw new Error();
+    .then(function(response) {
+      if (!response[0] || !response[1]) throw new Error();
 
-      return video.remove();
-    })
-    .then(function(video) {
-      if (!video) throw new Error();
+      payload.video = {
+        id: response[0]._id,
+        name: response[0].name,
+        filename: response[0].filename,
+        date: formatDate(response[0].date),
+        description: response[0].description,
+        views: response[0].views,
+        device: response[0].device
+      };
 
+      try {
+        fs.unlinkSync(
+          path.join(global.config.video_path, payload.video.filename)
+        );
+      } catch (e) {}
       res.json(payload);
     })
     .catch(function(err) {

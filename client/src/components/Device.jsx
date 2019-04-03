@@ -38,8 +38,13 @@ class Device extends Component {
 		const id = this.props.deviceId;
 		const status = this.state.status;
 
+		if (e.target.id === "remove") {
+			return this.props.onRemoveClick(id, name);
+		}
+
 		if (e.target.id !== "status") {
-			this.props.onClick(id, name, status, this.statusUpdate); //TODO: Add id possibly
+			this.onStatusClick();
+			return this.props.onClick(id, name, status, this.statusUpdate);
 		}
 	}
 
@@ -49,7 +54,12 @@ class Device extends Component {
 
 		return (
 			<li className="Device" onClick={this.onClick}>
-				{name}
+				<div className="device-name">
+					<div onClick={this.onClick} className="remove" id="remove">
+						-
+					</div>
+					{name}
+				</div>
 				<DeviceStatus status={status} onClick={this.onStatusClick} />
 			</li>
 		);

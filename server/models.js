@@ -15,8 +15,7 @@ const videoSchema = new Schema({
   date: { type: Date, default: Date.now },
   description: { type: String },
   views: { type: Number, default: 0 },
-  device: { type: String },
-  lecturer: { type: Schema.Types.ObjectId, ref: "Lecturer" }
+  device: { type: String }
 });
 const Video = model("Video", videoSchema);
 

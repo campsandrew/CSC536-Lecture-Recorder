@@ -1,118 +1,24 @@
-import React, { Component } from "react";
+import React from "react";
 import "./css/VideoList.css";
 
 import TitleBar from "./TitleBar";
 import Video from "./Video";
-//import Modal from "./Modal";
 
-class VideoList extends Component {
-	constructor(props) {
-		super(props);
+function VideoList(props) {
+	const { lecturer, videos, videoClick, addClick, removeClick } = props;
 
-		this.state = {
-			videos: [
-				// {
-				// 	id: 0,
-				// 	name: "Sample Video",
-				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				// 	device: "Test Device",
-				// 	lecturer: "Lecturer Name",
-				// 	views: 10,
-				// 	date: "2/29/2019",
-				// 	description: "Sample video pulled from youtube"
-				// },
-				// {
-				// 	id: 1,
-				// 	name: "Test Device",
-				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				// 	device: "My Camera",
-				// 	date: "2/29/2019",
-				// 	lecturer: "Lecturer Name",
-				// 	views: 10,
-				// 	description: "Sample video pulled from youtube"
-				// },
-				// {
-				// 	id: 2,
-				// 	name: "Test Device",
-				// 	url: "https://www.youtube.com/embed/HjxYvcdpVnU",
-				// 	device: "Backup",
-				// 	date: "2/29/2019",
-				// 	lecturer: "Lecturer Name",
-				// 	views: 10,
-				// 	description: "Sample video pulled from youtube"
-				// }
-			],
-			modal: {
-				show: false
-			}
-		};
-
-		this.onVideoClick = this.onVideoClick.bind(this);
-		this.onAddLecturerClick = this.onAddLecturerClick.bind(this);
-		this.onModalClose = this.onModalClose.bind(this);
-		this.onDeleteClick = this.onDeleteClick.bind(this);
-	}
-
-	onVideoClick(e, video) {
-		this.setState({
-			modal: {
-				show: true,
-				title: video.getName(),
-				content: "video",
-				primary: "Close",
-				secondary: "Delete"
-				// action: {
-				// 	type: "status",
-				// 	status: device.getStatus(),
-				// 	onClick: device.onStatusUpdate
-				// }
-			}
-		});
-	}
-
-	onAddLecturerClick(e) {
-		this.setState({
-			modal: {
-				show: true,
-				title: "New Lecturer",
-				content: "add-lecturer",
-				primary: "Add",
-				secondary: "Close"
-			}
-		});
-	}
-
-	onModalClose(e) {
-		this.setState({
-			modal: {
-				show: false
-			}
-		});
-	}
-
-	onDeleteClick(e) {
-		this.setState({
-			modal: {
-				show: false
-			}
-		});
-	}
-
-	renderVideoContent() {
-		const lecturer = this.props.isLecturer;
-		const videoDetails = this.state.videos;
-
-		if (!videoDetails.length) {
-			return <div className="no-video">no recorded lectures</div>;
-		}
-
-		return (
+	let videoList;
+	if (!videos.length) {
+		videoList = <div className="no-video">no recorded lectures</div>;
+	} else {
+		videoList = (
 			<ul>
-				{videoDetails.map(video => (
+				{videos.map(video => (
 					<Video
-						isLecturer={lecturer}
-						details={video}
-						onClick={this.onVideoClick}
+						lecturer={lecturer}
+						video={video}
+						onVideoClick={videoClick}
+						onRemoveClick={removeClick}
 						key={video.id}
 					/>
 				))}
@@ -120,38 +26,18 @@ class VideoList extends Component {
 		);
 	}
 
-	render() {
-		const lecturer = this.props.lecturer;
-		//const modal = this.state.modal;
-		let titleBar = <TitleBar title="Recordings" />;
-
-		// Change this based on user type true for Viewer
-		if (!lecturer) {
-			titleBar = (
-				<TitleBar
-					title="Recordings"
-					action={{ type: "add", onClick: this.onAddLecturerClick }}
-				/>
-			);
-		}
-
-		return (
-			<div className="VideoList">
-				{titleBar}
-				{this.renderVideoContent()}
-				{/*				<Modal
-					show={modal.show}
-					title={modal.title}
-					primary={modal.primary}
-					secondary={modal.secondary}
-					onPrimary={this.onModalClose}
-					onSecondary={this.onDeleteClick}
-					action={modal.action}
-					content={modal.content}
-				/>*/}
-			</div>
-		);
-	}
+	return (
+		<div className="VideoList">
+			<TitleBar title="Recordings">
+				{!lecturer ? (
+					<div onClick={addClick} className="add">
+						+
+					</div>
+				) : null}
+			</TitleBar>
+			{videoList}
+		</div>
+	);
 }
 
 export default VideoList;

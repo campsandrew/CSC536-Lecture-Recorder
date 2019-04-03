@@ -1,75 +1,40 @@
-import React, { Component } from "react";
+import React from "react";
 import "./css/Video.css";
 
-class Video extends Component {
-	// constructor(props) {
-	// 	super(props);
-	// }
+function Video({ lecturer, video, onVideoClick, onRemoveClick }) {
+	let creator = lecturer ? video.device : video.creator;
 
-	// const click = props.onClick;
-	// const { id, name, url, length, camera, date, description } = props.details;
-
-	/*	function formatDuration(length) {
-		var minutes = length / 60;
-
-		return minutes.toFixed(2) + " mins";
-	}*/
-
-	// formatDate(date) {
-	// 	return date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
-	// }
-
-	getName() {
-		return this.props.details.name;
-	}
-
-	renderVideoInfo() {
-		const lecturer = this.props.isLecturer;
-		const info = this.props.details;
-		let creator = info.device;
-
-		// Check if user if a viewer
-		if (!lecturer) {
-			creator = info.lecturer;
+	function onClick(e) {
+		if (e.target.id === "remove") {
+			return onRemoveClick(video.id, video.name);
 		}
 
-		return (
+		onVideoClick(video.id, video.name);
+	}
+
+	return (
+		<li className="Video" onClick={onClick}>
+			<div className="video-content">
+				{lecturer ? (
+					<div onClick={onClick} className="remove" id="remove">
+						-
+					</div>
+				) : null}
+				<video controls>
+					<source src={video.src} type="video/mp4" />
+				</video>
+			</div>
 			<div>
-				<h3>{info.name}</h3>
-				<div id="summary">
+				<h3>{video.name}</h3>
+				<div className="summary">
 					{creator}
 					<br />
-					{info.views} Views &#8729; {info.date}
+					{video.views} Views &#8729; {video.date}
 				</div>
-				<p>{info.description}</p>
+				<p>{video.description}</p>
 			</div>
-		);
-	}
-
-	renderVideo() {
-		const info = this.props.details;
-
-		return (
-			<iframe
-				title={info.name}
-				src={info.url}
-				frameBorder="0"
-				allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-				allowFullScreen
-			/>
-		);
-	}
-
-	render() {
-		const onClick = this.props.onClick;
-
-		return (
-			<div className="Video" onClick={e => onClick(e, this)}>
-				{this.renderVideo()}
-				{this.renderVideoInfo()}
-			</div>
-		);
-	}
+		</li>
+	);
 }
 
 export default Video;

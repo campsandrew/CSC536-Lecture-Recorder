@@ -18,11 +18,13 @@
 	background-color: grey;
 	/* Text */
 	/* Other */
+	cursor: pointer;
 }
 
-.Video iframe {
+.Video video {
 	/* Positioning */
 	/* Display & Box Model */
+	display: inline-block;
 	height: 150px;
 	width: 250px;
 	margin: 0 10px 0 0;
@@ -38,8 +40,29 @@
 
 .Video p {
 	font-size: 11pt;
+	max-width: 400px;
 }
 
-.Video #summary {
+.Video .summary {
 	font-size: 9pt;
+}
+
+.Video .video-content {
+	display: flex;
+	align-items: center;
+}
+
+.Video .remove {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	width: 14px;
+	height: 14px;
+	color: white;
+	border: 1px solid grey;
+	background-color: red;
+	border-radius: 14px;
+	cursor: pointer;
+	font-size: 12pt;
+	margin-right: 3px;
 }

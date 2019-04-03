@@ -1,11 +1,12 @@
 .CameraFeed {
-	width: 30vw;
+	width: 100%;
 	display: flex;
 	justify-content: space-around;
+	text-align: center;
 }
 
 .CameraFeed img {
 	height: 250px;
 	width: 300px;
-	margin: 10px 0 0 0;
+	margin: 10px;
 }

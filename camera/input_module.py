@@ -93,11 +93,13 @@ class Input(module.Module):
             if controller.status == 1:
                 payload["success"] = False
                 payload["message"] = "device currently recording"
+                payload["status"] = 1
             else:
                 msg = {module.LOCATION: module.CAMERA_MODULE,
                        module.DATA: {"record": True}}
                 success = controller.module_message(msg, from_module=Input())
                 controller.status = 1
+                payload["status"] = 1
 
             logger.debug("start_recording_route() returned: " + str(payload))
             return flask.jsonify(payload)

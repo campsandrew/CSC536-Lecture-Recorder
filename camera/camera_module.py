@@ -56,11 +56,8 @@ class Camera(module.Module):
         self.logger.debug("initialize() returned")
         return None
 
-    def start_recording(self):
-         #self._filepath = self._cap.stop()
-        # sg = {module.LOCATION: module.INPUT_MODULE,
-        #       module.DATA: {"upload": self._filepath}}
-        #self._send_message(msg, from_module=self)
+    def start_recording(self, filename):
+
         return True
 
     def get_frame(self):
@@ -70,6 +67,11 @@ class Camera(module.Module):
         return data
 
     def stop_recording(self):
+                #self._filepath = self._cap.stop()
+        # sg = {module.LOCATION: module.INPUT_MODULE,
+        #       module.DATA: {"upload": self._filepath}}
+        #self._send_message(msg, from_module=self)
+        print("STOP RECORDING")
         return True
 
     def cleanup(self):
@@ -107,8 +109,6 @@ class Camera(module.Module):
 
         # TODO: Create message types switchboard
         data = message[module.DATA]
-
-        # TODO: Put this on a thread
         if "record" in data:
             if data["record"]:
                 return self.start_recording()

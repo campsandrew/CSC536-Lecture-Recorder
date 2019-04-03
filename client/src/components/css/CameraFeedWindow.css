@@ -1,0 +1,22 @@
+.CameraFeedWindow {
+	/* Positioning */
+	/* Display & Box Model */
+	border-radius: 10px;
+	overflow: hidden;
+	width: 400px;
+	margin: 10px;
+
+	/* Color */
+	background-color: white;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+	/* Text */
+	/* Other */
+	user-select: none;
+}
+
+@media screen and (max-device-width: 400px) {
+	.DeviceList {
+		width: 100%;
+	}
+}

@@ -13,6 +13,16 @@ function formatDate(date) {
   return month + "/" + day + "/" + year;
 }
 
+function formatName(user) {
+  return (
+    user.name.first.slice(0, 1).toUpperCase() +
+    user.name.first.slice(1) +
+    " " +
+    user.name.last.slice(0, 1).toUpperCase() +
+    user.name.last.slice(1)
+  );
+}
+
 /**
  *
  */
@@ -20,32 +30,6 @@ function getAuthToken(code, expires = 3000) {
   code.expires = expires * 1000 + new Date().getTime();
   return { accessToken: jwt.encode(code, jwt_secret), expiresAt: code.expires };
 }
-
-/**
- *
- */
-// function canAddLecturer(user, lecturer) {
-//   for (let l of user.lecturers) {
-//     if (l._id.equals(lecturer._id)) {
-//       return false;
-//     }
-//   }
-
-//   return true;
-// }
-
-/**
- *
- */
-// function canAddDevice(user, newDevice) {
-//   for (let device of user.devices) {
-//     if (newDevice.id === device.id) {
-//       return false;
-//     }
-//   }
-
-//   return true;
-// }
 
 /**
  *
@@ -78,11 +62,10 @@ function hasValidFields(fields, required) {
 }
 
 exports = {
-  //canAddDevice,
-  //canAddLecturer,
   hasValidFields,
   decodeToken,
   getAuthToken,
+  formatName,
   formatDate
 };
 

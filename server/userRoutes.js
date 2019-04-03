@@ -28,7 +28,7 @@ function addLecturerRoute(req, res) {
     return res.json(payload);
   }
 
-  if (user.kind !== "Viewer") {
+  if (!(user instanceof Viewer)) {
     payload.message = "invalid user request";
     payload.success = false;
     return res.status(401).json(payload);
@@ -43,11 +43,11 @@ function addLecturerRoute(req, res) {
       }
 
       lecturer.viewers.push(user);
-      user.lecturers.push(lecturer);
+      user.lecturers.push(lecturer.email);
       return Promise.all([lecturer.save(), user.save()]);
     })
     .then(function(response) {
-      if (!response[0 || !response[1]]) throw new Error();
+      if (!response[0] || !response[1]) throw new Error();
 
       res.json(payload);
     })

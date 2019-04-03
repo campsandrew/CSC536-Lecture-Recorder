@@ -19,7 +19,7 @@ class DeviceModal extends Component {
 		this.inputs = [
 			{
 				type: "text",
-				label: "Lecturer name",
+				label: "Lecture name",
 				ref: "name",
 				validation: null,
 				key: 0
@@ -79,8 +79,9 @@ class DeviceModal extends Component {
 
 	onSubmit(e) {
 		const id = this.props.deviceId;
+		const status = this.state.status;
 
-		if (!this.isValid()) return;
+		if (status !== 1 && !this.isValid()) return;
 		this.setState({ loading: true });
 		this.props.submit(this.getContent(), id);
 	}
@@ -156,9 +157,9 @@ class DeviceModal extends Component {
 					<button
 						className="primary"
 						onClick={this.onSubmit}
-						disabled={loading || status === 2 || status === 1}
+						disabled={loading || status === 2}
 					>
-						Record
+						{status === 1 ? "Stop" : "Record"}
 					</button>
 				</div>
 			</div>

@@ -7,6 +7,7 @@ const { decodeToken } = require("./utils");
  */
 function crossOrigin(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, AccessToken"
@@ -25,10 +26,10 @@ function getVideo(req, res, next) {
   };
 
   // Find device and attach to request object
-  Video.findOne({ _id: videoId })
-    .then(function(doc) {
-      req.video = doc;
-      if (!doc) {
+  Video.findById(videoId)
+    .then(function(video) {
+      req.video = video;
+      if (!video) {
         return res.status(403).json(payload);
       }
 
