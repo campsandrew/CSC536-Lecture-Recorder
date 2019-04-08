@@ -8,7 +8,7 @@ function CameraFeedWindow({ device, url, feedError }) {
 	return (
 		<div className="CameraFeedWindow">
 			<TitleBar title={device.name} />
-			<CameraFeed device={device} fps={20} feed={url} feedError={feedError} />
+			<CameraFeed device={device} fps={10} feed={url} feedError={feedError} />
 		</div>
 	);
 }
