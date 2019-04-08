@@ -30,6 +30,7 @@ class Input(module.Module):
 
         # Initialize flask service and logger
         input_config = config
+        deviceId = controller.deviceId
         service = flask.Flask(__name__)
         logger = logging.getLogger(__name__)
         kwargs = {"host": config[HOST],
@@ -38,17 +39,20 @@ class Input(module.Module):
                   "use_reloader": False}
 
         # Don't start service if not connected
-        # to server
-        deviceId = controller.deviceId
-        server = Input.server_address_lookup(config[CONNECTOR])
-        parts = [server, "device", deviceId, "ping"]
-        status_url = "/".join(s.strip("/") for s in parts)
-        params = {"address": "http://" + Input.get_ip_address() +
-                  ":" + str(config[PORT])}
-        is_connected = Input.has_connection(status_url, params)
-        if not is_connected:
-            return None
+        # to server and not in debug mode
+        if not config[module.DEBUG]:
+            server = Input.server_address_lookup(config[CONNECTOR])
+            parts = [server, "device", deviceId, "ping"]
+            status_url = "/".join(s.strip("/") for s in parts)
+            params = {"address": "http://" + Input.get_ip_address() +
+                      ":" + str(config[PORT])}
+            is_connected = Input.has_connection(status_url, params)
+            if not is_connected:
+                return None
 
+        #######################################################################
+        # Start flask route definitions
+        #######################################################################
         @service.route("/status", methods=["GET"])
         def status_route():
             """
@@ -127,28 +131,6 @@ class Input(module.Module):
             logger.debug("stop_recording_route() returned: " + str(payload))
             return flask.jsonify(payload)
 
-        @service.route("/rotate", methods=["GET"])
-        def rotate_camera_route():
-            """
-            """
-
-            payload = {
-                "success": True
-            }
-
-            # Get directional parameters
-            direction = flask.request.args.get("direction")
-            if direction is None:
-                payload["success"] = False
-                payload["message"] = "no direction specified"
-            else:
-                msg = {module.LOCATION: module.MOTOR_MODULE,
-                       module.DATA: {"direction": direction}}
-                success = controller.module_message(msg, from_module=Input())
-
-            logger.debug("rotate_camera_route() returned: " + str(payload))
-            return flask.jsonify(payload)
-
         @service.route("/cleanup", methods=["GET"])
         def shutdown_system_route():
             """
@@ -193,11 +175,36 @@ class Input(module.Module):
             logger.debug("error_route() return payload: " + str(payload))
             return flask.jsonify(payload)
 
-        # initialize modules in controller
-        controller.initialize()
+        # @service.route("/rotate", methods=["GET"])
+        # def rotate_camera_route():
+        #     """
+        #     """
 
-        # Starting service
+        #     payload = {
+        #         "success": True
+        #     }
+
+        #     # Get directional parameters
+        #     direction = flask.request.args.get("direction")
+        #     if direction is None:
+        #         payload["success"] = False
+        #         payload["message"] = "no direction specified"
+        #     else:
+        #         msg = {module.LOCATION: module.MOTOR_MODULE,
+        #                module.DATA: {"direction": direction}}
+        #         success = controller.module_message(msg, from_module=Input())
+
+        #     logger.debug("rotate_camera_route() returned: " + str(payload))
+        #     return flask.jsonify(payload)
+
+        #######################################################################
+        # End flask route definitions
+        #######################################################################
+
+        # initialize modules in controller and start flask service
+        controller.initialize()
         service.run(**kwargs)
+
         return service
 
     @staticmethod
