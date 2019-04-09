@@ -80,7 +80,7 @@ class Input(module.Module):
                    module.DATA: {"frame": True}}
             frame = controller.module_message(msg, from_module=Input())
 
-            logger.debug("live_stream_route() return payload: " + str(payload))
+            logger.debug("live_stream_route() returned image payload")
             return flask.Response(b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n\r\n", mimetype="multipart/x-mixed-replace; boundary=frame")
 
         @service.route("/start", methods=["GET"])
@@ -100,7 +100,7 @@ class Input(module.Module):
                 payload["status"] = 1
             else:
                 msg = {module.LOCATION: module.CAMERA_MODULE,
-                       module.DATA: {"record": True}}
+                       module.DATA: {"record": True, "filename": ""}}
                 success = controller.module_message(msg, from_module=Input())
                 controller.status = 1
                 payload["status"] = 1
