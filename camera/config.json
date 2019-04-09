@@ -27,7 +27,7 @@
 		"camera": {
 			"save_file": "videos/",
 			"camera_source": 0,
-			"frame_width": 300,
+			"frame_width": 150,
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
 			"proto_file": "model/deploy.prototxt"
 		},

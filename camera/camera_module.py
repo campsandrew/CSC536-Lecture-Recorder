@@ -198,8 +198,9 @@ class Camera(module.Module):
                 self._frame = frame
 
         fps.stop()
-        self.logger.debug("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-        self.logger.debug("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+        self.logger.warning(
+            "[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+        self.logger.warning("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
         self.logger.debug("_read_frame() returned")
         return self
 

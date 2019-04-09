@@ -81,8 +81,8 @@ class Motor(module.Module):
         return None
 
     def _movement_calc(self, current, prev):
-        degrees = 20
-        rpm = 10
+        degrees = 0
+        rpm = 20
         curr_box, curr_ct = current
         prev_box, prev_ct = prev
 
@@ -96,16 +96,20 @@ class Motor(module.Module):
             mag = abs(currX - prevX)
             diff = currX - prevX
 
+            print("PIX DIFF: " + str(mag))
+
             if mag > 2 and diff > 2:
-                print("CLOCKWISE")
+                degrees = diff / 2
+                # print("CLOCKWISE")
             elif mag > 2 and diff < 2:
-                print("COUNTERCLOCKWISE")
+                degrees = diff / 2
+                # print("COUNTERCLOCKWISE")
             else:
                 return None, None
 
         return degrees, rpm
 
-    def _rotate(self, degrees=None, rpm=None):
+    def _rotate(self, degrees=None, rpm=20):
         """
         """
 
