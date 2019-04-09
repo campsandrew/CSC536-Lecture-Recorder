@@ -1,7 +1,7 @@
 {
 	"development": {
 		"controller": {
-			"debug": true
+			"debug": false
 		},
 		"camera": {
 			"save_folder": "videos/",
@@ -10,7 +10,10 @@
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
 			"proto_file": "model/deploy.prototxt"
 		},
-		"motor": {},
+		"motor": {
+			"pins": [7, 11, 13, 15],
+			"steps_per_rev": 2048
+		},
 		"input": {
 			"connector": "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector",
 			"host": "0.0.0.0",
@@ -28,7 +31,10 @@
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
 			"proto_file": "model/deploy.prototxt"
 		},
-		"motor": {},
+		"motor": {
+			"pins": [7, 11, 13, 15],
+			"steps_per_rev": 2048
+		},
 		"input": {
 			"connector": "https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector",
 			"host": "0.0.0.0",

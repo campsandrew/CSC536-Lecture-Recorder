@@ -40,15 +40,15 @@ class Input(module.Module):
 
         # Don't start service if not connected
         # to server and not in debug mode
-        if not config[module.DEBUG]:
-            server = Input.server_address_lookup(config[CONNECTOR])
-            parts = [server, "device", deviceId, "ping"]
-            status_url = "/".join(s.strip("/") for s in parts)
-            params = {"address": "http://" + Input.get_ip_address() +
-                      ":" + str(config[PORT])}
-            is_connected = Input.has_connection(status_url, params)
-            if not is_connected:
-                return None
+        # if not config[module.DEBUG]:
+        #     server = Input.server_address_lookup(config[CONNECTOR])
+        #     parts = [server, "device", deviceId, "ping"]
+        #     status_url = "/".join(s.strip("/") for s in parts)
+        #     params = {"address": "http://" + Input.get_ip_address() +
+        #               ":" + str(config[PORT])}
+        #     is_connected = Input.has_connection(status_url, params)
+        #     if not is_connected:
+        #         return None
 
         #######################################################################
         # Start flask route definitions

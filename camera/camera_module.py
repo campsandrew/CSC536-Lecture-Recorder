@@ -116,8 +116,7 @@ class Camera(module.Module):
         fourcc = cv2.VideoWriter_fourcc("M", "P", "4", "V")
         self._out = cv2.VideoWriter(
             self._filepath, fourcc, fps, (self._W, self._H))
-        with self._record_lock:
-            self._recording = True
+        self._recording = True
 
         self.logger.debug("start_recording() returned")
         return True
@@ -133,9 +132,10 @@ class Camera(module.Module):
             self.logger.debug("stop_recording() returned")
             return False
 
-        with self._record_lock:
-            self._recording = False
-            self._out.release()
+        # Stop recording
+        self._recording = False
+        self._out.release()
+
         # self._filepath = self._cap.stop()
         # sg = {module.LOCATION: module.INPUT_MODULE,
         #       module.DATA: {"upload": self._filepath}}
@@ -209,6 +209,10 @@ class Camera(module.Module):
         as communicating with the motor module.
         """
 
+        prev_box = (0, 0, 0, 0)
+        box = (0, 0, 0, 0)
+        prev_ct = {}
+        ct = {}
         while self._started:
             with self._frame_lock:
                 frame = self._frame.copy()
@@ -217,31 +221,42 @@ class Camera(module.Module):
                 frame, 1.0, (self._W, self._H), (104.0, 177.0, 123.0))
             self._net.setInput(blob)
             detections = self._net.forward()
-            rects = []
+            #rects = []
 
             # loop over the detections
             for i in range(0, detections.shape[2]):
                 if detections[0, 0, i, 2] > 0.5:  # 50% confidence
-                    box = detections[0, 0, i, 3:7] * \
-                        numpy.array([self._W, self._H, self._W, self._H])
-                    rects.append(box.astype("int"))
+                    prev_box = box
+                    prev_ct = ct.copy()
+                    box = (detections[0, 0, i, 3:7] *
+                           numpy.array([self._W, self._H, self._W, self._H])).astype("int")
+                    ct = self._ct.update([box])
 
-                    # Draws bounding box
-                    (startX, startY, endX, endY) = box.astype("int")
+                    # Check if device is alreaady recording
+                    msg = {module.LOCATION: module.MOTOR_MODULE,
+                           module.DATA: {"prev": (prev_box, prev_ct), "current": (box, ct)}}
+                    self._send_message(msg, from_module=self)
+
+                    # Draws box to frame
+                    (startX, startY, endX, endY) = box
                     cv2.rectangle(frame, (startX, startY), (endX, endY),
                                   (0, 255, 0), 2)
+                    centX, centY = ct[next(iter(ct))]
+                    cv2.circle(frame, (centX, centY), 4, (0, 255, 0), -1)
+
+                    break
 
             # update our centroid tracker using the computed set of bounding
             # box rectangles
-            objects = self._ct.update(rects)
+            #objects = self._ct.update(rects)
 
             # loop over the tracked objects
-            for (objectID, centroid) in objects.items():
-                text = "ID {}".format(objectID)
-                cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                cv2.circle(frame, (centroid[0], centroid[
-                           1]), 4, (0, 255, 0), -1)
+            # for (objectID, centroid) in objects.items():
+                #text = "ID {}".format(objectID)
+                # cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
+                #            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                # cv2.circle(frame, (centroid[0], centroid[
+                #           1]), 4, (0, 255, 0), -1)
                 #print(centroid[0], centroid[1])
 
             with self._process_lock:
