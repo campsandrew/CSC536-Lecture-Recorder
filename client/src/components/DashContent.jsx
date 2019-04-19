@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import "./css/ContentArea.css";
 
 import AddFormModal from "./AddFormModal";
@@ -13,27 +14,62 @@ class DashContent extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = {
-			show: false,
-			videos: [],
-			devices: []
+		// Class variables
+		this.api = null;
+		this.fps = 10;
+		this.statusCodes = {
+			offline: 2,
+			recording: 1,
+			online: 0
+		};
+		this.modalTypes = {
+			device: "device",
+			video: "video",
+			addDevice: "add-device",
+			removeDevice: "remove-device",
+			addLecturer: "add-lecturer",
+			removeVideo: "remove-video"
 		};
 
-		this.api = null;
-		this.addDeviceClick = this.addDeviceClick.bind(this);
-		this.addDeviceClick = this.addDeviceClick.bind(this);
-		this.removeDeviceClick = this.removeDeviceClick.bind(this);
-		this.addLecturerClick = this.addLecturerClick.bind(this);
-		this.removeVideoClick = this.removeVideoClick.bind(this);
-		this.deviceStatusClick = this.deviceStatusClick.bind(this);
-		this.deviceClick = this.deviceClick.bind(this);
-		this.videoClick = this.videoClick.bind(this);
-		this.closeModal = this.closeModal.bind(this);
-		this.onFormSubmit = this.onFormSubmit.bind(this);
+		// Initial state
+		this.state = {
+			videos: [],
+			devices: [],
+			modal: {
+				show: false
+			}
+		};
+
+		// Api method bindings
+		this.apiGetDevicesSuccess = this.apiGetDevicesSuccess.bind(this);
+		this.apiGetStatusSuccess = this.apiGetStatusSuccess.bind(this);
+		this.apiGetVideosSuccess = this.apiGetVideosSuccess.bind(this);
 		this.apiSuccess = this.apiSuccess.bind(this);
-		this.apiVideosSuccess = this.apiVideosSuccess.bind(this);
-		this.apiStatusChange = this.apiStatusChange.bind(this);
 		this.apiError = this.apiError.bind(this);
+
+		// Device method bindings
+		this.onAddDeviceClick = this.onAddDeviceClick.bind(this);
+		this.onRemoveDeviceClick = this.onRemoveDeviceClick.bind(this);
+		this.onDeviceClick = this.onDeviceClick.bind(this);
+		this.onStatusClick = this.onStatusClick.bind(this);
+		this.onShutdownClick = this.onShutdownClick.bind(this);
+
+		// Video method bindings
+		this.onAddLecturerClick = this.onAddLecturerClick.bind(this);
+		this.onRemoveVideoClick = this.onRemoveVideoClick.bind(this);
+		this.onVideoClick = this.onVideoClick.bind(this);
+
+		// Modal method bindings
+		this.onModalSubmit = this.onModalSubmit.bind(this);
+		this.onModalClose = this.onModalClose.bind(this);
+
+		// Device status information
+		this.deviceOffline = d =>
+			d.status === this.statusCodes.offline ? true : false;
+		this.deviceRecording = d =>
+			d.status === this.statusCodes.recording ? true : false;
+		this.deviceOnline = d =>
+			d.status === this.statusCodes.online ? true : false;
 	}
 
 	componentDidUpdate(prevProps) {
@@ -43,303 +79,287 @@ class DashContent extends Component {
 		// Create api and get video content
 		if (this.api === null && server && lecturer !== undefined) {
 			this.api = new API(server);
-			this.api.getVideos(this.apiVideosSuccess, this.apiError);
 
 			if (lecturer) {
-				this.api.getDevices(
-					data => this.setState({ devices: data.devices }),
-					this.apiError
-				);
+				this.api.getVideos(this.apiGetVideosSuccess, this.apiError);
+				this.api.getDevices(this.apiGetDevicesSuccess, this.apiError);
 			}
 		}
 	}
 
-	onFormSubmit(content, id) {
-		const modal = this.state.modal;
-		const devices = this.state.devices;
-
-		if (this.api === null) {
-			this.refs[modal].submitError("no connection to servers");
-			return;
+	/**
+	 * Api Callback Methods
+	 */
+	apiGetDevicesSuccess(data) {
+		let devices = data.devices;
+		for (let device of devices) {
+			device.status = this.statusCodes.offline;
+			this.onStatusClick(device);
 		}
 
-		switch (modal) {
-			case "add-device":
-				this.api.addDevice(content, this.apiSuccess, this.apiError);
-				break;
-			case "remove-device":
-				this.api.deleteDevice(id, this.apiSuccess, this.apiError);
-				break;
-			case "add-lecturer":
-				this.api.addLecturer(content, this.apiSuccess, this.apiError);
-				break;
-			case "remove-video":
-				this.api.deleteVideo(id, this.apiSuccess, this.apiError);
-				break;
-			case "device":
-				let device;
-				for (let d of devices) {
-					if (id === d.id) device = d;
-				}
-
-				if (!device.recording) {
-					this.api.addVideo(id, content, this.apiSuccess, this.apiError);
-					this.api.recordDevice(id, true, this.apiSuccess, this.apiError);
-				} else {
-					this.api.recordDevice(id, false, this.apiSuccess, this.apiError);
-				}
-				break;
-			case "video":
-			default:
-		}
+		this.setState({ devices: devices });
 	}
+	apiGetStatusSuccess(data) {
+		let devices = this.state.devices;
 
+		// Add updated status to device
+		for (let device of devices) {
+			if (device.id === data.id) {
+				device.status = data.status;
+				device.address = data.address;
+			}
+		}
+
+		this.setState({ devices: devices });
+	}
+	apiGetVideosSuccess(data) {
+		let videos = data.videos;
+
+		for (let video of videos) {
+			video.src = this.api.getVideoSrc(video);
+		}
+
+		this.setState({ videos: videos });
+	}
 	apiSuccess(data) {
 		const modal = this.state.modal;
 		let devices = this.state.devices;
 		let videos = this.state.videos;
+		let newState = {};
 
-		switch (modal) {
-			case "add-device":
+		switch (modal.type) {
+			case this.modalTypes.addDevice:
+				data.device.status = this.statusCodes.offline;
 				devices.push(data.device);
-				this.setState({ devices: devices, show: false });
+				newState.devices = devices;
+				this.onStatusClick(data.device);
 				break;
-			case "remove-device":
+			case this.modalTypes.removeDevice:
 				for (let i in devices) {
 					if (devices[i].id === data.device.id) {
 						devices.splice(i, 1);
 					}
 				}
 
-				this.setState({ devices: devices, show: false });
+				newState.devices = devices;
 				break;
-			case "add-lecturer":
-				this.api.getVideos(this.apiVideosSuccess, this.apiError);
-				this.setState({ show: false });
+			case this.modalTypes.addLecturer:
+				this.api.getVideos(this.apiGetVideosSuccess, this.apiError);
 				break;
-			case "remove-video":
+			case this.modalTypes.removeVideo:
 				for (let i in videos) {
 					if (videos[i].id === data.video.id) {
 						videos.splice(i, 1);
 					}
 				}
 
-				this.setState({ videos: videos, show: false });
+				newState.videos = videos;
 				break;
-			case "device":
+			case this.modalTypes.device:
+				// Add new video to list
 				if (data.video) {
 					videos.push(data.video);
-					return this.setState({ videos: videos });
+					newState.videos = videos;
 				}
 
-				if (data.recording) {
-					for (let i in devices) {
-						if (devices[i].id === data.id) {
-							devices[i].recording = true;
-							devices[i].status = data.status;
+				// Update device status
+				if (data.device) {
+					for (let device of devices) {
+						if (device.id === data.device.id) {
+							device.status = data.device.status;
 							break;
 						}
 					}
-					return this.setState({ devices: devices, show: false });
-				}
-
-				if (data.recording === false) {
-					for (let i in devices) {
-						if (devices[i].id === data.id) {
-							devices[i].recording = false;
-							devices[i].status = data.status;
-							break;
-						}
-					}
-					return this.setState({ devices: devices, show: false });
+					newState.devices = devices;
 				}
 
 				break;
-			case "video":
+			case this.modalTypes.video:
+			default:
+		}
+
+		newState.modal = { show: false };
+		this.setState(newState);
+	}
+
+	apiError(data) {
+		const modal = this.state.modal;
+
+		if (modal.show) {
+			console.log("HERE: " + modal);
+			console.log(data);
+			this.refs[modal.type].submitError(data.message);
+		}
+
+		// Updating device status if no contact is made
+		if (data.hasOwnProperty("id")) {
+			data.status = this.statusCodes.offline;
+			this.apiGetStatusSuccess(data);
+		}
+
+		console.log(data.message);
+	}
+
+	/**
+	 * Modal Events
+	 */
+	onModalSubmit(content, id) {
+		const modal = this.state.modal;
+
+		if (this.api === null) {
+			let message = "server connection error";
+			return this.refs[modal].submitError(message);
+		}
+
+		switch (modal.type) {
+			case this.modalTypes.addDevice:
+				this.api.addDevice(content, this.apiSuccess, this.apiError);
+				break;
+			case this.modalTypes.removeDevice:
+				this.api.deleteDevice(id, this.apiSuccess, this.apiError);
+				break;
+			case this.modalTypes.addLecturer:
+				this.api.addLecturer(content, this.apiSuccess, this.apiError);
+				break;
+			case this.modalTypes.removeVideo:
+				this.api.deleteVideo(id, this.apiSuccess, this.apiError);
+				break;
+			case this.modalTypes.device:
+				this.api.recordDevice(
+					id,
+					content,
+					this.deviceRecording(modal.device),
+					this.apiSuccess,
+					this.apiError
+				);
+				break;
+			case this.modalTypes.video:
 			default:
 		}
 	}
 
-	apiVideosSuccess(data) {
-		let videos = data.videos;
-
-		for (let i in videos) {
-			videos[i].src = this.api.getVideoSrc(videos[i].id, videos[i].filename);
-		}
-
-		this.setState({ videos: data.videos });
-	}
-
-	apiError(error) {
-		const modal = this.state.modal;
-		const show = this.state.show;
-
-		if (show) {
-			this.refs[modal].submitError(error);
-		}
-	}
-
-	addDeviceClick() {
-		this.setState({ show: true, modal: "add-device" });
-	}
-
-	removeDeviceClick(id, name) {
+	onModalClose(e) {
 		this.setState({
-			show: true,
-			modal: "remove-device",
-			device: { id: id, name: name }
-		});
-	}
-
-	addLecturerClick() {
-		this.setState({
-			show: true,
-			modal: "add-lecturer"
-		});
-	}
-
-	removeVideoClick(id, name) {
-		this.setState({
-			show: true,
-			modal: "remove-video",
-			video: { id: id, name: name }
-		});
-	}
-
-	deviceClick(id, name, status, statusUpdate) {
-		this.deviceStatusClick(id, statusUpdate, this.apiError);
-		this.setState({
-			show: true,
-			modal: "device",
-			device: { id: id, name: name, status: status, callback: statusUpdate }
-		});
-	}
-
-	deviceStatusClick(id, successCbs, errorCbs) {
-		const addIn = (cb, add) => {
-			if (Array.isArray(cb)) {
-				cb.push(add);
-				return cb;
+			modal: {
+				show: false
 			}
+		});
+	}
 
-			if (!cb) {
-				return [this.apiError, add];
+	/**
+	 * Video Click Events
+	 */
+	onAddLecturerClick() {
+		this.setState({
+			modal: {
+				show: true,
+				type: this.modalTypes.addLecturer
 			}
-
-			return [cb, add];
-		};
-
-		successCbs = addIn(successCbs, this.apiStatusChange);
-		errorCbs = addIn(errorCbs, this.apiStatusChange);
-
-		return this.api.statusDevice(id, successCbs, errorCbs);
+		});
 	}
-
-	// This is some shit code i need to fix
-	apiStatusChange(data, data2) {
-		const addStatus = (data, status) => {
-			for (let i in devices) {
-				if (devices[i].id === data.id) {
-					devices[i].status = status;
-					devices[i].address = data.address;
-				}
+	onVideoClick(video) {}
+	onRemoveVideoClick(video) {
+		this.setState({
+			modal: {
+				show: true,
+				type: this.modalTypes.removeVideo,
+				video: video
 			}
-		};
-
-		let devices = this.state.devices;
-		if (data && data.hasOwnProperty("status") && data.hasOwnProperty("id")) {
-			addStatus(data, data.status);
-		} else if (
-			data2 &&
-			data2.hasOwnProperty("status") &&
-			data2.hasOwnProperty("id")
-		) {
-			addStatus(data2, data2.status);
-		} else if (data && data.hasOwnProperty("id")) {
-			addStatus(data, 2);
-		} else if (data2 && data2.hasOwnProperty("id")) {
-			addStatus(data2, 2);
-		} else {
-			return;
-		}
-
-		this.setState({ devices: devices });
+		});
 	}
 
-	videoClick() {}
-
-	closeModal(e) {
-		this.setState({ show: false });
+	/**
+	 * Device Click Events
+	 */
+	onDeviceClick(device) {
+		this.setState({
+			modal: {
+				show: true,
+				type: this.modalTypes.device,
+				device: device
+			}
+		});
+	}
+	onAddDeviceClick(e) {
+		this.setState({
+			modal: {
+				show: true,
+				type: this.modalTypes.addDevice
+			}
+		});
+	}
+	onRemoveDeviceClick(device) {
+		this.setState({
+			modal: {
+				show: true,
+				type: this.modalTypes.removeDevice,
+				device: device
+			}
+		});
+	}
+	onStatusClick(device) {
+		this.api.statusDevice(device.id, this.apiGetStatusSuccess, this.apiError);
+	}
+	onShutdownClick(device) {
+		this.api.shutdownDevice(device.id, this.apiSuccess, this.apiError);
 	}
 
+	/**
+	 * Render Methods
+	 */
 	renderModal() {
-		const video = this.state.video;
-		const device = this.state.device;
 		const modal = this.state.modal;
 
-		if (!this.state.show) {
-			return null;
-		}
-
-		switch (modal) {
-			case "add-device":
+		switch (modal.type) {
+			case this.modalTypes.addDevice:
 				return (
 					<AddFormModal
-						title="Register Device"
 						type="device"
-						onClose={this.closeModal}
-						submit={this.onFormSubmit}
-						ref={modal}
+						onSubmit={this.onModalSubmit}
+						onClose={this.onModalClose}
+						ref={modal.type}
 					/>
 				);
-			case "remove-device":
+			case this.modalTypes.removeDevice:
 				return (
 					<RemoveFormModal
-						title="Delete Device"
-						id={device.id}
-						name={device.name}
-						type="device"
-						onClose={this.closeModal}
-						submit={this.onFormSubmit}
-						ref={modal}
+						device={modal.device}
+						onSubmit={this.onModalSubmit}
+						onClose={this.onModalClose}
+						ref={modal.type}
 					/>
 				);
-			case "add-lecturer":
+			case this.modalTypes.addLecturer:
 				return (
 					<AddFormModal
-						title="Add Lecturer"
 						type="lecturer"
-						onClose={this.closeModal}
-						submit={this.onFormSubmit}
-						ref={modal}
+						onSubmit={this.onModalSubmit}
+						onClose={this.onModalClose}
+						ref={modal.type}
 					/>
 				);
-			case "remove-video":
+			case this.modalTypes.removeVideo:
 				return (
 					<RemoveFormModal
-						title="Delete Video"
-						id={video.id}
-						name={video.name}
-						type="video"
-						onClose={this.closeModal}
-						submit={this.onFormSubmit}
-						ref={modal}
+						video={modal.video}
+						onSubmit={this.onModalSubmit}
+						onClose={this.onModalClose}
+						ref={modal.type}
 					/>
 				);
-			case "device":
+			case this.modalTypes.device:
 				return (
 					<DeviceModal
-						title={device.name}
-						deviceId={device.id}
-						onClose={this.closeModal}
-						submit={this.onFormSubmit}
-						onStatusClick={this.deviceStatusClick}
-						deviceCallback={device.callback}
-						status={device.status}
-						ref={modal}
+						device={modal.device}
+						offline={this.deviceOffline(modal.device)}
+						recording={this.deviceRecording(modal.device)}
+						statusClick={this.onStatusClick}
+						onSubmit={this.onModalSubmit}
+						onClose={this.onModalClose}
+						ref={modal.type}
 					/>
 				);
-			case "video":
+			case this.modalTypes.video:
 			default:
 				return null;
 		}
@@ -350,31 +370,32 @@ class DashContent extends Component {
 		const videos = this.state.videos;
 		const devices = this.state.devices;
 
-		// if viewer then dont render devices
 		let deviceList = null;
 		let cameraFeeds = null;
+
+		// if viewer then dont render devices
 		if (lecturer) {
 			deviceList = (
 				<DeviceList
 					devices={devices}
-					deviceClick={this.deviceClick}
-					statusClick={this.deviceStatusClick}
-					addClick={this.addDeviceClick}
-					removeClick={this.removeDeviceClick}
+					addClick={this.onAddDeviceClick}
+					deviceClick={this.onDeviceClick}
+					statusClick={this.onStatusClick}
+					removeClick={this.onRemoveDeviceClick}
 				/>
 			);
 			cameraFeeds = devices.map(device => {
-				if (device.status === 1 || device.status === 0) {
+				if (this.deviceRecording(device) || this.deviceOnline(device)) {
 					return (
 						<CameraFeedWindow
 							device={device}
-							url={device.address + "/live"}
+							fps={this.fps}
+							feedError={this.onStatusClick}
+							shutdown={this.onShutdownClick}
 							key={device.id}
-							feedError={this.deviceStatusClick}
 						/>
 					);
 				}
-
 				return null;
 			});
 		}
@@ -384,11 +405,11 @@ class DashContent extends Component {
 				{deviceList}
 				{cameraFeeds}
 				<VideoList
-					lecturer={lecturer}
 					videos={videos}
-					videoClick={this.videoClick}
-					addClick={this.addLecturerClick}
-					removeClick={this.removeVideoClick}
+					isLecturer={lecturer}
+					addClick={this.onAddLecturerClick}
+					videoClick={this.onVideoClick}
+					removeClick={this.onRemoveVideoClick}
 				/>
 			</div>
 		);
@@ -396,12 +417,14 @@ class DashContent extends Component {
 
 	render() {
 		const auth = this.props.auth;
+		const showModal = this.state.modal.show;
 
 		document.title = "LectureFly | Dash";
 		return (
 			<div>
-				{auth ? this.renderContent() : null}
-				{this.renderModal()}
+				{!auth ? <Redirect to="/unauthorized" /> : null}
+				{this.renderContent()}
+				{showModal ? this.renderModal() : null}
 			</div>
 		);
 	}

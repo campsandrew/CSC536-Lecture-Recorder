@@ -8,9 +8,6 @@ import ErrorContent from "./ErrorContent";
 import API from "../api";
 import Auth from "../authentication";
 
-const CONNECTOR_URL =
-	"https://0y701umd03.execute-api.us-west-2.amazonaws.com/lambda/ipConnector";
-
 class App extends Component {
 	/**
 	 *
@@ -18,9 +15,11 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 
+		this.auth = new Auth();
+
 		this.state = {
 			server: "",
-			authenticated: false,
+			authenticated: this.auth.isAuthenticated(),
 			user: {}
 		};
 
@@ -28,8 +27,7 @@ class App extends Component {
 		this.apiConnectorSuccess = this.apiConnectorSuccess.bind(this);
 		this.apiError = this.apiError.bind(this);
 		this.onLogout = this.onLogout.bind(this);
-		this.api = new API(CONNECTOR_URL, false);
-		this.auth = new Auth();
+		this.api = new API(props.connector, false);
 	}
 
 	/**
@@ -43,28 +41,15 @@ class App extends Component {
 	 *
 	 */
 	apiConnectorSuccess(data) {
-		const authenticated = this.auth.isAuthenticated();
-		const authState = this.state.authenticated;
+		const auth = this.state.authenticated;
 
+		this.api = new API(data.address);
 		this.setState({
 			server: data.address
 		});
 
-		this.api = new API(data.address);
-		if (authenticated && !authState) {
-			this.setState({
-				authenticated: true
-			});
-
-			return this.api.getUser(this.apiGetUserSuccess, this.apiError);
-		}
-
-		if (!authenticated && authState) {
-			this.setState({
-				authenticated: false
-			});
-
-			return;
+		if (auth) {
+			this.api.getUser(this.apiGetUserSuccess, this.apiError);
 		}
 	}
 
@@ -88,6 +73,7 @@ class App extends Component {
 	}
 
 	onLogout(e) {
+		this.setState({ authenticated: false });
 		this.auth.logout();
 	}
 
@@ -98,6 +84,7 @@ class App extends Component {
 		const server = this.state.server;
 		const user = this.state.user;
 		const auth = this.state.authenticated;
+
 		const routing = (
 			<BrowserRouter>
 				<Switch>
@@ -112,12 +99,14 @@ class App extends Component {
 						render={() => (
 							<DashContent
 								server={server}
-								auth={auth}
 								lecturer={user.lecturer}
+								auth={auth}
 							/>
 						)}
 					/>
-					<Route render={() => <ErrorContent />} />
+					<Route
+						render={() => <ErrorContent path={window.location.pathname} />}
+					/>
 				</Switch>
 			</BrowserRouter>
 		);

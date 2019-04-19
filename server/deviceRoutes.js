@@ -1,8 +1,8 @@
 const express = require("express");
 const axios = require("axios");
-const { hasValidFields } = require("./utils");
+const { hasValidFields, formatDate } = require("./utils");
 const { getDevice, getVideo, authUser } = require("./middleware");
-const { Device, Lecturer, Viewer } = require("./models");
+const { Device, Lecturer, Viewer, Video } = require("./models");
 
 const router = express.Router();
 
@@ -25,8 +25,13 @@ router.delete(
   deleteDeviceRoute
 );
 router.get("/device/:deviceid/status", authUser, getDevice, deviceStatusRoute);
-router.get("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
-router.get("/device/:deviceid/cleanup", authUser, deviceCleanupRoute);
+router.post("/device/:deviceid/record", authUser, getDevice, deviceRecordRoute);
+router.get(
+  "/device/:deviceid/cleanup",
+  authUser,
+  getDevice,
+  deviceCleanupRoute
+);
 
 /**
  *
@@ -261,22 +266,129 @@ function deviceStatusRoute(req, res) {
  *
  */
 function deviceRecordRoute(req, res) {
-  let action = req.query.action.toLowerCase();
-  let device = req.device;
+  const required = ["name", "description"];
+  const action = req.query.action;
+  const user = req.user;
+  const device = req.device;
   let payload = {
     success: true
   };
 
   // Check for valid query action
-  if (action !== "start" && action !== "stop") {
+  if (
+    !hasValidFields(req.query, "action") &&
+    action !== "start" &&
+    action !== "stop"
+  ) {
     payload.success = false;
     payload.message = "invalid recording action";
     return res.json(payload);
   }
 
+  // Check for proper values in body
+  if (!hasValidFields(req.body, required)) {
+    payload.message = "invalid fields";
+    payload.success = false;
+    return res.json(payload);
+  }
+
+  if (user instanceof Viewer) {
+    payload.message = "invalid user request";
+    payload.success = false;
+    return res.status(401).json(payload);
+  }
+
+  // Create new video
+  let video = new Video({
+    name: req.body.name,
+    description: req.body.description,
+    device: device.name
+  });
+  video.filename = video._id + ".mp4";
+  user.videos.push(video);
+
+  let url = device.address + "/" + action;
+  if (req.body.tracking) {
+    url += "?tracking=" + req.body.tracking + "&filename=" + video.filename;
+  }
+
+  // Send record message to device
+  axios
+    .get(url)
+    .then(function(response) {
+      if (!response) {
+        payload.message = "no communication with device";
+        throw new Error();
+      }
+
+      // Add video device response
+      payload.device = { id: device.id };
+      if (response.data.success) {
+        delete response.data.success;
+        for (let k in response.data) {
+          payload.device[k] = response.data[k];
+        }
+      } else {
+        payload.message = response.data.message;
+        throw new Error();
+      }
+
+      // Don't try to create video if stoping recording
+      if (action === "stop") {
+        res.json(payload);
+        return null;
+      } else {
+        return Promise.all([video.save(), user.save()]);
+      }
+    })
+    .then(function(response) {
+      if (!response) return;
+      if (!response[0] || !response[1]) throw new Error();
+
+      payload.video = {
+        id: response[0]._id,
+        name: response[0].name,
+        filename: response[0].filename,
+        date: formatDate(response[0].date),
+        description: response[0].description,
+        views: response[0].views,
+        device: response[0].device
+      };
+
+      return res.json(payload);
+    })
+    .catch(function(err) {
+      console.log(err);
+      if (!payload.message) {
+        payload.message = "error recording lecture";
+      }
+
+      payload.device = { id: device.id, status: 2 };
+      payload.success = false;
+      return res.json(payload);
+    });
+}
+
+/**
+ *
+ */
+function deviceCleanupRoute(req, res) {
+  let required = ["shutdown"];
+  let device = req.device;
+  let payload = {
+    success: true
+  };
+
+  // Check for proper values in body
+  if (!hasValidFields(req.query, required)) {
+    payload.message = "invalid fields";
+    payload.success = false;
+    return res.json(payload);
+  }
+
   // Send device status request
   axios
-    .get(`${device.address}/${action}`)
+    .get(`${device.address}/cleanup?shutdown=${req.query.shutdown}`)
     .then(function(response) {
       if (response.data.success) {
         delete response.data.success;
@@ -297,17 +409,6 @@ function deviceRecordRoute(req, res) {
       payload.message = "no communication with device";
       res.json(payload);
     });
-}
-
-/**
- *
- */
-function deviceCleanupRoute(req, res) {
-  let payload = {
-    success: true
-  };
-
-  res.json(payload);
 }
 
 module.exports = router;

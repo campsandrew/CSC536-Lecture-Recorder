@@ -9,14 +9,17 @@ class AddFormModal extends Component {
 	constructor(props) {
 		super(props);
 
+		this.inputs = [];
+		this.title = "";
 		this.state = {
 			loading: false,
 			errors: []
 		};
 
-		this.inputs = [];
+		// Get proper inputs for modal
 		switch (props.type) {
 			case "device":
+				this.title = "Register Device";
 				this.inputs = [
 					{
 						type: "text",
@@ -35,6 +38,7 @@ class AddFormModal extends Component {
 				];
 				break;
 			case "lecturer":
+				this.title = "Add Lecturer";
 				this.inputs = [
 					{
 						type: "email",
@@ -82,7 +86,7 @@ class AddFormModal extends Component {
 	onSubmit(e) {
 		if (!this.isValid()) return;
 		this.setState({ loading: true });
-		this.props.submit(this.getContent());
+		this.props.onSubmit(this.getContent());
 	}
 
 	submitError(error) {
@@ -157,12 +161,10 @@ class AddFormModal extends Component {
 	}
 
 	render() {
-		const title = this.props.title;
-
 		return (
 			<div className="Modal">
 				<div className="form">
-					<TitleBar title={title} className="color-dark large" />
+					<TitleBar title={this.title} className="color-dark large" />
 					{this.renderContent()}
 					<hr />
 					{this.renderFooter()}

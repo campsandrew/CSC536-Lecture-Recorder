@@ -5,7 +5,7 @@ import Device from "./Device";
 import TitleBar from "./TitleBar";
 
 function DeviceList(props) {
-	const { devices, deviceClick, statusClick, addClick, removeClick } = props;
+	const { devices, addClick, deviceClick, statusClick, removeClick } = props;
 
 	let deviceList;
 	if (!devices.length) {
@@ -15,9 +15,8 @@ function DeviceList(props) {
 			<ul>
 				{devices.map(device => (
 					<Device
-						deviceId={device.id}
-						name={device.name}
-						onClick={deviceClick}
+						deviceInfo={device}
+						onDeviceClick={deviceClick}
 						onStatusClick={statusClick}
 						onRemoveClick={removeClick}
 						key={device.id}

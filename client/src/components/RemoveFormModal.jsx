@@ -13,13 +13,24 @@ class RemoveFormModal extends Component {
 			errors: []
 		};
 
+		if (props.hasOwnProperty("device")) {
+			this.title = "Delete Device";
+			this.item = props.device;
+		} else if (props.hasOwnProperty("video")) {
+			this.title = "Delete Lecture";
+			this.item = props.video;
+		} else {
+			this.title = "";
+			this.item = {};
+		}
+
 		this.onSubmit = this.onSubmit.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
 	}
 
 	onSubmit(e) {
 		this.setState({ loading: true });
-		this.props.submit(null, this.props.id);
+		this.props.onSubmit(null, this.item.id);
 	}
 
 	submitError(error) {
@@ -33,14 +44,13 @@ class RemoveFormModal extends Component {
 	}
 
 	renderContent() {
-		const name = this.props.name;
 		const errors = this.state.errors;
 		const loading = this.state.loading;
 
 		return (
 			<div className="content">
 				<div className="note">
-					Are you sure you would like to delete {name}?
+					Are you sure you would like to delete {this.item.name}?
 				</div>
 				<ErrorStatus errors={errors} loading={loading} />
 			</div>
@@ -73,12 +83,10 @@ class RemoveFormModal extends Component {
 	}
 
 	render() {
-		const title = this.props.title;
-
 		return (
 			<div className="Modal">
 				<div className="form">
-					<TitleBar title={title} className="color-dark large" />
+					<TitleBar title={this.title} className="color-dark large" />
 					{this.renderContent()}
 					<hr />
 					{this.renderFooter()}

@@ -5,7 +5,7 @@ import TitleBar from "./TitleBar";
 import Video from "./Video";
 
 function VideoList(props) {
-	const { lecturer, videos, videoClick, addClick, removeClick } = props;
+	const { isLecturer, videos, videoClick, addClick, removeClick } = props;
 
 	let videoList;
 	if (!videos.length) {
@@ -15,10 +15,10 @@ function VideoList(props) {
 			<ul>
 				{videos.map(video => (
 					<Video
-						lecturer={lecturer}
+						isLecturer={isLecturer}
 						video={video}
-						onVideoClick={videoClick}
-						onRemoveClick={removeClick}
+						videoClick={videoClick}
+						removeClick={removeClick}
 						key={video.id}
 					/>
 				))}
@@ -29,7 +29,7 @@ function VideoList(props) {
 	return (
 		<div className="VideoList">
 			<TitleBar title="Recordings">
-				{!lecturer ? (
+				{!isLecturer ? (
 					<div onClick={addClick} className="add">
 						+
 					</div>

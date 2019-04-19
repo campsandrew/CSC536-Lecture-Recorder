@@ -12,8 +12,7 @@ class DeviceModal extends Component {
 
 		this.state = {
 			loading: false,
-			errors: [],
-			status: props.status
+			errors: []
 		};
 
 		this.inputs = [
@@ -37,14 +36,17 @@ class DeviceModal extends Component {
 		this.onSubmit = this.onSubmit.bind(this);
 		this.onKeyPress = this.onKeyPress.bind(this);
 		this.onStatusClick = this.onStatusClick.bind(this);
-		this.statusUpdate = this.statusUpdate.bind(this);
 	}
 
 	getContent() {
 		let content = {};
 
 		for (let ref in this.refs) {
-			content[ref] = this.refs[ref].getValue();
+			if (ref === "tracking") {
+				content[ref] = !this.refs[ref].checked;
+			} else {
+				content[ref] = this.refs[ref].getValue();
+			}
 		}
 
 		return content;
@@ -56,6 +58,7 @@ class DeviceModal extends Component {
 
 		// Loop through all inputs on form
 		for (let ref in this.refs) {
+			if (ref === "tracking") continue;
 			if (!this.refs[ref].isValid()) {
 				errors.push(this.refs[ref].getError());
 				valid = false;
@@ -66,29 +69,26 @@ class DeviceModal extends Component {
 		return valid;
 	}
 
-	statusUpdate(data) {
-		this.setState({ status: data.status, loading: false, errors: [] });
-	}
-
 	onStatusClick(e) {
-		const id = this.props.deviceId;
-		const callback = this.props.deviceCallback;
-		this.props.onStatusClick(id, [this.statusUpdate, callback]);
-		this.setState({ loading: true });
+		this.props.statusClick(this.props.device);
 	}
 
 	onSubmit(e) {
-		const id = this.props.deviceId;
-		const status = this.state.status;
+		const recording = this.props.recording;
+		const device = this.props.device;
 
-		if (status !== 1 && !this.isValid()) return;
+		if (!recording && !this.isValid()) return;
 		this.setState({ loading: true });
-		this.props.submit(this.getContent(), id);
+		this.props.onSubmit(this.getContent(), device.id);
 	}
 
 	submitError(error) {
-		this.setState({ status: 2, loading: false, errors: [error] });
-		this.props.deviceCallback(error);
+		let errors = [error];
+		if (this.props.offline) {
+			errors = [];
+		}
+
+		this.setState({ loading: false, errors: errors });
 	}
 
 	onKeyPress(e) {
@@ -110,7 +110,8 @@ class DeviceModal extends Component {
 	}
 
 	renderContent() {
-		const status = this.state.status;
+		const offline = this.props.offline;
+		const recording = this.props.recording;
 		const errors = this.state.errors;
 		const loading = this.state.loading;
 		const inputs = this.inputs.map(input => (
@@ -122,30 +123,44 @@ class DeviceModal extends Component {
 				key={input.key}
 				onFocusOut={this.onFocusError}
 				onKeyPress={this.onKeyPress}
-				disabled={loading || status === 2 || status === 1}
+				disabled={loading || offline || recording}
 			/>
 		));
 
 		return (
 			<div className="content">
 				{inputs}
+				<div className="tracking">
+					<input
+						type="checkbox"
+						disabled={loading || offline || recording}
+						id="tracking"
+						ref="tracking"
+					/>
+					<label htmlFor="tracking">Disable tracking</label>
+				</div>
 				<ErrorStatus errors={errors} loading={loading} />
 			</div>
 		);
 	}
 
 	renderFooter() {
+		const recording = this.props.recording;
+		const offline = this.props.offline;
 		const loading = this.state.loading;
-		const status = this.state.status;
-		const statusKey = {
-			0: "Ready",
-			1: "Recording",
-			2: "Offline"
-		};
+
+		let status = "";
+		if (recording) {
+			status = "Recording";
+		} else if (offline) {
+			status = "Offline";
+		} else {
+			status = "Online";
+		}
 
 		return (
 			<div className="footer">
-				<div className="status-code">{statusKey[status]}</div>
+				<div className="status-code">{status}</div>
 				<div className="buttons">
 					<button
 						className="secondary"
@@ -157,9 +172,9 @@ class DeviceModal extends Component {
 					<button
 						className="primary"
 						onClick={this.onSubmit}
-						disabled={loading || status === 2}
+						disabled={loading || offline}
 					>
-						{status === 1 ? "Stop" : "Record"}
+						{recording ? "Stop" : "Record"}
 					</button>
 				</div>
 			</div>
@@ -167,14 +182,13 @@ class DeviceModal extends Component {
 	}
 
 	render() {
-		const status = this.state.status;
-		const title = this.props.title;
+		const device = this.props.device;
 
 		return (
 			<div className="Modal">
 				<div className="form">
-					<TitleBar title={title} className="color-dark large">
-						<DeviceStatus status={status} onClick={this.onStatusClick} />
+					<TitleBar title={device.name} className="color-dark large">
+						<DeviceStatus status={device.status} onClick={this.onStatusClick} />
 					</TitleBar>
 					{this.renderContent()}
 					<hr />

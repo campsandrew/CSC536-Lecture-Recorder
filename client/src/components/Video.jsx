@@ -1,22 +1,14 @@
 import React from "react";
 import "./css/Video.css";
 
-function Video({ lecturer, video, onVideoClick, onRemoveClick }) {
-	let creator = lecturer ? video.device : video.creator;
-
-	function onClick(e) {
-		if (e.target.id === "remove") {
-			return onRemoveClick(video.id, video.name);
-		}
-
-		onVideoClick(video.id, video.name);
-	}
+function Video({ isLecturer, video, videoClick, removeClick }) {
+	let creator = isLecturer ? video.device : video.creator;
 
 	return (
-		<li className="Video" onClick={onClick}>
+		<li className="Video" onClick={e => videoClick(video)}>
 			<div className="video-content">
-				{lecturer ? (
-					<div onClick={onClick} className="remove" id="remove">
+				{isLecturer ? (
+					<div onClick={e => removeClick(video)} className="remove" id="remove">
 						-
 					</div>
 				) : null}

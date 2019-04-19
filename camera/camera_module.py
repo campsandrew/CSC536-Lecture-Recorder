@@ -214,6 +214,7 @@ class Camera(module.Module):
         box = (0, 0, 0, 0)
         prev_ct = {}
         ct = {}
+        fps = FPS().start()
         while self._started:
             with self._frame_lock:
                 frame = self._frame.copy()
@@ -247,21 +248,29 @@ class Camera(module.Module):
 
                     break
 
+            fps.update()
+
             # update our centroid tracker using the computed set of bounding
             # box rectangles
             #objects = self._ct.update(rects)
 
             # loop over the tracked objects
             # for (objectID, centroid) in objects.items():
-                #text = "ID {}".format(objectID)
-                # cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
-                #            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                # cv2.circle(frame, (centroid[0], centroid[
-                #           1]), 4, (0, 255, 0), -1)
-                #print(centroid[0], centroid[1])
+            #text = "ID {}".format(objectID)
+            # cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
+            #            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # cv2.circle(frame, (centroid[0], centroid[
+            #           1]), 4, (0, 255, 0), -1)
+            #print(centroid[0], centroid[1])
 
             with self._process_lock:
                 self._processed_frame = frame
+
+        fps.stop()
+        self.logger.warning(
+            "[PROCESS] elasped time: {:.2f}".format(fps.elapsed()))
+        self.logger.warning("[PROCESS] approx. FPS: {:.2f}".format(fps.fps()))
+        self.logger.debug("_read_frame() returned")
 
         self.logger.debug("_process_frame() returned")
         return self

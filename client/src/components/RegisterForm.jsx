@@ -171,6 +171,7 @@ class RegisterForm extends Component {
 						onChange={this.onLecturerRadio}
 						onKeyPress={this.onKeyPress}
 						disabled={loading}
+						id="lecturer"
 					/>
 					<label htmlFor="lecturer">Lecturer</label>
 				</div>
@@ -181,6 +182,7 @@ class RegisterForm extends Component {
 						onChange={this.onViewerRadio}
 						onKeyPress={this.onKeyPress}
 						disabled={loading}
+						id="viewer"
 					/>
 					<label htmlFor="viewer">Viewer</label>
 				</div>

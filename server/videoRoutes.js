@@ -9,7 +9,6 @@ const { Video, Lecturer, Viewer } = require("./models");
 const router = express.Router();
 
 // API Frontend Routes - Videos
-router.post("/video/:deviceid", authUser, getDevice, addVideoRoute);
 router.get("/videos", authUser, getVideosRoute);
 router.delete("/video/:videoid/delete", authUser, getVideo, deleteVideoRoute);
 router.get("/video/:videoid/view/:filename", authUser, viewVideoRoute);
@@ -181,66 +180,6 @@ function viewVideoRoute(req, res) {
     res.writeHead(200, head);
     fs.createReadStream(videoPath).pipe(res);
   }
-}
-
-/**
- *
- */
-function addVideoRoute(req, res) {
-  const required = ["name", "description"];
-  const user = req.user;
-  const device = req.device;
-  let payload = {
-    success: true
-  };
-
-  // Check for proper values in body
-  if (!hasValidFields(req.body, required)) {
-    payload.message = "invalid fields";
-    payload.success = false;
-    return res.json(payload);
-  }
-
-  if (user instanceof Viewer) {
-    payload.message = "invalid user request";
-    payload.success = false;
-    return res.status(401).json(payload);
-  }
-
-  // Create new video
-  let video = new Video({
-    name: req.body.name,
-    description: req.body.description,
-    device: device.name
-  });
-  video.filename = video._id + ".mp4";
-  user.videos.push(video);
-
-  // Save video
-  Promise.all([video.save(), user.save()])
-    .then(function(response) {
-      if (!response[0] || !response[1]) throw new Error();
-
-      payload.video = {
-        id: response[0]._id,
-        name: response[0].name,
-        filename: response[0].filename,
-        date: formatDate(response[0].date),
-        description: response[0].description,
-        views: response[0].views,
-        device: response[0].device
-      };
-      res.json(payload);
-    })
-    .catch(function(err) {
-      console.log(err);
-      if (!payload.message) {
-        payload.message = "error saving lecture";
-      }
-
-      payload.success = false;
-      return res.json(payload);
-    });
 }
 
 /**

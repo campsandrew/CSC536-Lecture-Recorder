@@ -4,11 +4,15 @@ import "./css/CameraFeedWindow.css";
 import TitleBar from "./TitleBar";
 import CameraFeed from "./CameraFeed";
 
-function CameraFeedWindow({ device, url, feedError }) {
+function CameraFeedWindow({ device, feedError, fps, shutdown }) {
 	return (
 		<div className="CameraFeedWindow">
 			<TitleBar title={device.name} />
-			<CameraFeed device={device} fps={10} feed={url} feedError={feedError} />
+			<CameraFeed device={device} fps={fps} feedError={feedError} />
+			<hr />
+			<div className="footer">
+				<button onClick={() => shutdown(device)}>Turn off</button>
+			</div>
 		</div>
 	);
 }

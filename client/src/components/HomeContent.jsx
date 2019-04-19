@@ -5,6 +5,7 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import SuccessForm from "./SuccessForm";
+import AboutUsInfo from "./AboutUsInfo";
 import API from "../api";
 
 class HomeContent extends Component {
@@ -119,8 +120,11 @@ class HomeContent extends Component {
 
 		document.title = "LectureFly | Home";
 		return (
-			<div className="ContentArea justify-end">
-				{!auth ? this.renderForm() : null}
+			<div>
+				<div className="ContentArea justify-end" id="home-image">
+					{!auth ? this.renderForm() : null}
+				</div>
+				<AboutUsInfo />
 			</div>
 		);
 	}

@@ -13,6 +13,16 @@ class API {
       this.auth = new Auth();
       this.config.headers = this.auth.authHeader();
     }
+
+    this.executeCallback = (callbacks, data) => {
+      if (!Array.isArray(callbacks)) {
+        callbacks = [callbacks];
+      }
+
+      for (let callback of callbacks) {
+        callback(data);
+      }
+    };
   }
 
   serverConnector(cbSuccess, cbError, validate = null) {
@@ -91,16 +101,6 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  // // TODO: add to api on server
-  // streamDevice(id, cbSuccess, cbError, validate = null) {
-  //   const url = this.server + "/device/" + id + "/stream";
-
-  //   axios
-  //     .get(url, this.config)
-  //     .then(res => this.successResponse(res, cbSuccess, cbError, validate))
-  //     .catch(err => this.catchError(err, cbError));
-  // }
-
   statusDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/status";
 
@@ -110,34 +110,44 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  recordDevice(id, start, cbSuccess, cbError, validate = null) {
+  recordDevice(id, body, recording, cbSuccess, cbError, validate = null) {
     let url = this.server + "/device/" + id + "/record?action=";
-    if (start) {
+    if (!recording) {
       url = url + "start";
     } else {
       url = url + "stop";
     }
 
     axios
+      .post(url, body, this.config)
+      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+      .catch(err => this.catchError(err, cbError));
+  }
+
+  shutdownDevice(id, cbSuccess, cbError, validate = null) {
+    let url = this.server + "/device/" + id + "/cleanup?shutdown=true";
+
+    axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
       .catch(err => this.catchError(err, cbError));
   }
+
+  // COMBINE
+  // addVideo(id, body, cbSuccess, cbError, validate = null) {
+  //   const url = this.server + "/video/" + id;
+
+  //   axios
+  //     .post(url, body, this.config)
+  //     .then(res => this.successResponse(res, cbSuccess, cbError, validate))
+  //     .catch(err => this.catchError(err, cbError));
+  // }
 
   cleanupDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/cleanup";
 
     axios
       .get(url, this.config)
-      .then(res => this.successResponse(res, cbSuccess, cbError, validate))
-      .catch(err => this.catchError(err, cbError));
-  }
-
-  addVideo(id, body, cbSuccess, cbError, validate = null) {
-    const url = this.server + "/video/" + id;
-
-    axios
-      .post(url, body, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
       .catch(err => this.catchError(err, cbError));
   }
@@ -160,13 +170,13 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  getVideoSrc(id, filename) {
+  getVideoSrc(video) {
     const url =
       this.server +
       "/video/" +
-      id +
+      video.id +
       "/view/" +
-      filename +
+      video.filename +
       "?accesstoken=" +
       this.config.headers.accessToken;
 
@@ -183,62 +193,39 @@ class API {
   }
 
   successResponse(res, cbSuccess, cbError, validate) {
-    let callbackArray = (callback, data, data2) => {
-      if (Array.isArray(callback)) {
-        for (let cb of callback) {
-          cb(data, data2);
-        }
-      } else {
-        callback(data, data2);
-      }
-    };
-
     if (res.status === 200 && res.data.success) {
       if (validate === null) {
-        return callbackArray(cbSuccess, res.data);
+        return this.executeCallback(cbSuccess, res.data);
       }
-
       if (validate !== null && validate(res.data)) {
-        return callbackArray(cbSuccess, res.data);
+        return this.executeCallback(cbSuccess, res.data);
       }
 
-      return callbackArray(cbError, "field validation error");
+      return this.executeCallback(cbError, "field validation error");
     }
 
     // Good status but bad success status
     if (res.status === 200 && !res.data.success) {
-      console.log(res.data.message);
-      return callbackArray(cbError, res.data.message, res.data);
+      return this.executeCallback(cbError, res.data);
     }
 
     // Unauthorized
     if (res.status === 401 || res.status === 403) {
       window.location.replace("/unauthorized");
-      callbackArray(cbError, "unauthorized access");
+      this.executeCallback(cbError, "unauthorized access");
     }
 
     // Not found
     if (res.status === 404) {
       window.location.replace("/error");
-      callbackArray(cbError, "page not found");
+      this.executeCallback(cbError, "page not found");
     }
-
-    return callbackArray(cbError, "unknown error");
+    // return callbackArray(cbError, "unknown error");
   }
 
   catchError(err, cb) {
-    let callbackArray = (callbacks, data) => {
-      if (Array.isArray(callbacks)) {
-        for (let callback of callbacks) {
-          callback(data);
-        }
-      } else {
-        callbacks(data);
-      }
-    };
-
     console.log(err);
-    return callbackArray(cb, "error connecting to server");
+    return this.executeCallback(cb, "server error");
   }
 }
 

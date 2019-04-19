@@ -1,69 +1,33 @@
-import React, { Component } from "react";
+import React from "react";
 import "./css/Device.css";
 
 import DeviceStatus from "./DeviceStatus";
 
-class Device extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			status: 2
-		};
+function Device(props) {
+	const { deviceInfo, onDeviceClick, onStatusClick, onRemoveClick } = props;
 
-		this.statusUpdate = this.statusUpdate.bind(this);
-		this.onStatusClick = this.onStatusClick.bind(this);
-		this.onClick = this.onClick.bind(this);
-	}
-
-	componentDidMount() {
-		const id = this.props.deviceId;
-		this.props.onStatusClick(id, this.statusUpdate);
-	}
-
-	onStatusClick(e) {
-		const id = this.props.deviceId;
-		this.props.onStatusClick(id, this.statusUpdate, this.statusUpdate);
-	}
-
-	statusUpdate(data) {
-		if (data.hasOwnProperty("status")) {
-			return this.setState({ status: data.status });
-		}
-
-		this.setState({ status: 2 });
-	}
-
-	onClick(e) {
-		const name = this.props.name;
-		const id = this.props.deviceId;
-		const status = this.state.status;
-
+	const onClick = e => {
 		if (e.target.id === "remove") {
-			return this.props.onRemoveClick(id, name);
+			onRemoveClick(deviceInfo);
+		} else if (e.target.id === "status") {
+			onStatusClick(deviceInfo);
+		} else {
+			onStatusClick(deviceInfo);
+			onDeviceClick(deviceInfo);
 		}
+	};
 
-		if (e.target.id !== "status") {
-			this.onStatusClick();
-			return this.props.onClick(id, name, status, this.statusUpdate);
-		}
-	}
-
-	render() {
-		const name = this.props.name;
-		const status = this.state.status;
-
-		return (
-			<li className="Device" onClick={this.onClick}>
-				<div className="device-name">
-					<div onClick={this.onClick} className="remove" id="remove">
-						-
-					</div>
-					{name}
+	return (
+		<li className="Device" onClick={onClick}>
+			<div className="device-name">
+				<div onClick={onClick} className="remove" id="remove">
+					-
 				</div>
-				<DeviceStatus status={status} onClick={this.onStatusClick} />
-			</li>
-		);
-	}
+				{deviceInfo.name}
+			</div>
+			<DeviceStatus status={deviceInfo.status} onClick={null} />
+		</li>
+	);
 }
 
 export default Device;

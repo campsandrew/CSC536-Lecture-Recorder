@@ -12,11 +12,10 @@ CONNECTOR = "connector"
 HOST = "host"
 PORT = "port"
 
+
 #--------------------
 # Input Service Class
 #--------------------
-
-
 class Input(module.Module):
 
     @staticmethod
@@ -40,15 +39,15 @@ class Input(module.Module):
 
         # Don't start service if not connected
         # to server and not in debug mode
-        # if not config[module.DEBUG]:
-        #     server = Input.server_address_lookup(config[CONNECTOR])
-        #     parts = [server, "device", deviceId, "ping"]
-        #     status_url = "/".join(s.strip("/") for s in parts)
-        #     params = {"address": "http://" + Input.get_ip_address() +
-        #               ":" + str(config[PORT])}
-        #     is_connected = Input.has_connection(status_url, params)
-        #     if not is_connected:
-        #         return None
+        if not config[module.DEBUG]:
+            server = Input.server_address_lookup(config[CONNECTOR])
+            parts = [server, "device", deviceId, "ping"]
+            status_url = "/".join(s.strip("/") for s in parts)
+            params = {"address": "http://" + Input.get_ip_address() +
+                      ":" + str(config[PORT])}
+            is_connected = Input.has_connection(status_url, params)
+            if not is_connected:
+                return None
 
         #######################################################################
         # Start flask route definitions
@@ -90,20 +89,25 @@ class Input(module.Module):
 
             payload = {
                 "success": True,
-                "recording": True,
+                "status": 1
             }
+            filename = flask.request.args.get("filename")
+            track = flask.request.args.get("tracking")
+            if tracking is None:
+                tracking = False
 
             # Check if device is alreaady recording
             if controller.status == 1:
                 payload["success"] = False
                 payload["message"] = "device currently recording"
-                payload["status"] = 1
+            else if filename is None:
+                payload["success"] = False
+                payload["message"] = "no filename sent"
             else:
                 msg = {module.LOCATION: module.CAMERA_MODULE,
-                       module.DATA: {"record": True, "filename": ""}}
+                       module.DATA: {"record": True, "track": track, "filename": filename}}
                 success = controller.module_message(msg, from_module=Input())
                 controller.status = 1
-                payload["status"] = 1
 
             logger.debug("start_recording_route() returned: " + str(payload))
             return flask.jsonify(payload)
@@ -115,7 +119,7 @@ class Input(module.Module):
 
             payload = {
                 "success": True,
-                "recording": False
+                "status": 0
             }
 
             # Check if device is alreaady not recording
@@ -136,6 +140,10 @@ class Input(module.Module):
             """
             """
 
+            payload = {
+                "success": True
+            }
+
             # Get shutdown parameter
             shutdown = flask.request.args.get("shutdown")
             if shutdown is None:
@@ -145,14 +153,14 @@ class Input(module.Module):
             try:
                 controller.cleanup(shutdown=shutdown)
             except RuntimeError as e:
+                payload.message = "service not shutdown"
                 logger.error("service not shutdown - " + str(e))
-                return "service not shutdown - " + str(e)
             except:
+                payload.message = "service not shutdown"
                 logger.error("service not shutdown")
-                return "service not shutdown"
 
             logger.debug("shutdown_system_route() returned")
-            return "system shutdown"
+            return flask.jsonify(payload)
 
         @service.errorhandler(404)
         def error_route(err):

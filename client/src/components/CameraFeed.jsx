@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./css/CameraFeed.css";
-//import noStream from "./images/teaching.jpg";
 
 class CameraFeed extends Component {
 	constructor(props) {
@@ -32,16 +31,16 @@ class CameraFeed extends Component {
 	}
 
 	onError(e) {
-		this.props.feedError(this.props.device.id);
+		this.props.feedError(this.props.device);
 	}
 
 	render() {
-		const feed = this.props.feed;
+		const url = this.props.device.address + "/live";
 
 		return (
 			<div className="CameraFeed">
 				<img
-					src={feed + "?" + new Date().getTime()}
+					src={url + "?" + new Date().getTime()}
 					alt="live camera feed"
 					onError={this.onError}
 				/>

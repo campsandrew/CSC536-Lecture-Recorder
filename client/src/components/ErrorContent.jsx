@@ -1,20 +1,13 @@
-import React, { Component } from "react";
+import React from "react";
+import { Redirect } from "react-router-dom";
 
-class ErrorContent extends Component {
-	/**
-	 *
-	 */
-	// constructor(props) {
-	// 	super(props);
-	// }
-
-	/**
-	 *
-	 */
-	render() {
-		document.title = "LectureFly | Error";
-		return <div />;
+function ErrorContent({ path }) {
+	if (path !== "/unauthorized" && path !== "/error") {
+		return <Redirect to="/error" />;
 	}
+
+	document.title = "LectureFly | Error";
+	return <div />;
 }
 
 export default ErrorContent;
