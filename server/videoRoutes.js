@@ -168,14 +168,14 @@ function viewVideoRoute(req, res) {
       "Content-Range": `bytes ${start}-${end}/${fileSize}`,
       "Accept-Ranges": "bytes",
       "Content-Length": chunksize,
-      "Content-Type": "video/mp4"
+      "Content-Type": "video/webm"
     };
     res.writeHead(206, head);
     file.pipe(res);
   } else {
     const head = {
       "Content-Length": fileSize,
-      "Content-Type": "video/mp4"
+      "Content-Type": "video/webm"
     };
     res.writeHead(200, head);
     fs.createReadStream(videoPath).pipe(res);

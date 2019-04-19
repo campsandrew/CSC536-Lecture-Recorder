@@ -4,6 +4,8 @@ import "./css/Video.css";
 function Video({ isLecturer, video, videoClick, removeClick }) {
 	let creator = isLecturer ? video.device : video.creator;
 
+	console.log(video.src);
+
 	return (
 		<li className="Video" onClick={e => videoClick(video)}>
 			<div className="video-content">
@@ -13,7 +15,7 @@ function Video({ isLecturer, video, videoClick, removeClick }) {
 					</div>
 				) : null}
 				<video controls>
-					<source src={video.src} type="video/mp4" />
+					<source src={video.src} type="video/webm" />
 				</video>
 			</div>
 			<div>

@@ -93,14 +93,14 @@ class Input(module.Module):
             }
             filename = flask.request.args.get("filename")
             track = flask.request.args.get("tracking")
-            if tracking is None:
-                tracking = False
+            if track is None:
+                track = False
 
             # Check if device is alreaady recording
             if controller.status == 1:
                 payload["success"] = False
                 payload["message"] = "device currently recording"
-            else if filename is None:
+            elif filename is None:
                 payload["success"] = False
                 payload["message"] = "no filename sent"
             else:

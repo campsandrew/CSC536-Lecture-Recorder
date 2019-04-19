@@ -4,7 +4,7 @@
 			"debug": false
 		},
 		"camera": {
-			"save_folder": "videos/",
+			"save_folder": "videos",
 			"camera_source": 0,
 			"frame_width": 300,
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
@@ -25,7 +25,7 @@
 			"debug": false
 		},
 		"camera": {
-			"save_file": "videos/",
+			"save_folder": "videos",
 			"camera_source": 0,
 			"frame_width": 150,
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",

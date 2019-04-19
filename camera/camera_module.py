@@ -43,6 +43,7 @@ class Camera(module.Module):
         self._filepath = ""
         self._started = False
         self._recording = False
+        self._track = True
         self._ct = centroidtracker.CentroidTracker()
         self._frame_lock = threading.Lock()
         self._process_lock = threading.Lock()
@@ -95,7 +96,7 @@ class Camera(module.Module):
         self.logger.debug("initialize() returned")
         return None
 
-    def start_recording(self, filename="", fps=50.0):
+    def start_recording(self, filename, fps=30.0):
         """
         """
 
@@ -107,13 +108,21 @@ class Camera(module.Module):
             return False
 
         # Create filename
-        self._filepath = self._config[SAVE_FOLDER] + filename + ".m4v"
-        # self._filepath = self._config[SAVE_FOLDER] + filename + \
-        #     str(datetime.datetime.now()).replace(
-        #         ":", "-").replace(" ", ".") + ".m4v"
+        self._filepath = self._config[SAVE_FOLDER] + "/" + filename
+        if not self._track:
+            self._process_thread.join()
+        elif not self._process_thread.is_alive() and self._track:
+            self._process_thread = threading.Thread(
+                target=self._process_frame, args=())
+            self._process_thread.start()
+            # TODO: Camera initialization sequence
+        else:
+            print("HERE")
+            # TODO: Camera initialization sequence
 
         # Initialize video writer
-        fourcc = cv2.VideoWriter_fourcc("M", "P", "4", "V")
+        #fourcc = cv2.VideoWriter_fourcc("M", "J", "P", "G")
+        fourcc = cv2.VideoWriter_fourcc("V", "P", "8", "0")
         self._out = cv2.VideoWriter(
             self._filepath, fourcc, fps, (self._W, self._H))
         self._recording = True
@@ -171,8 +180,12 @@ class Camera(module.Module):
         """
         """
 
-        with self._process_lock:
-            frame = self._processed_frame.copy()
+        if self._track:
+            with self._process_lock:
+                frame = self._processed_frame.copy()
+        else:
+            with self._frame_lock:
+                frame = self._frame.copy()
 
         frame = cv2.flip(frame, 1)
         return cv2.imencode(".jpg", frame)[1].tobytes()
@@ -215,7 +228,7 @@ class Camera(module.Module):
         prev_ct = {}
         ct = {}
         fps = FPS().start()
-        while self._started:
+        while self._track and self._started:
             with self._frame_lock:
                 frame = self._frame.copy()
 
@@ -299,7 +312,8 @@ class Camera(module.Module):
         # Message switchboard
         data = message[module.DATA]
         if "record" in data:
-            if data["record"] and "filename" in data:
+            if data["record"] and "filename" in data and "track" in data:
+                self._track = data["track"]
                 return self.start_recording(data["filename"])
 
             return self.stop_recording()

@@ -304,12 +304,15 @@ function deviceRecordRoute(req, res) {
     description: req.body.description,
     device: device.name
   });
-  video.filename = video._id + ".mp4";
+  video.filename = video._id + ".webm";
   user.videos.push(video);
 
   let url = device.address + "/" + action;
-  if (req.body.tracking) {
-    url += "?tracking=" + req.body.tracking + "&filename=" + video.filename;
+  if (action === "start") {
+    url += "?filename=" + video.filename;
+  }
+  if (action === "start" && req.body.tracking) {
+    url += "&tracking=" + req.body.tracking;
   }
 
   // Send record message to device
