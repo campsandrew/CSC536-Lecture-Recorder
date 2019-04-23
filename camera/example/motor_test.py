@@ -2,6 +2,9 @@ PINS = [7, 11, 13, 15]
 STEPS_PER_REV = 2048
 MAX_ANGLE = 50
 
+import time
+import math
+
 
 #-------------------
 # Motor Module Class
