@@ -1,27 +1,14 @@
-import module
-
-import logging
-import time
-import math
-
-
-# Motor Module Specific Constants
-PINS = "pins"
-STEPS_PER_REV = "steps_per_rev"
+PINS = [7, 11, 13, 15]
+STEPS_PER_REV = 2048
 MAX_ANGLE = 50
 
 
 #-------------------
 # Motor Module Class
 #-------------------
-class Motor(module.Module):
+class Motor:
 
     def __init__(self):
-        """
-        """
-
-        # Public
-        self.logger = logging.getLogger(__name__)
 
         # Try to import RPi.GPIO module
         try:
@@ -31,32 +18,11 @@ class Motor(module.Module):
             self.gpio = None
 
         # Private
-        self._send_message = None
-        self._config = None
-        self._pins = None
-        self._steps_per_rev = None
-        self._steps_per_deg = None
-        self._angle = 0
-
-        self.logger.debug("__init__() returned")
-        return None
-
-    def initialize(self, callback, config):
-        """
-
-        Key arguments:
-        callback - function to call to send message to
-        controller
-        config - dictionary of configuration from config file
-
-        Returns: None
-        """
-
-        self._send_message = callback
-        self._config = config
-        self._pins = config[PINS]
-        self._steps_per_rev = config[STEPS_PER_REV]
+        self._pins = PINS
+        self._steps_per_rev = STEPS_PER_REV
         self._steps_per_deg = self._steps_per_rev / 360
+        print(self._steps_per_deg)
+        self._angle = 0
 
         # Initialize GPIO pins
         if self.gpio is not None:
@@ -66,20 +32,14 @@ class Motor(module.Module):
                 self.gpio.setup(pin, self.gpio.OUT)
                 self.gpio.output(pin, self.gpio.LOW)
 
-        self.logger.debug("initialize() returned")
         return None
 
     def cleanup(self):
-        """
-
-        Returns: None
-        """
 
         # GPIO cleanup
         if self.gpio is not None:
             self.gpio.cleanup()
 
-        self.logger.debug("cleanup() returned")
         return None
 
     def _movement_calc(self, current, prev):
@@ -131,11 +91,13 @@ class Motor(module.Module):
             direction = -1
 
         while step < steps:
+
             for pin_index in range(len(self._pins)):
                 self._fullstep(self._pins, pin_index)
                 step += 1
                 self._angle += (direction * self._steps_per_deg)
                 time.sleep(wait_time)
+                print(self._angle)
 
         # Set all pins to low
         for pin in self._pins:
@@ -154,34 +116,6 @@ class Motor(module.Module):
 
         return None
 
-    def controller_message(self, message):
-        """
-
-        Key arguments:
-        message - message data received from controller
-
-        Returns: None
-        """
-
-        if module.ERROR in message:
-            self.logger.error("error sending message")
-            return None
-
-        if module.SUCCESS in message:
-            self.logger.debug("message received - " + str(message))
-            return None
-
-        if module.DATA not in message:
-            self.logger.warning("message received with no data")
-            return None
-
-        # Message type switchboard
-        data = message[module.DATA]
-        if "prev" in data and "current" in data:
-            args = self._movement_calc(data["current"], data["prev"])
-            self._rotate(*args)
-            return None
-
-        self.logger.debug("message data - " + str(data))
-        self.logger.debug("controller_message() returned")
-        return None
+if __name__ == "__main__":
+    motor = Motor()
+    motor._rotate(5)
