@@ -105,6 +105,7 @@ class Motor(module.Module):
             prevX, prevY = prev_ct[next(iter(prev_ct))]
             mag = abs(currX - prevX)
             diff = currX - prevX
+            rpm += mag
 
             if mag > 2 and diff > 2:
                 degrees = 5
@@ -113,7 +114,7 @@ class Motor(module.Module):
             else:
                 return None, None
 
-        return degrees, rpm + mag
+        return degrees, rpm
 
     def _rotate(self, degrees=None, rpm=20, cleanup=False):
         """
