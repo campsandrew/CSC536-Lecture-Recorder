@@ -258,7 +258,7 @@ class Camera(module.Module):
                     # Check if device is alreaady recording
                     msg = {module.LOCATION: module.MOTOR_MODULE,
                            module.DATA: {"prev": (prev_box, prev_ct), "current": (box, ct)}}
-                    # self._send_message(msg, from_module=self)
+                    self._send_message(msg, from_module=self)
 
                     # Draws box to frame
                     (startX, startY, endX, endY) = box

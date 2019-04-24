@@ -160,7 +160,7 @@ class Controller:
         # Turn off computer (untested on raspberry pi, needs su permissions)
         if shutdown:
             self.logger.warning("system shutting down")
-            os.system("shutdown -s")
+            os.system("shutdown now")
 
         self.logger.debug("cleanup() returned")
         return None
