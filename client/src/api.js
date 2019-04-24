@@ -9,6 +9,7 @@ class API {
       headers: {}
     };
 
+    this.auth = null;
     if (auth) {
       this.auth = new Auth();
       this.config.headers = this.auth.authHeader();
@@ -23,6 +24,12 @@ class API {
         callback(data);
       }
     };
+  }
+
+  checkAuth() {
+    if (this.auth !== null && !this.auth.isAuthenticated()) {
+      window.location.replace("/unauthorized");
+    }
   }
 
   serverConnector(cbSuccess, cbError, validate = null) {
@@ -47,6 +54,7 @@ class API {
   getUser(cbSuccess, cbError, validate = null) {
     const url = this.server + "/user?name=true&type=true";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -68,6 +76,7 @@ class API {
   addLecturer(body, cbSuccess, cbError, validate = null) {
     const url = this.server + "/user/lecturer";
 
+    this.checkAuth();
     axios
       .put(url, body, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -77,6 +86,7 @@ class API {
   addDevice(body, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device";
 
+    this.checkAuth();
     axios
       .post(url, body, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -86,6 +96,7 @@ class API {
   getDevices(cbSuccess, cbError, validate = null) {
     const url = this.server + "/devices";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -95,6 +106,7 @@ class API {
   deleteDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/delete";
 
+    this.checkAuth();
     axios
       .delete(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -104,6 +116,7 @@ class API {
   statusDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/status";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -118,6 +131,7 @@ class API {
       url = url + "stop";
     }
 
+    this.checkAuth();
     axios
       .post(url, body, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -127,6 +141,7 @@ class API {
   shutdownDevice(id, cbSuccess, cbError, validate = null) {
     let url = this.server + "/device/" + id + "/cleanup?shutdown=true";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -136,6 +151,7 @@ class API {
   cleanupDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/cleanup";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -145,6 +161,7 @@ class API {
   getVideos(cbSuccess, cbError, validate = null) {
     const url = this.server + "/videos";
 
+    this.checkAuth();
     axios
       .get(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -154,6 +171,7 @@ class API {
   deleteVideo(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/video/" + id + "/delete";
 
+    this.checkAuth();
     axios
       .delete(url, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
@@ -176,6 +194,7 @@ class API {
   addViewVideo(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/video/" + id + "/view";
 
+    this.checkAuth();
     axios
       .put(url, {}, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))

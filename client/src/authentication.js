@@ -4,6 +4,11 @@ class Auth {
     this.expiresAt = localStorage.getItem("expires_at");
   }
 
+  getUpdatedTokens() {
+    this.accessToken = localStorage.getItem("access_token");
+    this.expiresAt = localStorage.getItem("expires_at");
+  }
+
   authenticate(res, cbSuccess, cbError, validate) {
     if (res.status === 200 && res.data.success) {
       if (validate === null) {
@@ -35,6 +40,7 @@ class Auth {
   }
 
   isAuthenticated() {
+    this.getUpdatedTokens();
     if (new Date().getTime() < this.expiresAt && this.accessToken) {
       return true;
     }
@@ -43,6 +49,7 @@ class Auth {
   }
 
   authHeader() {
+    this.getUpdatedTokens();
     return { accessToken: this.accessToken };
   }
 
