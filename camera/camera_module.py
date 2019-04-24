@@ -40,8 +40,6 @@ class Camera(module.Module):
         self._W = None
         self._size = None
         self._cap = None
-        self._piCamera = None
-        self._rawCapture = None
         self._processed_frame = None
         self._frame = None
         self._filepath = ""
@@ -52,8 +50,10 @@ class Camera(module.Module):
         self._frame_lock = threading.Lock()
         self._process_lock = threading.Lock()
         self._record_lock = threading.Lock()
-        self._capture_thread = None
-        self._process_thread = None
+        self._capture_thread = threading.Thread(
+            target=self._read_frame, args=())
+        self._process_thread = threading.Thread(
+            target=self._process_frame, args=())
 
         self.logger.debug("__init__() returned")
         return None
@@ -86,50 +86,22 @@ class Camera(module.Module):
 
         # Initializae capture opject and neural net
         self._W = config[FRAME_WIDTH]
+        self._fps = config[FRAME_RATE]
         self._net = cv2.dnn.readNetFromCaffe(
             config[PROTO_FILE], config[MODEL_FILE])
 
         # Setup camera with proper source
         src = config[CAMERA_SOURCE]
-        if src is None:
-            try:
-                from picamera.array import PiRGBArray
-                from picamera import PiCamera
-            except:
-                PiRGBArray = None
-                PiCamera = None
+        self._cap = VideoStream(src).start()
 
-            if PiCamera is not None and PiRGBArray:
-                self._H = self._W
-                self._piCamera = PiCamera()
-                self._piCamera.resolution = (self._H, self._W)
-                self._piCamera.framerate = config[FRAME_RATE]
-                self._rawCapture = PiRGBArray(self._piCamera)
-                self._cap = self._piCamera.capture_continuous(
-                    self._rawCapture, format="bgr", use_video_port=True)
-
-        else:
-            self._cap = VideoStream(src).start()
-
-            # Let camera warm up and get frame sizes
-            frame = None
-            while frame is None:
-                frame = self._cap.read()
-            self._frame = imutils.resize(frame, width=self._W)
-            (self._H, _) = self._frame.shape[:2]
-
-        # Check if using pi camera
-        args = ()
-        if self._piCamera is not None:
-            args = (True,)
+        # Let camera warm up and get frame sizes
+        frame = None
+        while frame is None:
+            frame = self._cap.read()
+        self._frame = imutils.resize(frame, width=self._W)
+        (self._H, _) = self._frame.shape[:2]
 
         # Start threading for frame processing and capture
-        self._capture_thread = threading.Thread(
-            target=self._read_frame, args=args)
-        self._process_thread = threading.Thread(
-            target=self._process_frame, args=())
-        self._capture_thread.daemon = True
-        self._process_thread.daemon = True
         self._started = True
         self._capture_thread.start()
         self._process_thread.start()
@@ -137,7 +109,7 @@ class Camera(module.Module):
         self.logger.debug("initialize() returned")
         return None
 
-    def start_recording(self, filename, fps=30.0):
+    def start_recording(self, filename):
         """
         """
 
@@ -165,7 +137,7 @@ class Camera(module.Module):
         # fourcc = cv2.VideoWriter_fourcc("M", "J", "P", "G")
         fourcc = cv2.VideoWriter_fourcc("V", "P", "8", "0")
         self._out = cv2.VideoWriter(
-            self._filepath, fourcc, fps, (self._W, self._H))
+            self._filepath, fourcc, self._fps, (self._W, self._H))
         self._recording = True
 
         self.logger.debug("start_recording() returned")
@@ -231,7 +203,7 @@ class Camera(module.Module):
         frame = cv2.flip(frame, 1)
         return cv2.imencode(".jpg", frame)[1].tobytes()
 
-    def _read_frame(self, pi=False):
+    def _read_frame(self):
         """This threaded method is just
         responsible for reading the camera where
         the frame is stored in shared memeory with
@@ -239,29 +211,17 @@ class Camera(module.Module):
         """
 
         fps = FPS().start()
-        if pi:
-            for f in self._cap:
-                with self._frame_lock:
-                    self._frame = f.array
-                self._rawCapture.truncate(0)
+        while self._started:
+            frame = self._cap.read()
+            frame = imutils.resize(frame, width=self._W)
 
-                if not self._started:
-                    self._cap.close()
-                    self._rawCapture.close()
-                    self._piCamera.close()
-                    break
-        else:
-            while self._started:
-                frame = self._cap.read()
-                frame = imutils.resize(frame, width=self._W)
+            # Save video file if recording
+            if self._recording:
+                self._out.write(frame)
 
-                # Save video file if recording
-                if self._recording:
-                    self._out.write(frame)
-
-                fps.update()
-                with self._frame_lock:
-                    self._frame = frame
+            fps.update()
+            with self._frame_lock:
+                self._frame = frame
 
         fps.stop()
         self.logger.warning(
