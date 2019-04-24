@@ -42,6 +42,11 @@ function addLecturerRoute(req, res) {
         throw new Error();
       }
 
+      if (user.lecturers.indexOf(lecturer.email.toLowerCase()) >= 0) {
+        payload.message = "already subscribed to lecturer";
+        throw new Error();
+      }
+
       lecturer.viewers.push(user);
       user.lecturers.push(lecturer.email);
       return Promise.all([lecturer.save(), user.save()]);

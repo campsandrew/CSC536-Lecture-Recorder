@@ -35,7 +35,7 @@ class Motor(module.Module):
         self._config = None
         self._pins = None
         self._steps_per_rev = None
-        self._steps_per_deg = None
+        self._deg_per_step = None
         self._angle = 0
 
         self.logger.debug("__init__() returned")
@@ -56,7 +56,7 @@ class Motor(module.Module):
         self._config = config
         self._pins = config[PINS]
         self._steps_per_rev = config[STEPS_PER_REV]
-        self._steps_per_deg = self._steps_per_rev / 360
+        self._deg_per_step = 360 / self._steps_per_rev
 
         # Initialize GPIO pins
         if self.gpio is not None:
@@ -74,6 +74,14 @@ class Motor(module.Module):
 
         Returns: None
         """
+
+        direction = 1
+        if self._angle < 0:
+            direction = -1
+
+        # Put camera back to original location
+        while direction * self._angle > 0:
+            self._rotate(-1 * direction * 1, cleanup=True)
 
         # GPIO cleanup
         if self.gpio is not None:
@@ -98,20 +106,16 @@ class Motor(module.Module):
             mag = abs(currX - prevX)
             diff = currX - prevX
 
-            print("PIX DIFF: " + str(mag))
-
             if mag > 2 and diff > 2:
-                degrees = diff / 2
-                # print("CLOCKWISE")
-            elif mag > 2 and diff < 2:
-                degrees = diff / 2
-                # print("COUNTERCLOCKWISE")
+                degrees = 5
+            elif mag > 2 and diff < -2:
+                degrees = -5
             else:
                 return None, None
 
-        return degrees, rpm
+        return degrees, rpm + mag
 
-    def _rotate(self, degrees=None, rpm=20):
+    def _rotate(self, degrees=None, rpm=20, cleanup=False):
         """
         """
 
@@ -132,10 +136,16 @@ class Motor(module.Module):
 
         while step < steps:
             for pin_index in range(len(self._pins)):
+                if abs(self._angle) > MAX_ANGLE and not cleanup:
+                    step = steps + 1
+                    break
                 self._fullstep(self._pins, pin_index)
-                step += 1
-                self._angle += (direction * self._steps_per_deg)
                 time.sleep(wait_time)
+                step += 1
+                self._angle += (direction * self._deg_per_step)
+
+        if degrees < 0:
+            self._pins.reverse()
 
         # Set all pins to low
         for pin in self._pins:

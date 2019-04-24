@@ -183,28 +183,6 @@ class Input(module.Module):
             logger.debug("error_route() return payload: " + str(payload))
             return flask.jsonify(payload)
 
-        # @service.route("/rotate", methods=["GET"])
-        # def rotate_camera_route():
-        #     """
-        #     """
-
-        #     payload = {
-        #         "success": True
-        #     }
-
-        #     # Get directional parameters
-        #     direction = flask.request.args.get("direction")
-        #     if direction is None:
-        #         payload["success"] = False
-        #         payload["message"] = "no direction specified"
-        #     else:
-        #         msg = {module.LOCATION: module.MOTOR_MODULE,
-        #                module.DATA: {"direction": direction}}
-        #         success = controller.module_message(msg, from_module=Input())
-
-        #     logger.debug("rotate_camera_route() returned: " + str(payload))
-        #     return flask.jsonify(payload)
-
         #######################################################################
         # End flask route definitions
         #######################################################################
@@ -252,9 +230,11 @@ class Input(module.Module):
             logger.error("no connection to connector server - " + url)
 
         # TODO: delete file
-        if "success" in data:
+        if "success" in data and data["success"]:
             os.remove(filepath)
             logger.debug("file deleted - " + filepath)
+        else:
+            logger.error("file not uploaded - " + filepath)
 
         return None
 
@@ -280,16 +260,14 @@ class Input(module.Module):
             logger.warning("message received with no data - " + str(message))
             return None
 
-        # TODO: Create message types switchboard
+        # Message switchboard
         data = message[module.DATA]
-
-        # TODO: Put this on a thread
         if "upload" in data:
+            videoId = data["upload"].split("/")[-1].split(".")[0]
             server = Input.server_address_lookup(input_config[CONNECTOR])
-            parts = [server, deviceId, "upload"]
+            parts = [server, "device", deviceId, videoId, "upload"]
             url = "/".join(s.strip("/") for s in parts)
-            # print(data["upload"])
-            #Input.uploadVideo(url, data["upload"])
+            Input.uploadVideo(url, data["upload"])
 
         logger.debug("message data - " + str(data))
         logger.debug("controller_message() returned")

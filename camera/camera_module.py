@@ -8,6 +8,7 @@ import logging
 import imutils
 import numpy
 import cv2
+import os
 
 # Camera Module Specific Constants
 SAVE_FOLDER = "save_folder"
@@ -75,6 +76,13 @@ class Camera(module.Module):
             self.logger.debug("start() returned")
             return None
 
+        # Upload any videos not transfered to server
+        for file in os.listdir(config[SAVE_FOLDER]):
+            if ".webm" in file:
+                msg = {module.LOCATION: module.INPUT_MODULE,
+                       module.DATA: {"upload": config[SAVE_FOLDER] + "/" + file}}
+                self._send_message(msg, from_module=self)
+
         # Initializae capture opject and neural net
         self._W = config[FRAME_WIDTH]
         self._cap = VideoStream(config[CAMERA_SOURCE]).start()
@@ -117,11 +125,11 @@ class Camera(module.Module):
             self._process_thread.start()
             # TODO: Camera initialization sequence
         else:
-            print("HERE")
+            pass
             # TODO: Camera initialization sequence
 
         # Initialize video writer
-        #fourcc = cv2.VideoWriter_fourcc("M", "J", "P", "G")
+        # fourcc = cv2.VideoWriter_fourcc("M", "J", "P", "G")
         fourcc = cv2.VideoWriter_fourcc("V", "P", "8", "0")
         self._out = cv2.VideoWriter(
             self._filepath, fourcc, fps, (self._W, self._H))
@@ -141,14 +149,11 @@ class Camera(module.Module):
             self.logger.debug("stop_recording() returned")
             return False
 
-        # Stop recording
+        # Stop recording and upload video to server
         self._recording = False
-        self._out.release()
-
-        # self._filepath = self._cap.stop()
-        # sg = {module.LOCATION: module.INPUT_MODULE,
-        #       module.DATA: {"upload": self._filepath}}
-        # self._send_message(msg, from_module=self)
+        msg = {module.LOCATION: module.INPUT_MODULE,
+               module.DATA: {"upload": self._filepath}}
+        self._send_message(msg, from_module=self)
 
         self.logger.debug("stop_recording() returned")
         return True
@@ -165,13 +170,16 @@ class Camera(module.Module):
             self.logger.debug("cleanup() returned")
             return None
 
+        # Upload recording if currently recording
+        if self._recording:
+            self.stop_recording()
+
         # Kills camera thread
         self._started = False
-        self._recording = False
         self._capture_thread.join()
         self._process_thread.join()
-        if self._out is not None:
-            self._out.release()
+        # if self._out is not None:
+        #     self._out.release()
 
         self.logger.debug("cleanup() returned")
         return None
@@ -236,7 +244,7 @@ class Camera(module.Module):
                 frame, 1.0, (self._W, self._H), (104.0, 177.0, 123.0))
             self._net.setInput(blob)
             detections = self._net.forward()
-            #rects = []
+            # rects = []
 
             # loop over the detections
             for i in range(0, detections.shape[2]):
@@ -250,7 +258,7 @@ class Camera(module.Module):
                     # Check if device is alreaady recording
                     msg = {module.LOCATION: module.MOTOR_MODULE,
                            module.DATA: {"prev": (prev_box, prev_ct), "current": (box, ct)}}
-                    self._send_message(msg, from_module=self)
+                    # self._send_message(msg, from_module=self)
 
                     # Draws box to frame
                     (startX, startY, endX, endY) = box
@@ -265,16 +273,16 @@ class Camera(module.Module):
 
             # update our centroid tracker using the computed set of bounding
             # box rectangles
-            #objects = self._ct.update(rects)
+            # objects = self._ct.update(rects)
 
             # loop over the tracked objects
             # for (objectID, centroid) in objects.items():
-            #text = "ID {}".format(objectID)
+            # text = "ID {}".format(objectID)
             # cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
             #            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             # cv2.circle(frame, (centroid[0], centroid[
             #           1]), 4, (0, 255, 0), -1)
-            #print(centroid[0], centroid[1])
+            # print(centroid[0], centroid[1])
 
             with self._process_lock:
                 self._processed_frame = frame

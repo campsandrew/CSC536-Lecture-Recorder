@@ -133,16 +133,6 @@ class API {
       .catch(err => this.catchError(err, cbError));
   }
 
-  // COMBINE
-  // addVideo(id, body, cbSuccess, cbError, validate = null) {
-  //   const url = this.server + "/video/" + id;
-
-  //   axios
-  //     .post(url, body, this.config)
-  //     .then(res => this.successResponse(res, cbSuccess, cbError, validate))
-  //     .catch(err => this.catchError(err, cbError));
-  // }
-
   cleanupDevice(id, cbSuccess, cbError, validate = null) {
     const url = this.server + "/device/" + id + "/cleanup";
 
@@ -187,7 +177,7 @@ class API {
     const url = this.server + "/video/" + id + "/view";
 
     axios
-      .put(url, this.config)
+      .put(url, {}, this.config)
       .then(res => this.successResponse(res, cbSuccess, cbError, validate))
       .catch(err => this.catchError(err, cbError));
   }
@@ -209,23 +199,25 @@ class API {
       return this.executeCallback(cbError, res.data);
     }
 
-    // Unauthorized
-    if (res.status === 401 || res.status === 403) {
-      window.location.replace("/unauthorized");
-      this.executeCallback(cbError, "unauthorized access");
-    }
-
-    // Not found
-    if (res.status === 404) {
-      window.location.replace("/error");
-      this.executeCallback(cbError, "page not found");
-    }
-    // return callbackArray(cbError, "unknown error");
+    return this.executeCallback(cbError, "unknown error");
   }
 
   catchError(err, cb) {
-    console.log(err);
-    return this.executeCallback(cb, "server error");
+    if (!err.response) {
+      return this.executeCallback(cb, "server error");
+    }
+
+    // Unauthorized
+    if (err.response.status === 401 || err.response.status === 403) {
+      window.location.replace("/unauthorized");
+      this.executeCallback(cb, "unauthorized access");
+    }
+
+    // Not found
+    if (err.response.status === 404) {
+      window.location.replace("/error");
+      this.executeCallback(cb, "page not found");
+    }
   }
 }
 

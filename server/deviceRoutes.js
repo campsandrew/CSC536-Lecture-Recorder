@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const fs = require("fs");
 const { hasValidFields, formatDate } = require("./utils");
 const { getDevice, getVideo, authUser } = require("./middleware");
 const { Device, Lecturer, Viewer, Video } = require("./models");
@@ -79,8 +80,13 @@ function deviceUploadRoute(req, res) {
   }
 
   let bitmap = Buffer.from(media.data, "base64");
-  let filepath = "videos/" + req.files.media.name;
-  //fs.writeFileSync(filepath, bitmap);
+  let filepath = "videos/" + media.name;
+  try {
+    fs.writeFileSync(filepath, bitmap);
+  } catch (err) {
+    payload.success = false;
+    payload.message = "could not save file";
+  }
 
   res.json(payload);
 }
@@ -338,6 +344,7 @@ function deviceRecordRoute(req, res) {
 
       // Don't try to create video if stoping recording
       if (action === "stop") {
+        payload.video = true;
         res.json(payload);
         return null;
       } else {
@@ -348,15 +355,15 @@ function deviceRecordRoute(req, res) {
       if (!response) return;
       if (!response[0] || !response[1]) throw new Error();
 
-      payload.video = {
-        id: response[0]._id,
-        name: response[0].name,
-        filename: response[0].filename,
-        date: formatDate(response[0].date),
-        description: response[0].description,
-        views: response[0].views,
-        device: response[0].device
-      };
+      // payload.video = {
+      //   id: response[0]._id,
+      //   name: response[0].name,
+      //   filename: response[0].filename,
+      //   date: formatDate(response[0].date),
+      //   description: response[0].description,
+      //   views: response[0].views,
+      //   device: response[0].device
+      // };
 
       return res.json(payload);
     })

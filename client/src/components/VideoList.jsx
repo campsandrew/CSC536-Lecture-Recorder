@@ -5,7 +5,14 @@ import TitleBar from "./TitleBar";
 import Video from "./Video";
 
 function VideoList(props) {
-	const { isLecturer, videos, videoClick, addClick, removeClick } = props;
+	const {
+		isLecturer,
+		videos,
+		videoClick,
+		addClick,
+		removeClick,
+		playClick
+	} = props;
 
 	let videoList;
 	if (!videos.length) {
@@ -19,6 +26,7 @@ function VideoList(props) {
 						video={video}
 						videoClick={videoClick}
 						removeClick={removeClick}
+						playClick={playClick}
 						key={video.id}
 					/>
 				))}

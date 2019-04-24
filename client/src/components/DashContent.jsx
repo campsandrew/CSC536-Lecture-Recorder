@@ -58,6 +58,7 @@ class DashContent extends Component {
 		this.onAddLecturerClick = this.onAddLecturerClick.bind(this);
 		this.onRemoveVideoClick = this.onRemoveVideoClick.bind(this);
 		this.onVideoClick = this.onVideoClick.bind(this);
+		this.onPlayVideoClick = this.onPlayVideoClick.bind(this);
 
 		// Modal method bindings
 		this.onModalSubmit = this.onModalSubmit.bind(this);
@@ -79,9 +80,9 @@ class DashContent extends Component {
 		// Create api and get video content
 		if (this.api === null && server && lecturer !== undefined) {
 			this.api = new API(server);
+			this.api.getVideos(this.apiGetVideosSuccess, this.apiError);
 
 			if (lecturer) {
-				this.api.getVideos(this.apiGetVideosSuccess, this.apiError);
 				this.api.getDevices(this.apiGetDevicesSuccess, this.apiError);
 			}
 		}
@@ -113,7 +114,7 @@ class DashContent extends Component {
 		this.setState({ devices: devices });
 	}
 	apiGetVideosSuccess(data) {
-		let videos = data.videos;
+		let videos = data.videos.reverse();
 
 		for (let video of videos) {
 			video.src = this.api.getVideoSrc(video);
@@ -158,8 +159,9 @@ class DashContent extends Component {
 			case this.modalTypes.device:
 				// Add new video to list
 				if (data.video) {
-					videos.push(data.video);
-					newState.videos = videos;
+					this.api.getVideos(this.apiGetVideosSuccess, this.apiError);
+					// videos.push(data.video);
+					// newState.videos = videos;
 				}
 
 				// Update device status
@@ -186,8 +188,6 @@ class DashContent extends Component {
 		const modal = this.state.modal;
 
 		if (modal.show) {
-			console.log("HERE: " + modal);
-			console.log(data);
 			this.refs[modal.type].submitError(data.message);
 		}
 
@@ -266,6 +266,9 @@ class DashContent extends Component {
 				video: video
 			}
 		});
+	}
+	onPlayVideoClick(video) {
+		this.api.addViewVideo(video.id, this.apiSuccess, this.apiError);
 	}
 
 	/**
@@ -410,6 +413,7 @@ class DashContent extends Component {
 					addClick={this.onAddLecturerClick}
 					videoClick={this.onVideoClick}
 					removeClick={this.onRemoveVideoClick}
+					playClick={this.onPlayVideoClick}
 				/>
 			</div>
 		);
