@@ -8,7 +8,6 @@ import math
 # Motor Module Specific Constants
 PINS = "pins"
 STEPS_PER_REV = "steps_per_rev"
-MAX_ANGLE = 50
 
 
 #-------------------
@@ -90,38 +89,23 @@ class Motor(module.Module):
         self.logger.debug("cleanup() returned")
         return None
 
-    def _movement_calc(self, current, prev):
+    def _movement_calc(self, ct, size):
+        w, h = size
         degrees = 0
         rpm = 20
-        curr_box, curr_ct = current
-        prev_box, prev_ct = prev
 
-        # Calculate direction and rotation duration
-        (cSX, cSY, cEX, cEY) = curr_box
-        (pSX, pSY, pEX, pEY) = prev_box
+        midX = w / 2
 
-        cHeight = cEY - cSY
-        cWidth = cEX - cSX
-        pHeight = pEY - pSY
-        pWidth = pEX - pSX
-        cArea = cHeight * cWidth
-        pArea = pHeight * pWidth
+        if len(ct) != 0:
+            currX, currY = ct[next(iter(ct))]
+            diff = midX - currX
 
-        # cArea - self._area_max_dist
-
-        if len(prev_ct) != 0 and len(curr_ct) != 0:
-            currX, currY = curr_ct[next(iter(curr_ct))]
-            prevX, prevY = prev_ct[next(iter(prev_ct))]
-            mag = abs(currX - prevX)
-            diff = currX - prevX
-            rpm += mag
-
-            if mag > 2 and diff > 2:
-                degrees = diff
-            elif mag > 2 and diff < -2:
+            if diff > 0:
                 degrees = -diff
+            elif diff < 0:
+                degrees = diff
             else:
-                return None, None
+                pass
 
         return degrees, rpm
 
@@ -146,9 +130,6 @@ class Motor(module.Module):
 
         while step < steps:
             for pin_index in range(len(self._pins)):
-                if abs(self._angle) > MAX_ANGLE and not cleanup:
-                    step = steps + 1
-                    break
                 self._fullstep(self._pins, pin_index)
                 time.sleep(wait_time)
                 step += 1
@@ -197,8 +178,8 @@ class Motor(module.Module):
 
         # Message type switchboard
         data = message[module.DATA]
-        if "prev" in data and "current" in data:
-            args = self._movement_calc(data["current"], data["prev"])
+        if "size" in data and "current" in data:
+            args = self._movement_calc(data["current"], data["size"])
             self._rotate(*args)
             return None
 

@@ -236,9 +236,7 @@ class Camera(module.Module):
         as communicating with the motor module.
         """
 
-        prev_box = (0, 0, 0, 0)
         box = (0, 0, 0, 0)
-        prev_ct = {}
         ct = {}
         fps = FPS().start()
         while self._track and self._started:
@@ -254,15 +252,13 @@ class Camera(module.Module):
             # loop over the detections
             for i in range(0, detections.shape[2]):
                 if detections[0, 0, i, 2] > 0.5:  # 50% confidence
-                    prev_box = box
-                    prev_ct = ct.copy()
                     box = (detections[0, 0, i, 3:7] *
                            numpy.array([self._W, self._H, self._W, self._H])).astype("int")
                     ct = self._ct.update([box])
 
                     # Check if device is alreaady recording
                     msg = {module.LOCATION: module.MOTOR_MODULE,
-                           module.DATA: {"prev": (prev_box, prev_ct), "current": (box, ct)}}
+                           module.DATA: {"size": (self._W, self._H), "current": ct}}
                     self._send_message(msg, from_module=self)
 
                     # Draws box to frame
