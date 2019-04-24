@@ -100,6 +100,15 @@ class Motor(module.Module):
         (cSX, cSY, cEX, cEY) = curr_box
         (pSX, pSY, pEX, pEY) = prev_box
 
+        cHeight = cEY - cSY
+        cWidth = cEX - cSX
+        pHeight = pEY - pSY
+        pWidth = pEX - pSX
+        cArea = cHeight * cWidth
+        pArea = pHeight * pWidth
+
+        # cArea - self._area_max_dist
+
         if len(prev_ct) != 0 and len(curr_ct) != 0:
             currX, currY = curr_ct[next(iter(curr_ct))]
             prevX, prevY = prev_ct[next(iter(prev_ct))]
@@ -108,9 +117,9 @@ class Motor(module.Module):
             rpm += mag
 
             if mag > 2 and diff > 2:
-                degrees = 5
+                degrees = diff
             elif mag > 2 and diff < -2:
-                degrees = -5
+                degrees = -diff
             else:
                 return None, None
 

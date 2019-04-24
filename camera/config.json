@@ -6,7 +6,7 @@
 		"camera": {
 			"save_folder": "videos",
 			"camera_source": 0,
-			"frame_width": 300,
+			"frame_width": 150,
 			"frame_rate": 32,
 			"model_file": "model/res10_300x300_ssd_iter_140000.caffemodel",
 			"proto_file": "model/deploy.prototxt"
